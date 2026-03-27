@@ -2,7 +2,19 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { StyleSheet, Text, View } from 'react-native';
 
-export const CustomerCard = () => {
+interface CustomerProfile {
+  name: string;
+  company?: string;
+  email: string;
+  number: string;
+}
+
+export const CustomerCard = ({
+  name,
+  company,
+  email,
+  number,
+}: CustomerProfile) => {
   return (
     <View
       style={{
@@ -19,23 +31,24 @@ export const CustomerCard = () => {
       >
         <View
           style={{
-            // backgroundColor: '#0F6E56',
-            padding: 16,
+            padding: 0,
             borderRadius: 13,
+            flexDirection: 'row',
+            justifyContent: 'space-evenly',
+            alignItems: 'center',
           }}
         >
           <View
             style={{
-              width: 250,
-              height: 250,
+              flex: 1,
               alignItems: 'center',
               justifyContent: 'center',
-              margin: 'auto',
+              borderEndWidth: 1,
             }}
           >
             <MaterialIcons
               name="person"
-              size={150}
+              size={80}
               color="#F1EFE8"
               style={
                 {
@@ -46,7 +59,7 @@ export const CustomerCard = () => {
             />
           </View>
 
-          <View style={{ gap: 5, marginTop: 20 }}>
+          <View style={{ gap: 5, flex: 2, paddingStart: 20 }}>
             <View
               style={{
                 flexDirection: 'row',
@@ -63,7 +76,7 @@ export const CustomerCard = () => {
               <Text
                 style={{ color: '#F1EFE8', fontWeight: 'bold', fontSize: 20 }}
               >
-                Nelson Reyes
+                {name}
               </Text>
             </View>
 
@@ -74,9 +87,7 @@ export const CustomerCard = () => {
                 color="#F1EFE8"
                 style={{ marginRight: 8 }}
               />
-              <Text style={{ color: '#F1EFE8' }}>
-                Boundless Ideas I.T. Solutions
-              </Text>
+              <Text style={{ color: '#F1EFE8' }}>{company}</Text>
             </View>
 
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
@@ -86,7 +97,7 @@ export const CustomerCard = () => {
                 color="#F1EFE8"
                 style={{ marginRight: 8 }}
               />
-              <Text style={{ color: '#F1EFE8' }}>09929440796</Text>
+              <Text style={{ color: '#F1EFE8' }}>{number}</Text>
             </View>
 
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
@@ -96,9 +107,7 @@ export const CustomerCard = () => {
                 color="#F1EFE8"
                 style={{ marginRight: 8 }}
               />
-              <Text style={{ color: '#F1EFE8' }}>
-                reyes.nelson.panong@gmail.com
-              </Text>
+              <Text style={{ color: '#F1EFE8' }}>{email}</Text>
             </View>
           </View>
         </View>
@@ -109,6 +118,8 @@ export const CustomerCard = () => {
 
 const styles = StyleSheet.create({
   card: {
+    width: '90%',
+    minHeight: 150,
     borderRadius: 15, // same as border-radius: 50px
     shadowColor: '#000',
     shadowOffset: { width: 20, height: 20 },
@@ -117,7 +128,6 @@ const styles = StyleSheet.create({
     elevation: 10, // Android shadow
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 15,
-    paddingHorizontal: 10,
+    marginBottom: 10,
   },
 });

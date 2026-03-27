@@ -4,30 +4,6 @@ import { CustomerScreen } from '../screens/CustomerScreen';
 import { DashboardScreen } from '../screens/DashboardScreen';
 import { LeadsScreen } from '../screens/LeadsScreen';
 
-// function DashboardScreen() {
-//   return (
-//     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-//       <Text>Dashboard Screen</Text>
-//     </View>
-//   );
-// }
-
-// function CustomerScreen() {
-//   return (
-//     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-//       <Text>Customers Screen</Text>
-//     </View>
-//   );
-// }
-
-// function LeadsScreen() {
-//   return (
-//     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-//       <Text>Leads Screen</Text>
-//     </View>
-//   );
-// }
-
 const Tab = createBottomTabNavigator();
 
 export const Navigation = () => {
@@ -58,7 +34,11 @@ export const Navigation = () => {
       })}
     >
       <Tab.Screen name="Dashboard" component={DashboardScreen} />
-      <Tab.Screen name="Customer" component={CustomerScreen} />
+      <Tab.Screen
+        name="Customer"
+        component={CustomerScreen}
+        options={{ tabBarBadge: 5 }}
+      />
       <Tab.Screen name="Leads" component={LeadsScreen} />
     </Tab.Navigator>
   );

@@ -11,7 +11,7 @@ export default function Index() {
       toValue: 1,
       duration: 4000,
       useNativeDriver: true,
-    }).start(() => {
+    }).start(async () => {
       // @ts-ignore
       router.replace('/home');
     });

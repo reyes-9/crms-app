@@ -11,7 +11,6 @@ export default function Index() {
       }}
     >
       <Text style={{ fontSize: 48 }}></Text>
-      {/* <CustomerCard /> */}
       <Navigation />
     </View>
   );
