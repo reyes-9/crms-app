@@ -4,7 +4,13 @@ import { StyleSheet, Text, View } from 'react-native';
 
 export const CustomerCard = () => {
   return (
-    <View>
+    <View
+      style={{
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+      }}
+    >
       <LinearGradient
         colors={['#10765c', '#0e634d']}
         start={{ x: 0, y: 0 }}
