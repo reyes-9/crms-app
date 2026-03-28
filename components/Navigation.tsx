@@ -3,6 +3,8 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { CustomerScreen } from '../screens/CustomerScreen';
 import { DashboardScreen } from '../screens/DashboardScreen';
 import { LeadsScreen } from '../screens/LeadsScreen';
+import { ProfileScreen } from '../screens/ProfileScreen';
+import { theme } from '../theme/colors';
 
 const Tab = createBottomTabNavigator();
 
@@ -23,12 +25,14 @@ export const Navigation = () => {
               return (
                 <MaterialIcons name="assignment" size={size} color={color} />
               );
+            case 'Profile':
+              return <MaterialIcons name="person" size={size} color={color} />;
             default:
               return null;
           }
         },
-        tabBarActiveTintColor: '#0F6E56', // active color
-        tabBarInactiveTintColor: '#999', // inactive color
+        tabBarActiveTintColor: theme.colors.tabActive, // active color
+        tabBarInactiveTintColor: theme.colors.tabInactive, // inactive color
         tabBarStyle: [{ height: 70, paddingTop: 5 }], // recommended bottom nav height
         headerShown: false,
       })}
@@ -40,6 +44,7 @@ export const Navigation = () => {
         options={{ tabBarBadge: 5 }}
       />
       <Tab.Screen name="Leads" component={LeadsScreen} />
+      <Tab.Screen name="Profile" component={ProfileScreen} />
     </Tab.Navigator>
   );
 };

@@ -1,5 +1,5 @@
 import { Text, View } from 'react-native';
-import { CustomerCard } from '../components/CustomerCard';
+
 import { Navigation } from '../components/Navigation';
 
 export default function Index() {

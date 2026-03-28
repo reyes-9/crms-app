@@ -38,11 +38,19 @@
             "backgroundColor": "#000000"
           }
         }
-      ]
+      ],
+      "expo-font"
     ],
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "8e4e07ff-fc45-4c90-a502-502d07080f68"
+      }
+    },
+    "owner": "enzoxp"
   }
 }
