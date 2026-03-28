@@ -1,6 +1,7 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { Text, TouchableOpacity } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { theme } from '../theme/colors';
 
 export const BackButton = () => {
@@ -16,18 +17,20 @@ export const BackButton = () => {
   };
 
   return (
-    <TouchableOpacity
-      onPress={handleBack}
-      style={{
-        position: 'absolute',
-        top: 10,
-        left: 10,
-        flexDirection: 'row',
-        alignItems: 'center',
-      }}
-    >
-      <MaterialIcons name="arrow-back" size={24} color="#1D9E75" />
-      <Text style={{ color: theme.colors.primarySoft}}>Return</Text>
-    </TouchableOpacity>
+    <SafeAreaView edges={['top', 'left']}>
+      <TouchableOpacity
+        onPress={handleBack}
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          paddingTop: 8, // small spacing below safe area
+          paddingLeft: 8,
+          // position: 'absolute',
+        }}
+      >
+        <MaterialIcons name="arrow-back" size={24} color="#1D9E75" />
+        <Text style={{ color: theme.colors.primarySoft }}>Return</Text>
+      </TouchableOpacity>
+    </SafeAreaView>
   );
 };
