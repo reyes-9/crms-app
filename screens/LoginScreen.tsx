@@ -11,16 +11,22 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { BackButton } from '../components/BackButton';
 import { theme } from '../theme/colors';
+import { useUser } from '../hooks/useUser';
 
 export const LoginScreen = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
+  const { user } = useUser()
+
   const handleLogin = () => {
+    console.log('Current User:', user);
     console.log('Username:', username);
     console.log('Password:', password);
     // Add your login logic here
   };
+
+  
 
   return (
     <SafeAreaView edges={['bottom', 'right']} style={styles.container}>
@@ -43,6 +49,7 @@ export const LoginScreen = () => {
           <TextInput
             placeholder="Email Address"
             style={styles.input}
+            keyboardType="email-address"
             value={username}
             onChangeText={setUsername}
           />
@@ -131,3 +138,14 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
 });
+
+// WHAT IS AXIOS
+// WHAT IS AXIOS
+// WHAT IS AXIOS
+// WHAT IS AXIOS
+// WHAT IS AXIOS
+// CREATE A DJANGO API (MOCK API)
+// CREATE A DJANGO API (MOCK API)
+// CREATE A DJANGO API (MOCK API)
+// CREATE A DJANGO API (MOCK API)
+// CREATE A DJANGO API (MOCK API)

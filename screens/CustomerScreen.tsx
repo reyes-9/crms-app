@@ -1,80 +1,50 @@
 import { CustomerCard } from '@/components/CustomerCard';
-import React, { useState } from 'react';
-import { FlatList, View, RefreshControl } from 'react-native';
+import axios, { AxiosError } from 'axios';
+import React, { useEffect, useState } from 'react';
+import {
+  ActivityIndicator,
+  FlatList,
+  Platform,
+  RefreshControl,
+  Text,
+  View,
+} from 'react-native';
+import { CustomerProfile } from '../types/customer';
+
+const getBaseURL = () => {
+  if (Platform.OS === 'android') return 'http://10.0.2.2:8000';
+  if (Platform.OS === 'ios') return 'http://localhost:8000';
+  return 'http://127.0.0.1:8000';
+};
+
+//create an axios instance called "api"
+const api = axios.create({
+  baseURL: `${getBaseURL()}/api`,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
 
 export const CustomerScreen = () => {
-  const [customers] = useState([
-    {
-      id: 1,
-      name: 'Alice Johnson',
-      email: 'alice@example.com',
-      company: 'Acme Corp',
-      number: '123-456-7890',
-    },
-    {
-      id: 2,
-      name: 'Bob Smith',
-      email: 'bob@example.com',
-      company: 'Globex Inc',
-      number: '987-654-3210',
-    },
-    {
-      id: 3,
-      name: 'Charlie Brown',
-      email: 'charlie@example.com',
-      company: 'Initech',
-      number: '555-111-2222',
-    },
-    {
-      id: 4,
-      name: 'Diana Prince',
-      email: 'diana@example.com',
-      company: 'Wayne Enterprises',
-      number: '444-333-2222',
-    },
-    {
-      id: 5,
-      name: 'Ethan Hunt',
-      email: 'ethan@example.com',
-      company: 'Impossible Missions Force',
-      number: '999-888-7777',
-    },
-    {
-      id: 6,
-      name: 'Fiona Gallagher',
-      email: 'fiona@example.com',
-      company: 'Gallagher Group',
-      number: '222-333-4444',
-    },
-    {
-      id: 7,
-      name: 'George Clooney',
-      email: 'george@example.com',
-      company: 'Ocean Enterprises',
-      number: '111-222-3333',
-    },
-    {
-      id: 8,
-      name: 'Hannah Montana',
-      email: 'hannah@example.com',
-      company: 'Star Records',
-      number: '777-666-5555',
-    },
-    {
-      id: 9,
-      name: 'Ian Malcolm',
-      email: 'ian@example.com',
-      company: 'Jurassic Labs',
-      number: '888-999-0000',
-    },
-    {
-      id: 10,
-      name: 'Julia Roberts',
-      email: 'julia@example.com',
-      company: 'Hollywood Productions',
-      number: '333-444-5555',
-    },
-  ]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [customers, setCustomers] = useState<CustomerProfile[]>([]); // w/ customer profile interface (types)
+
+  const fetchCustomers = async () => {
+    try {
+      const res = await api.get('/customers/');
+      setCustomers(res.data);
+      setLoading(false);
+    } catch (err) {
+      const error = err as AxiosError;
+      setError(error.message);
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchCustomers();
+  }, []);
 
   const [refreshing, setRefreshing] = React.useState(false);
 
@@ -85,20 +55,28 @@ export const CustomerScreen = () => {
     }, 2000);
   }, []);
 
+  if (loading) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" color="#007AFF" />
+        <Text>Loading data...</Text>
+      </View>
+    );
+  }
+  if (error) {
+    // Show error message if something went wrong
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <Text style={{ color: 'red' }}>Error: {error}</Text>
+      </View>
+    );
+  }
+
   return (
     <View>
-      {/* {customers.map((customer) => (
-          <CustomerCard
-            name={customer.name}
-            email={customer.email}
-            company={customer.company}
-            number={customer.number}
-          />
-        ))} */}
-
       <FlatList
         refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh}/>
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
         data={customers}
         keyExtractor={(item) => item.id.toString()}
