@@ -1,4 +1,15 @@
-import { useState } from 'react';
+// the api is created just need to use it in here (ui)
+// the api is created just need to use it in here (ui)
+// the api is created just need to use it in here (ui)
+// the api is created just need to use it in here (ui)
+// the api is created just need to use it in here (ui)
+// the api is created just need to use it in here (ui)
+// the api is created just need to use it in here (ui)
+// the api is created just need to use it in here (ui)
+// the api is created just need to use it in here (ui)
+// the api is created just need to use it in here (ui)
+
+import React, { useState } from 'react';
 import {
   Image,
   StyleSheet,
@@ -9,29 +20,25 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { useRouter } from 'expo-router';
 import { BackButton } from '../components/BackButton';
 import { useUser } from '../hooks/useUser';
 import { theme } from '../theme/colors';
 
-export const LoginScreen = () => {
-  const [username, setUsername] = useState('');
+export const RegisterScreen = () => {
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [first_name, setFirstName] = useState('');
+  const [last_name, setLastName] = useState('');
+  const [phone_number, setPhoneNumber] = useState('');
+  const [address, setAddress] = useState('');
 
   const { user } = useUser();
 
-  const router = useRouter();
-
   const handleLogin = () => {
     console.log('Current User:', user);
-    console.log('Username:', username);
+    console.log('Username:', email);
     console.log('Password:', password);
     // Add your login logic here
-  };
-
-  const handleSignUp = () => {
-    console.log('Current User:', user);
-    router.push('/register');
   };
 
   return (
@@ -48,16 +55,40 @@ export const LoginScreen = () => {
         </View>
 
         {/* Title */}
-        <Text style={styles.title}>Login</Text>
+        <Text style={styles.title}>Register</Text>
 
         {/* Form */}
         <View style={styles.form}>
           <TextInput
+            placeholder="First Name"
+            style={styles.input}
+            value={first_name}
+            onChangeText={setFirstName}
+          />
+          <TextInput
+            placeholder="Last Name"
+            style={styles.input}
+            value={last_name}
+            onChangeText={setLastName}
+          />
+          <TextInput
+            placeholder="Phone Number"
+            style={styles.input}
+            value={phone_number}
+            onChangeText={setPhoneNumber}
+          />
+          <TextInput
+            placeholder="Address"
+            style={styles.input}
+            value={address}
+            onChangeText={setAddress}
+          />
+          <TextInput
             placeholder="Email Address"
             style={styles.input}
             keyboardType="email-address"
-            value={username}
-            onChangeText={setUsername}
+            value={email}
+            onChangeText={setEmail}
           />
           <TextInput
             placeholder="Password"
@@ -68,17 +99,12 @@ export const LoginScreen = () => {
           />
 
           <TouchableOpacity style={styles.button} onPress={handleLogin}>
-            <Text style={styles.buttonText}>Log in</Text>
+            <Text style={styles.buttonText}>Register</Text>
           </TouchableOpacity>
         </View>
 
         {/* Footer Links */}
-        <View style={styles.footer}>
-          <TouchableOpacity onPress={handleSignUp}>
-            <Text style={styles.link}>Don't have an account? Sign up</Text>
-          </TouchableOpacity>
-          <Text style={styles.link}>Forgot Password</Text>
-        </View>
+        <View style={styles.footer}></View>
       </View>
     </SafeAreaView>
   );
