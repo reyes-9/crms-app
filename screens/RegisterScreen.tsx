@@ -1,45 +1,33 @@
-// the api is created just need to use it in here (ui)
-// the api is created just need to use it in here (ui)
-// the api is created just need to use it in here (ui)
-// the api is created just need to use it in here (ui)
-// the api is created just need to use it in here (ui)
-// the api is created just need to use it in here (ui)
-// the api is created just need to use it in here (ui)
-// the api is created just need to use it in here (ui)
-// the api is created just need to use it in here (ui)
-// the api is created just need to use it in here (ui)
-
-import React, { useState } from 'react';
-import {
-  Image,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import React from 'react';
+import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { BackButton } from '../components/BackButton';
-import { useUser } from '../hooks/useUser';
-import { theme } from '../theme/colors';
+import { BackButton } from '@/components/BackButton';
+import { Input } from '@/components/Input';
+import { useUser } from '@/hooks/useUser';
+import { theme } from '@/theme/colors';
+import { RegisterCredentials } from '@/types/auth';
+import { useForm } from 'react-hook-form';
 
 export const RegisterScreen = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [first_name, setFirstName] = useState('');
-  const [last_name, setLastName] = useState('');
-  const [phone_number, setPhoneNumber] = useState('');
-  const [address, setAddress] = useState('');
+  const EMAIL_REGEX = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
 
   const { user } = useUser();
 
-  const handleLogin = () => {
-    console.log('Current User:', user);
-    console.log('Username:', email);
-    console.log('Password:', password);
+  const onSubmit = (data: RegisterCredentials) => {
+    console.log('Data: ', data);
+    // console.log('Current User:', user);
     // Add your login logic here
   };
+
+  const {
+    control,
+    handleSubmit,
+    watch,
+    // formState: { errors },
+  } = useForm<RegisterCredentials>();
+
+  const pwd = watch('password');
 
   return (
     <SafeAreaView edges={['bottom', 'right']} style={styles.container}>
@@ -56,52 +44,97 @@ export const RegisterScreen = () => {
 
         {/* Title */}
         <Text style={styles.title}>Register</Text>
-
         {/* Form */}
-        <View style={styles.form}>
-          <TextInput
-            placeholder="First Name"
-            style={styles.input}
-            value={first_name}
-            onChangeText={setFirstName}
-          />
-          <TextInput
-            placeholder="Last Name"
-            style={styles.input}
-            value={last_name}
-            onChangeText={setLastName}
-          />
-          <TextInput
-            placeholder="Phone Number"
-            style={styles.input}
-            value={phone_number}
-            onChangeText={setPhoneNumber}
-          />
-          <TextInput
-            placeholder="Address"
-            style={styles.input}
-            value={address}
-            onChangeText={setAddress}
-          />
-          <TextInput
-            placeholder="Email Address"
-            style={styles.input}
-            keyboardType="email-address"
-            value={email}
-            onChangeText={setEmail}
-          />
-          <TextInput
-            placeholder="Password"
-            style={styles.input}
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-          />
+        <Input
+          name="firstName"
+          placeholder="First Name"
+          control={control}
+          rules={{ required: 'First name is required' }}
+        />
+        <Input
+          name="lastName"
+          placeholder="Last Name"
+          control={control}
+          rules={{ required: 'Last name is required' }}
+        />
+        <Input
+          name="email"
+          placeholder="Email"
+          control={control}
+          rules={{
+            required: 'Email is required',
+            pattern: { value: EMAIL_REGEX, message: 'Invalid email.' },
+          }}
+        />
+        <Input
+          name="username"
+          placeholder="Username"
+          control={control}
+          rules={{
+            required: 'Username is required',
+            minLength: {
+              value: 3,
+              message: 'Username should be minimum 3 characters long.',
+            },
+            maxLength: {
+              value: 25,
+              message: 'Username should be maximum 25 characters long.',
+            },
+          }}
+        />
+        <Input
+          name="phoneNumber"
+          placeholder="Phone Number"
+          control={control}
+          rules={{
+            required: 'This field is required',
+            minLength: {
+              value: 11,
+              message:
+                'Phone Number should always be minimum 11 characters long.',
+            },
+            maxLength: {
+              value: 11,
+              message:
+                'Phone Number should always be maximum 11 characters long.',
+            },
+          }}
+        />
+        <Input
+          name="address"
+          placeholder="Address"
+          control={control}
+          rules={{ required: 'Address is required' }}
+        />
+        <Input
+          name="password"
+          placeholder="Password"
+          secureTextEntry
+          control={control}
+          rules={{
+            required: 'Password is required',
+            minLength: {
+              value: 8,
+              message: 'Password should be minimum 8 characters long.',
+            },
+          }}
+        />
+        <Input
+          name="confirmPassword"
+          placeholder="Confirm Password"
+          secureTextEntry
+          control={control}
+          rules={{
+            validate: (value) => value === pwd || 'Password do not match',
+          }}
+        />
 
-          <TouchableOpacity style={styles.button} onPress={handleLogin}>
-            <Text style={styles.buttonText}>Register</Text>
-          </TouchableOpacity>
-        </View>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={handleSubmit(onSubmit)}
+        >
+          <Text style={styles.buttonText}>Register</Text>
+        </TouchableOpacity>
 
         {/* Footer Links */}
         <View style={styles.footer}></View>
@@ -144,15 +177,7 @@ const styles = StyleSheet.create({
   form: {
     marginBottom: 30,
   },
-  input: {
-    borderWidth: 1,
-    borderColor: theme.colors.primaryLight,
-    backgroundColor: theme.colors.light,
-    padding: 12,
-    marginBottom: 15,
-    borderRadius: 5,
-    color: theme.colors.textPrimary,
-  },
+
   button: {
     backgroundColor: theme.colors.primaryLight,
     padding: 15,

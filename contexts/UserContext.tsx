@@ -1,6 +1,7 @@
 import { createContext, useState } from 'react';
 import {
   LoginCredentials,
+  RegisterCredentials,
   UserContextType,
   UserProviderProps,
 } from '../types/auth';
@@ -13,11 +14,21 @@ export const UserContext = createContext<UserContextType | undefined>(
 export function UserProvider({ children }: UserProviderProps) {
   const [user, setUser] = useState<UserDetails | null>(null);
 
+  async function register({
+    username,
+    firstName,
+    lastName,
+    email,
+    phoneNumber,
+    address,
+    password,
+    confirmPassword,
+  }: RegisterCredentials) {}
   async function login({ email, password }: LoginCredentials) {}
   async function logout() {}
 
   return (
-    <UserContext.Provider value={{ user, login, logout }}>
+    <UserContext.Provider value={{ user, register, login, logout }}>
       {children}
     </UserContext.Provider>
   );
