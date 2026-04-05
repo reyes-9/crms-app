@@ -12,7 +12,7 @@ import {
 import { CustomerProfile } from '../types/customer';
 
 const getBaseURL = () => {
-  // if (Platform.OS === 'android') return 'http://127.0.0.1:8000';
+  if (Platform.OS === 'android') return 'http://192.168.68.112:8000/';
   if (Platform.OS === 'ios') return 'http://localhost:8000';
   return 'http://127.0.0.1:8000';
 };

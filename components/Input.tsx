@@ -21,16 +21,29 @@ export const Input: React.FC<InputProps> = ({
         fieldState: { error },
       }) => (
         <View style={styles.container}>
+          {/* Label + Asterisk */}
+          <View style={styles.labelRow}>
+            <Text style={styles.label}>{placeholder}</Text>
+            {rules?.required && error && (
+              <Text style={styles.asterisk}> *</Text>
+            )}
+            {/* {error && <Text style={styles.error}>{error.message}</Text>} */}
+          </View>
+
+          {/* Input */}
           <TextInput
-            placeholder={placeholder}
+            // placeholder={placeholder}
             placeholderTextColor={
               error ? theme.colors.error : theme.colors.textSecondary
             }
             style={[
               styles.input,
               {
+                // borderColor: error
+                //   ? theme.colors.error
+                //   : theme.colors.primaryLight,
                 borderColor: error
-                  ? theme.colors.error
+                  ? theme.colors.primaryLight
                   : theme.colors.primaryLight,
               },
             ]}
@@ -39,9 +52,9 @@ export const Input: React.FC<InputProps> = ({
             onChangeText={onChange}
             onBlur={onBlur}
           />
-          {error && (
-            <Text style={styles.error}>{error.message || 'Error'}</Text>
-          )}
+
+          {/* Error */}
+          {error?.message && <Text style={styles.error}>{error.message}</Text>}
         </View>
       )}
     />
@@ -49,20 +62,34 @@ export const Input: React.FC<InputProps> = ({
 };
 
 const styles = StyleSheet.create({
-  input: {
-    borderWidth: 1.5,
-    borderColor: theme.colors.primaryLight,
-    backgroundColor: theme.colors.light,
-    padding: 12,
-    borderRadius: 5,
-    color: theme.colors.textPrimary,
-  },
   container: {
     marginBottom: 20,
   },
-  error: {
-    alignSelf: 'stretch',
+
+  labelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+
+  label: {
+    color: theme.colors.textSecondary,
+    fontSize: theme.typography.fontSize.sm,
+  },
+
+  asterisk: {
     color: theme.colors.error,
-    fontWeight: 'bold',
+    fontSize: theme.typography.fontSize.sm,
+  },
+
+  input: {
+    borderBottomWidth: 2,
+    color: theme.colors.light,
+    fontSize: theme.typography.fontSize.md,
+  },
+
+  error: {
+    marginTop: 4,
+    color: theme.colors.error,
+    fontSize: theme.typography.fontSize.xs,
   },
 });

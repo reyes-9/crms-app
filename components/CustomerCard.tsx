@@ -121,11 +121,11 @@ const styles = StyleSheet.create({
     width: '90%',
     minHeight: 150,
     borderRadius: 15, // same as border-radius: 50px
-    shadowColor: '#000',
-    shadowOffset: { width: 20, height: 20 },
-    shadowOpacity: 0.3,
-    shadowRadius: 60,
-    elevation: 10, // Android shadow
+    boxShadowColor: '#000',
+    boxShadowOffset: { width: 20, height: 20 },
+    boxShadowOpacity: 0.3,
+    boxShadowRadius: 60,
+    elevation: 10, // Android boxShadow
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 10,

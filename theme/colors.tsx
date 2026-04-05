@@ -64,17 +64,17 @@ export const theme = {
   elevation: {
     sm: {
       elevation: 2,
-      shadowColor: '#000',
-      shadowOpacity: 0.1,
-      shadowRadius: 3,
-      shadowOffset: { width: 0, height: 1 },
+      boxShadowColor: '#000',
+      boxShadowOpacity: 0.1,
+      boxShadowRadius: 3,
+      boxShadowOffset: { width: 0, height: 1 },
     },
     md: {
       elevation: 4,
-      shadowColor: '#000',
-      shadowOpacity: 0.15,
-      shadowRadius: 5,
-      shadowOffset: { width: 0, height: 3 },
+      boxShadowColor: '#000',
+      boxShadowOpacity: 0.15,
+      boxShadowRadius: 5,
+      boxShadowOffset: { width: 0, height: 3 },
     },
   },
 };

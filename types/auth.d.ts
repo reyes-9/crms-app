@@ -5,40 +5,26 @@ export interface UserProviderProps {
 }
 
 export interface LoginCredentials {
-  email: string;
-  password: string;
-}
-
-export interface UserCreadentials {
-  email: string;
+  username: string;
   password: string;
 }
 
 export interface UserContextType {
   user: UserDetails | null;
-  register: (credentials: {
-    username: string;
-    firstName: string;
-    lastName: string;
-    email: string;
-    phoneNumber: string;
-    address: string;
-    password: string;
-    confirmPassword: string;
-  }) => Promise<void>;
-  login: (credentials: { email: string; password: string }) => Promise<void>;
+  isLoading: boolean;
+  register: (credentials: RegisterCredentials) => Promise<void>;
+  login: (credentials: LoginCredentials) => Promise<void>;
   logout: () => Promise<void>;
 }
 
 export interface RegisterCredentials {
   username: string;
-  firstName: string;
-  lastName: string;
-  phoneNumber: string;
+  first_name: string;
+  last_name: string;
+  phone_number: string;
   address: string;
   email: string;
   password: string;
-  confirmPassword: string;
 }
 
 export interface InputProps {
