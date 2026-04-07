@@ -13,7 +13,7 @@ export default function Index() {
       useNativeDriver: true,
     }).start(async () => {
       // @ts-ignore
-      router.replace('/home');
+      router.replace('/login');
     });
   }, []);
 

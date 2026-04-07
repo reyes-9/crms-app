@@ -15,6 +15,7 @@ export const theme = {
     // UI
     background: '#FFFFFF',
     border: '#E5E7EB',
+    offWhite: '#FAFAF9',
 
     // Text
     textPrimary: '#2C2C2A',
@@ -75,6 +76,20 @@ export const theme = {
       boxShadowOpacity: 0.15,
       boxShadowRadius: 5,
       boxShadowOffset: { width: 0, height: 3 },
+    },
+    lg: {
+      elevation: 8,
+      boxShadowColor: '#000',
+      boxShadowOpacity: 0.2,
+      boxShadowRadius: 10,
+      boxShadowOffset: { width: 0, height: 6 },
+    },
+    xl: {
+      elevation: 12,
+      boxShadowColor: '#000',
+      boxShadowOpacity: 0.25,
+      boxShadowRadius: 16,
+      boxShadowOffset: { width: 0, height: 8 },
     },
   },
 };

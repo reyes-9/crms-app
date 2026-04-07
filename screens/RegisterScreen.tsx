@@ -1,16 +1,19 @@
+import { useState } from 'react';
 import {
+  ActivityIndicator,
   Alert,
   KeyboardAvoidingView,
   Platform,
+  Pressable,
   StyleSheet,
   Text,
-  TouchableOpacity,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { BackButton } from '@/components/BackButton';
 import { Input } from '@/components/Input';
+import { ReusableModal } from '@/components/ReusableModal';
 import { useUser } from '@/hooks/useUser';
 import { theme } from '@/theme/colors';
 import { RegisterCredentials } from '@/types/auth';
@@ -27,24 +30,32 @@ export const RegisterScreen = () => {
     control,
     handleSubmit,
     watch,
+    trigger,
+    setError,
     formState: { isSubmitting },
   } = useForm<RegisterCredentials>({
     /*can have default values for the inputs*/
     // FOR TESTING ONLY
-    defaultValues: {
-      username: 'testuser',
-      first_name: 'Test',
-      last_name: 'User',
-      phone_number: '12345678901',
-      address: '123 Test Street',
-      email: 'test@example.com',
-      password: 'testpassword',
-      // confirmPassword: 'testpassword',
-    },
+    // defaultValues: {
+    //   username: 'testuser',
+    //   first_name: 'Test',
+    //   last_name: 'User',
+    //   phone_number: '12345678901',
+    //   address: '123 Test Street',
+    //   email: 'test@example.com',
+    //   password: 'testpassword',
+    //   // confirmPassword: 'testpassword',
+    // },
   });
 
   // for validating the confirm password real-time
   const password = watch('password');
+  const [modalVisible, setModalVisible] = useState(false);
+
+  // You are telling TypeScript:
+  // "I know this data is an object where keys are field names and values are arrays of error strings."
+  // This allows you to use Object.entries safely.
+  type BackendErrorResponse = Record<string, string[]>;
 
   const onSubmit = async (data: RegisterCredentials) => {
     try {
@@ -57,19 +68,41 @@ export const RegisterScreen = () => {
         email: data.email,
         password: data.password,
       });
+      setModalVisible(true);
 
-      router.replace('/login');
+      setTimeout(() => {
+        // setSubmitted(true);
+        setModalVisible(false);
+        router.replace('/login');
+      }, 3500);
     } catch (err: any) {
-      const msg = err.message;
-      Alert.alert('Registration failed. Please try again.', msg);
+      if (err.response && err.response.data) {
+        // console.log('tangina mo');
+        const errorData = err.response.data as BackendErrorResponse;
+
+        Object.entries(errorData).forEach(([field, messages]) => {
+          setError(field as keyof RegisterCredentials, {
+            type: 'manual',
+            message: Array.isArray(messages) ? messages.join(', ') : messages,
+          });
+        });
+      } else {
+        Alert.alert('Registration failed', 'Unexpected error occurred.');
+      }
     }
   };
 
-  const fieldMessage = true;
+  const setFieldMessage = true;
 
   return (
     <SafeAreaView edges={['bottom', 'right']} style={styles.container}>
       <BackButton />
+      <ReusableModal
+        visible={modalVisible}
+        title="Account Created Successfully!"
+        message="Now you can login and use our services."
+        onClose={() => setModalVisible(false)}
+      />
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -79,10 +112,8 @@ export const RegisterScreen = () => {
           {/* Title */}
           <Text style={styles.title}>Register</Text>
           <Text style={styles.helperText}>
-            {' '}
-            Note:
-            <Text style={{ color: theme.colors.error }}> *</Text> Required field
-            — please fill this in
+            Note: (<Text style={{ color: theme.colors.error }}>*</Text>)
+            Required field — please fill this in
           </Text>
           {/* Form */}
           {/* First Name + Last Name */}
@@ -92,7 +123,7 @@ export const RegisterScreen = () => {
                 name="first_name"
                 placeholder="First Name"
                 control={control}
-                rules={{ required: fieldMessage }}
+                rules={{ required: setFieldMessage }}
               />
             </View>
             <View style={styles.half}>
@@ -100,7 +131,7 @@ export const RegisterScreen = () => {
                 name="last_name"
                 placeholder="Last Name"
                 control={control}
-                rules={{ required: fieldMessage }}
+                rules={{ required: setFieldMessage }}
               />
             </View>
           </View>
@@ -111,7 +142,7 @@ export const RegisterScreen = () => {
             placeholder="Email"
             control={control}
             rules={{
-              required: fieldMessage,
+              required: setFieldMessage,
               pattern: { value: EMAIL_REGEX, message: 'Invalid email.' },
             }}
           />
@@ -124,7 +155,7 @@ export const RegisterScreen = () => {
                 placeholder="Username"
                 control={control}
                 rules={{
-                  required: fieldMessage,
+                  required: setFieldMessage,
                   minLength: {
                     value: 3,
                     message: 'It should be minimum 3 characters long.',
@@ -142,7 +173,7 @@ export const RegisterScreen = () => {
                 placeholder="Phone Number"
                 control={control}
                 rules={{
-                  required: fieldMessage,
+                  required: setFieldMessage,
                   minLength: {
                     value: 11,
                     message:
@@ -163,7 +194,7 @@ export const RegisterScreen = () => {
             name="address"
             placeholder="Address"
             control={control}
-            rules={{ required: fieldMessage }}
+            rules={{ required: setFieldMessage }}
           />
 
           {/* Password */}
@@ -173,7 +204,7 @@ export const RegisterScreen = () => {
             secureTextEntry
             control={control}
             rules={{
-              required: fieldMessage,
+              required: setFieldMessage,
               minLength: {
                 value: 8,
                 message: 'Password should be minimum 8 characters long.',
@@ -188,21 +219,42 @@ export const RegisterScreen = () => {
             secureTextEntry
             control={control}
             rules={{
-              required: fieldMessage,
+              required: setFieldMessage,
               validate: (value) =>
                 value === password || 'Password do not match',
             }}
           />
 
-          <TouchableOpacity
-            style={styles.button}
+          <Pressable
             onPress={handleSubmit(onSubmit)}
             disabled={isSubmitting}
+            style={({ pressed }) => [
+              styles.button,
+              pressed && { backgroundColor: theme.colors.primaryLight }, // subtle feedback
+              { opacity: pressed ? 0.7 : 1 }, // increase opacity when pressed,
+              isSubmitting && { opacity: 0.7 }, // dim when disabled
+            ]}
           >
-            <Text style={styles.buttonText}>
-              {isSubmitting ? 'Creating account...' : 'Register'}
-            </Text>
-          </TouchableOpacity>
+            {isSubmitting ? (
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <ActivityIndicator
+                  size="small"
+                  color={theme.colors.textInverse}
+                />
+                <Text style={[styles.buttonText, { marginLeft: 8 }]}>
+                  Creating account...
+                </Text>
+              </View>
+            ) : (
+              <Text style={styles.buttonText}>Register</Text>
+            )}
+          </Pressable>
+
+          {/* FOR MODAL TESTING */}
+
+          {/* <Pressable style={{padding: 10, backgroundColor: 'gray'}} onPress={() => setModalVisible(true)}>
+            <Text style={styles.buttonText}>Open Modal</Text>
+          </Pressable> */}
 
           {/* Footer Links */}
           <View style={styles.footer}></View>
@@ -233,16 +285,20 @@ const styles = StyleSheet.create({
     height: 40,
     marginRight: 10,
   },
-  appName: {
-    fontSize: 24,
-    color: theme.colors.textInverse,
-  },
   title: {
     fontSize: 48,
     fontWeight: '500',
     color: theme.colors.primarySoft,
     marginBottom: 40,
   },
+  helperText: {
+    fontSize: 12,
+    fontStyle: 'italic',
+    color: theme.colors.textSecondary,
+    alignSelf: 'flex-start',
+    marginBottom: 40,
+  },
+
   form: {
     marginBottom: 30,
   },
@@ -274,12 +330,5 @@ const styles = StyleSheet.create({
   link: {
     color: theme.colors.primarySoft,
     marginTop: 10,
-  },
-  helperText: {
-    fontSize: 12, // small, unobtrusive
-    fontStyle: 'italic',
-    color: theme.colors.textSecondary, // or use a neutral gray if not error-related
-    alignSelf: 'flex-start', // aligns nicely under the field
-    marginBottom: 20,
   },
 });

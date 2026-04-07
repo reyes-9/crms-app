@@ -14,7 +14,6 @@ export const Input: React.FC<InputProps> = ({
     <Controller
       control={control}
       name={name}
-      //   rules={{ required: true }}
       rules={rules}
       render={({
         field: { onChange, onBlur, value },
@@ -25,7 +24,7 @@ export const Input: React.FC<InputProps> = ({
           <View style={styles.labelRow}>
             <Text style={styles.label}>{placeholder}</Text>
             {rules?.required && error && (
-              <Text style={styles.asterisk}> *</Text>
+              <Text style={styles.asterisk}> * </Text>
             )}
             {/* {error && <Text style={styles.error}>{error.message}</Text>} */}
           </View>
@@ -36,17 +35,7 @@ export const Input: React.FC<InputProps> = ({
             placeholderTextColor={
               error ? theme.colors.error : theme.colors.textSecondary
             }
-            style={[
-              styles.input,
-              {
-                // borderColor: error
-                //   ? theme.colors.error
-                //   : theme.colors.primaryLight,
-                borderColor: error
-                  ? theme.colors.primaryLight
-                  : theme.colors.primaryLight,
-              },
-            ]}
+            style={[styles.input, { borderColor: theme.colors.primaryLight }]}
             value={value}
             secureTextEntry={secureTextEntry}
             onChangeText={onChange}

@@ -23,13 +23,13 @@ export const BackButton = () => {
         style={{
           flexDirection: 'row',
           alignItems: 'center',
-          paddingTop: 8, // small spacing below safe area
-          paddingLeft: 8,
+          paddingTop: 10, // small spacing below safe area
+          paddingLeft: 10,
           // position: 'absolute',
         }}
       >
-        <MaterialIcons name="arrow-back" size={24} color="#1D9E75" />
-        <Text style={{ color: theme.colors.primarySoft }}>Return</Text>
+        <MaterialIcons name="arrow-back" size={32} color="#1D9E75" />
+        <Text style={{ color: theme.colors.primarySoft }}></Text>
       </TouchableOpacity>
     </SafeAreaView>
   );

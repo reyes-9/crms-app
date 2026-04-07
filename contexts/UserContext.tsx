@@ -1,3 +1,4 @@
+import { ReusableModal } from '@/components/ReusableModal';
 import { authService } from '@/services/authService';
 import { UserDetails } from '@/types/user';
 import { clearKeys } from '@/utils/storage';
@@ -9,6 +10,8 @@ import {
   UserContextType,
   UserProviderProps,
 } from '../types/auth';
+
+// setModalVisible
 
 export const UserContext = createContext<UserContextType | undefined>(
   undefined,

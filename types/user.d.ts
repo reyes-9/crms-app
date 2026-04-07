@@ -1,4 +1,4 @@
-export type UserDetails = {
+export interface UserDetails {
   id: number;
   username: string;
   first_name: string;
@@ -7,4 +7,4 @@ export type UserDetails = {
   email: string;
   phone_number: string;
   profile_image: string;
-};
+}

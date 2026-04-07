@@ -36,7 +36,7 @@ export const LoginScreen = () => {
 
   return (
     <SafeAreaView edges={['bottom', 'right']} style={styles.container}>
-      <BackButton />
+      {/* <BackButton /> */}
       <View style={styles.content}>
         {/* Branding */}
         <View style={styles.brand}>

@@ -1,5 +1,5 @@
 // Define your stack params for type-safe navigation
-export type CustomerProfile = {
+export interface CustomerProfile {
   id: number;
   name: string;
   email: string;
