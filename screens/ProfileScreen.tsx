@@ -1,3 +1,4 @@
+import { useUser } from '@/hooks/useUser';
 import { useRouter } from 'expo-router';
 import { Alert, Button, Platform, Text, View } from 'react-native';
 
@@ -10,6 +11,8 @@ function showAlert(message: string) {
 }
 
 export const ProfileScreen = () => {
+  const { logout } = useUser();
+
   const router = useRouter();
 
   return (
@@ -19,6 +22,13 @@ export const ProfileScreen = () => {
         title="Login"
         onPress={() => {
           router.push('/login');
+        }}
+      />
+      <Button
+        title="logout"
+        onPress={ async () => {
+          await logout();
+          router.replace('/login');
         }}
       />
     </View>

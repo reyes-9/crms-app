@@ -1,36 +1,64 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
+  ActivityIndicator,
   Image,
+  Pressable,
   StyleSheet,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { Input } from '@/components/Input';
+import { useUser } from '@/hooks/useUser';
+import { theme } from '@/theme/colors';
+import { LoginCredentials } from '@/types/auth';
 import { useRouter } from 'expo-router';
-import { BackButton } from '../components/BackButton';
-import { useUser } from '../hooks/useUser';
-import { theme } from '../theme/colors';
+import { useForm } from 'react-hook-form';
+// import { api } from '@/services/api';
 
 export const LoginScreen = () => {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-
-  const { user } = useUser();
+  const { login, loadUser, user } = useUser();
+  const [err, setErr] = useState('');
 
   const router = useRouter();
 
-  const handleLogin = () => {
-    console.log('Current User:', user);
-    console.log('Username:', username);
-    console.log('Password:', password);
-    // Add your login logic here
+  useEffect(() => {
+    console.log(user);
+
+    if (user != null) {
+      router.push('/home');
+    }
+  }, [user]);
+
+  const {
+    control,
+    handleSubmit,
+    formState: { isSubmitting },
+  } = useForm<LoginCredentials>({});
+
+  const onSubmit = async (data: LoginCredentials) => {
+    // console.log('Crasync edentials: ', data);
+
+    try {
+      await login({
+        username: data.username,
+        password: data.password,
+      });
+
+      (await loadUser(), router.push('/home'));
+    } catch (err: any) {
+      // console.log('here');
+      // console.log(err.response); // full response
+      // console.log(err.response.data); // backend error
+      // console.log(err.response.data.detail); // your message
+      console.log(err.message);
+      setErr(err.message);
+    }
   };
 
   const handleSignUp = () => {
-    console.log('Current User:', user);
     router.push('/register');
   };
 
@@ -49,27 +77,59 @@ export const LoginScreen = () => {
 
         {/* Title */}
         <Text style={styles.title}>Login</Text>
+        <Text style={styles.helperText}>
+          Note: (<Text style={{ color: theme.colors.error }}>*</Text>) Required
+          field — please fill this in
+        </Text>
 
         {/* Form */}
+        {/* { if value ? true : false } */}
+        {err ? <Text style={styles.errorMsg}>{err}</Text> : ''}
+
         <View style={styles.form}>
-          <TextInput
-            placeholder="Email Address"
-            style={styles.input}
-            keyboardType="email-address"
-            value={username}
-            onChangeText={setUsername}
-          />
-          <TextInput
-            placeholder="Password"
-            style={styles.input}
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
+          <Input
+            name="username"
+            placeholder="Username"
+            control={control}
+            rules={{
+              required: true,
+            }}
           />
 
-          <TouchableOpacity style={styles.button} onPress={handleLogin}>
-            <Text style={styles.buttonText}>Log in</Text>
-          </TouchableOpacity>
+          <Input
+            name="password"
+            placeholder="Password"
+            secureTextEntry
+            control={control}
+            rules={{
+              required: true,
+            }}
+          />
+
+          <Pressable
+            onPress={handleSubmit(onSubmit)}
+            disabled={isSubmitting}
+            style={({ pressed }) => [
+              styles.button,
+              pressed && { backgroundColor: theme.colors.primaryLight }, // subtle feedback
+              { opacity: pressed ? 0.7 : 1 }, // increase opacity when pressed,
+              isSubmitting && { opacity: 0.7 }, // dim when disabled
+            ]}
+          >
+            {isSubmitting ? (
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <ActivityIndicator
+                  size="small"
+                  color={theme.colors.textInverse}
+                />
+                <Text style={[styles.buttonText, { marginLeft: 8 }]}>
+                  Logging In...
+                </Text>
+              </View>
+            ) : (
+              <Text style={styles.buttonText}>Login</Text>
+            )}
+          </Pressable>
         </View>
 
         {/* Footer Links */}
@@ -114,6 +174,20 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     color: theme.colors.primarySoft,
     marginBottom: 30,
+  },
+  helperText: {
+    fontSize: 12,
+    fontStyle: 'italic',
+    color: theme.colors.textSecondary,
+    alignSelf: 'flex-start',
+    marginBottom: 30,
+  },
+  errorMsg: {
+    color: theme.colors.error,
+    backgroundColor: `${theme.colors.error}45`, // append hex alpha (80 = 50%)
+    padding: 10,
+    marginBottom: 20,
+    borderRadius: 4,
   },
   form: {
     marginBottom: 30,

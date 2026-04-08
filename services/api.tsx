@@ -10,9 +10,24 @@ const getBaseURL = () => {
 
 export const api = axios.create({
   baseURL: `${getBaseURL()}/api`,
-  headers: { 'Content-Type': 'application-json' },
+  headers: { 'Content-Type': 'application/json' },
 });
 
+// Attach access token to every request
+api.interceptors.request.use(async (config) => {
+  const token = await AsyncStorage.getItem('access');
+
+  // Ensure headers object exists
+  config.headers = config.headers || {};
+
+  // Add Authorization if token exists
+  if (token) {
+    (config.headers as any).Authorization = `Bearer ${token}`;
+  }
+
+  return config;
+});
+// Handle 401 responses and attempt refresh
 api.interceptors.response.use(
   (res) => res,
   async (error) => {
@@ -22,17 +37,19 @@ api.interceptors.response.use(
       original._retry = true;
 
       try {
-        const refresh = await AsyncStorage.getItem('referesh');
+        const refresh = await AsyncStorage.getItem('refresh');
         const res = await axios.post(
           `${getBaseURL()}/api/auth/token/refresh/`,
           { refresh },
         );
+
         await AsyncStorage.setItem('access', res.data.access);
         original.headers.Authorization = `Bearer ${res.data.access}`;
         return api(original);
       } catch {
         // Refresh also failed — user needs to log in again
         await clearKeys(['access', 'refresh']);
+        return Promise.reject(error);
       }
     }
     return Promise.reject(error);

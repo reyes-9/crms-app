@@ -1,4 +1,3 @@
-import { ReusableModal } from '@/components/ReusableModal';
 import { authService } from '@/services/authService';
 import { UserDetails } from '@/types/user';
 import { clearKeys } from '@/utils/storage';
@@ -10,8 +9,6 @@ import {
   UserContextType,
   UserProviderProps,
 } from '../types/auth';
-
-// setModalVisible
 
 export const UserContext = createContext<UserContextType | undefined>(
   undefined,
@@ -42,21 +39,37 @@ export function UserProvider({ children }: UserProviderProps) {
 
   async function register(credentials: RegisterCredentials) {
     try {
-      const data = await authService.register(credentials);
+      const registrationRes = await authService.register(credentials);
 
-      await AsyncStorage.setItem('access', data.access);
-      await AsyncStorage.setItem('refresh', data.refresh);
-
-      setUser(data.user);
-    } catch (error) {
-      throw error;
+      // await AsyncStorage.setItem('access', data.access);
+      // await AsyncStorage.setItem('refresh', data.refresh);
+      setUser(registrationRes.user);
+    } catch (registrationErr) {
+      throw registrationErr;
     }
   }
 
   async function login(credentials: LoginCredentials) {
-    await authService.login(credentials);
-    const data = await authService.getMe();
-    setUser(data.user);
+    try {
+      const loginRes = await authService.login(credentials);
+
+      await AsyncStorage.setItem('access', loginRes.access);
+      await AsyncStorage.setItem('refresh', loginRes.refresh);
+    } catch (loginErr: any) {
+      const message =
+        loginErr?.response?.data?.detail || loginErr?.message || 'Login failed';
+      throw new Error(message);
+    }
+  }
+
+  async function loadUser() {
+    try {
+      const data = await authService.getMe();
+      setUser(data.user);
+    } catch (err) {
+      console.error('Failed to load user:', err);
+      setUser(null);
+    }
   }
 
   async function logout() {
@@ -65,7 +78,9 @@ export function UserProvider({ children }: UserProviderProps) {
   }
 
   return (
-    <UserContext.Provider value={{ user, isLoading, register, login, logout }}>
+    <UserContext.Provider
+      value={{ user, isLoading, register, login, loadUser, logout }}
+    >
       {children}
     </UserContext.Provider>
   );

@@ -9,14 +9,6 @@ export interface LoginCredentials {
   password: string;
 }
 
-export interface UserContextType {
-  user: UserDetails | null;
-  isLoading: boolean;
-  register: (credentials: RegisterCredentials) => Promise<void>;
-  login: (credentials: LoginCredentials) => Promise<void>;
-  logout: () => Promise<void>;
-}
-
 export interface RegisterCredentials {
   username: string;
   first_name: string;
@@ -25,6 +17,15 @@ export interface RegisterCredentials {
   address: string;
   email: string;
   password: string;
+}
+
+export interface UserContextType {
+  user: UserDetails | null;
+  isLoading: boolean;
+  register: (credentials: RegisterCredentials) => Promise<void>;
+  login: (credentials: LoginCredentials) => Promise<void>;
+  loadUser: () => Promise<void>;
+  logout: () => Promise<void>;
 }
 
 export interface InputProps {

@@ -22,15 +22,16 @@ import { useForm } from 'react-hook-form';
 
 export const RegisterScreen = () => {
   const EMAIL_REGEX = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
+  const setFieldMessage = true;
 
   const router = useRouter();
-
   const { register } = useUser();
+  const [modalVisible, setModalVisible] = useState(false);
+
   const {
     control,
     handleSubmit,
     watch,
-    trigger,
     setError,
     formState: { isSubmitting },
   } = useForm<RegisterCredentials>({
@@ -47,11 +48,8 @@ export const RegisterScreen = () => {
     //   // confirmPassword: 'testpassword',
     // },
   });
-
   // for validating the confirm password real-time
   const password = watch('password');
-  const [modalVisible, setModalVisible] = useState(false);
-
   // You are telling TypeScript:
   // "I know this data is an object where keys are field names and values are arrays of error strings."
   // This allows you to use Object.entries safely.
@@ -68,16 +66,16 @@ export const RegisterScreen = () => {
         email: data.email,
         password: data.password,
       });
+
       setModalVisible(true);
 
       setTimeout(() => {
-        // setSubmitted(true);
         setModalVisible(false);
         router.replace('/login');
       }, 3500);
     } catch (err: any) {
+      console.log(err);
       if (err.response && err.response.data) {
-        // console.log('tangina mo');
         const errorData = err.response.data as BackendErrorResponse;
 
         Object.entries(errorData).forEach(([field, messages]) => {
@@ -92,8 +90,6 @@ export const RegisterScreen = () => {
     }
   };
 
-  const setFieldMessage = true;
-
   return (
     <SafeAreaView edges={['bottom', 'right']} style={styles.container}>
       <BackButton />
@@ -103,6 +99,7 @@ export const RegisterScreen = () => {
         message="Now you can login and use our services."
         onClose={() => setModalVisible(false)}
       />
+
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -115,7 +112,9 @@ export const RegisterScreen = () => {
             Note: (<Text style={{ color: theme.colors.error }}>*</Text>)
             Required field — please fill this in
           </Text>
+
           {/* Form */}
+
           {/* First Name + Last Name */}
           <View style={styles.row}>
             <View style={styles.half}>
@@ -167,6 +166,7 @@ export const RegisterScreen = () => {
                 }}
               />
             </View>
+
             <View style={styles.half}>
               <Input
                 name="phone_number"
