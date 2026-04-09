@@ -41,8 +41,6 @@ export function UserProvider({ children }: UserProviderProps) {
     try {
       const registrationRes = await authService.register(credentials);
 
-      // await AsyncStorage.setItem('access', data.access);
-      // await AsyncStorage.setItem('refresh', data.refresh);
       setUser(registrationRes.user);
     } catch (registrationErr) {
       throw registrationErr;

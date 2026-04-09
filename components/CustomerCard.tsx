@@ -1,13 +1,7 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { StyleSheet, Text, View } from 'react-native';
-
-interface CustomerProfile {
-  name: string;
-  company?: string;
-  email: string;
-  number: string;
-}
+import { CustomerProfile } from '@/types/customer';
 
 export const CustomerCard = ({
   name,
@@ -121,10 +115,10 @@ const styles = StyleSheet.create({
     width: '90%',
     minHeight: 150,
     borderRadius: 15, // same as border-radius: 50px
-    boxShadowColor: '#000',
-    boxShadowOffset: { width: 20, height: 20 },
-    boxShadowOpacity: 0.3,
-    boxShadowRadius: 60,
+    shadowColor: '#000',
+    shadowOffset: { width: 20, height: 20 },
+    shadowOpacity: 0.3,
+    shadowRadius: 60,
     elevation: 10, // Android boxShadow
     alignItems: 'center',
     justifyContent: 'center',

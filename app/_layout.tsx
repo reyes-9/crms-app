@@ -5,6 +5,7 @@ import {
 } from '@expo-google-fonts/inter';
 import { Stack } from 'expo-router';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { CustomerProvider } from '../contexts/CustomerContext';
 import { UserProvider } from '../contexts/UserContext';
 
 export default function RootLayout() {
@@ -19,9 +20,11 @@ export default function RootLayout() {
 
   return (
     <UserProvider>
-      <SafeAreaProvider>
-        <Stack screenOptions={{ headerShown: false }} />
-      </SafeAreaProvider>
+      <CustomerProvider>
+        <SafeAreaProvider>
+          <Stack screenOptions={{ headerShown: false }} />
+        </SafeAreaProvider>
+      </CustomerProvider>
     </UserProvider>
   );
 }

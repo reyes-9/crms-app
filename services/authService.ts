@@ -1,6 +1,5 @@
 import { LoginCredentials } from '@/types/auth';
 import { clearKeys } from '@/utils/storage';
-// import AsyncStorage from '@react-native-async-storage/async-storage';
 import { api } from './api';
 
 export const authService = {

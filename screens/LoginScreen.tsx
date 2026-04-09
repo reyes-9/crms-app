@@ -16,7 +16,6 @@ import { theme } from '@/theme/colors';
 import { LoginCredentials } from '@/types/auth';
 import { useRouter } from 'expo-router';
 import { useForm } from 'react-hook-form';
-// import { api } from '@/services/api';
 
 export const LoginScreen = () => {
   const { login, loadUser, user } = useUser();
@@ -25,7 +24,7 @@ export const LoginScreen = () => {
   const router = useRouter();
 
   useEffect(() => {
-    console.log(user);
+    // console.log(user);
 
     if (user != null) {
       router.push('/home');
@@ -49,10 +48,6 @@ export const LoginScreen = () => {
 
       (await loadUser(), router.push('/home'));
     } catch (err: any) {
-      // console.log('here');
-      // console.log(err.response); // full response
-      // console.log(err.response.data); // backend error
-      // console.log(err.response.data.detail); // your message
       console.log(err.message);
       setErr(err.message);
     }

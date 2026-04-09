@@ -21,6 +21,7 @@ api.interceptors.request.use(async (config) => {
   config.headers = config.headers || {};
 
   // Add Authorization if token exists
+  console.log('ACCESS TOKEN', token);
   if (token) {
     (config.headers as any).Authorization = `Bearer ${token}`;
   }
