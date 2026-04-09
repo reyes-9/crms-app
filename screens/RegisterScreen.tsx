@@ -71,7 +71,7 @@ export const RegisterScreen = () => {
 
       setTimeout(() => {
         setModalVisible(false);
-        router.replace('/login');
+        router.replace('/auth/login');
       }, 3500);
     } catch (err: any) {
       console.log(err);

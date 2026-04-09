@@ -1,4 +1,4 @@
-import { MaterialIcons } from '@expo/vector-icons';
+import { Feather } from '@expo/vector-icons';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { CustomerScreen } from '../screens/CustomerScreen';
 import { DashboardScreen } from '../screens/DashboardScreen';
@@ -16,17 +16,13 @@ export const Navigation = () => {
         tabBarIcon: ({ color, size }) => {
           switch (route.name) {
             case 'Dashboard':
-              return (
-                <MaterialIcons name="dashboard" size={size} color={color} />
-              );
+              return <Feather name="grid" size={size} color={color} />;
             case 'Customer':
-              return <MaterialIcons name="people" size={size} color={color} />;
+              return <Feather name="users" size={size} color={color} />;
             case 'Leads':
-              return (
-                <MaterialIcons name="assignment" size={size} color={color} />
-              );
+              return <Feather name="file-text" size={size} color={color} />;
             case 'Profile':
-              return <MaterialIcons name="person" size={size} color={color} />;
+              return <Feather name="user" size={size} color={color} />;
             default:
               return null;
           }

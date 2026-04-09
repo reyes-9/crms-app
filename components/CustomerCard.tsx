@@ -1,7 +1,7 @@
+import { CustomerProfile } from '@/types/customer';
 import { MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { StyleSheet, Text, View } from 'react-native';
-import { CustomerProfile } from '@/types/customer';
 
 export const CustomerCard = ({
   name,
@@ -40,17 +40,7 @@ export const CustomerCard = ({
               borderEndWidth: 1,
             }}
           >
-            <MaterialIcons
-              name="person"
-              size={80}
-              color="#F1EFE8"
-              style={
-                {
-                  // borderColor: '#F1EFE8',
-                  // borderRadius: 50,
-                }
-              }
-            />
+            <MaterialIcons name="person" size={80} color="#F1EFE8" />
           </View>
 
           <View style={{ gap: 5, flex: 2, paddingStart: 20 }}>

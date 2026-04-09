@@ -26,14 +26,14 @@ export const ProfileScreen = () => {
       <Button
         title="Login"
         onPress={() => {
-          router.push('/login');
+          router.push('/auth/login');
         }}
       />
       <Button
         title="logout"
         onPress={async () => {
           await logout();
-          router.replace('/login');
+          router.replace('/auth/login');
         }}
       />
     </View>

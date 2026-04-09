@@ -27,7 +27,7 @@ export const LoginScreen = () => {
     // console.log(user);
 
     if (user != null) {
-      router.push('/home');
+      router.push('/app/home');
     }
   }, [user]);
 
@@ -46,7 +46,7 @@ export const LoginScreen = () => {
         password: data.password,
       });
 
-      (await loadUser(), router.push('/home'));
+      (await loadUser(), router.push('/app/home'));
     } catch (err: any) {
       console.log(err.message);
       setErr(err.message);
@@ -54,7 +54,7 @@ export const LoginScreen = () => {
   };
 
   const handleSignUp = () => {
-    router.push('/register');
+    router.push('/auth/register');
   };
 
   return (

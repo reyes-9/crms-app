@@ -1,4 +1,4 @@
-import { MaterialIcons } from '@expo/vector-icons';
+import { Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { Text, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -12,7 +12,7 @@ export const BackButton = () => {
       router.back();
     } else {
       // Fallback: navigate somewhere safe
-      router.push('/home'); // or your default screen
+      router.push('/app/home'); // or your default screen
     }
   };
 
@@ -28,7 +28,7 @@ export const BackButton = () => {
           // position: 'absolute',
         }}
       >
-        <MaterialIcons name="arrow-back" size={32} color="#1D9E75" />
+        <Feather name="arrow-left" size={32} color="#1D9E75" />
         <Text style={{ color: theme.colors.primarySoft }}></Text>
       </TouchableOpacity>
     </SafeAreaView>
