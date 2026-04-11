@@ -44,16 +44,16 @@ export const RegisterScreen = () => {
   } = useForm<RegisterCredentials>({
     /*can have default values for the inputs*/
     // FOR TESTING ONLY
-    // defaultValues: {
-    //   username: 'testuser',
-    //   first_name: 'Test',
-    //   last_name: 'User',
-    //   phone_number: '12345678901',
-    //   address: '123 Test Street',
-    //   email: 'test@example.com',
-    //   password: 'testpassword',
-    //   // confirmPassword: 'testpassword',
-    // },
+    defaultValues: {
+      username: 'testuser',
+      first_name: 'Test',
+      last_name: 'User',
+      phone_number: '12345678901',
+      address: '123 Test Street',
+      email: 'test@example.com',
+      password: 'testpassword',
+      // confirmPassword: 'testpassword',
+    },
   });
   // for validating the confirm password real-time
   const password = watch('password');
@@ -101,6 +101,8 @@ export const RegisterScreen = () => {
     <SafeAreaView edges={['bottom', 'right']} style={styles.container}>
       <BackButton />
       <ReusableModal
+        state="success"
+        buttons={[]}
         visible={modalVisible}
         title="Account Created Successfully!"
         message="Now you can login and use our services."
@@ -116,7 +118,7 @@ export const RegisterScreen = () => {
           {/* Title */}
           <Text style={styles.title}>Register</Text>
           <Text style={styles.helperText}>
-            Note: (<Text style={{ color: theme.colors.error }}>*</Text>)
+            Note: (<Text style={{ color: theme.colors.danger }}>*</Text>)
             Required field — please fill this in
           </Text>
 
@@ -259,7 +261,10 @@ export const RegisterScreen = () => {
 
           {/* FOR MODAL TESTING */}
 
-          {/* <Pressable style={{padding: 10, backgroundColor: 'gray'}} onPress={() => setModalVisible(true)}>
+          {/* <Pressable
+            style={{ padding: 10, backgroundColor: 'gray' }}
+            onPress={() => setModalVisible(true)}
+          >
             <Text style={styles.buttonText}>Open Modal</Text>
           </Pressable> */}
 

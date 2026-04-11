@@ -9,6 +9,7 @@
 
 import { CustomerCard } from '@/components/CustomerCard';
 
+import { ReusableModal } from '@/components/ReusableModal';
 import SearchBar from '@/components/Searchbar';
 import SwipeableRow from '@/components/SwipeableRow'; // your wrapper
 import { useCustomer } from '@/hooks/useCustomer';
@@ -35,6 +36,9 @@ export const CustomerScreen = () => {
   const [openRow, setOpenRow] = useState<string | null>(null);
 
   const [query, setQuery] = useState('');
+
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+  const [archiveModalVisible, setArchiveModalVisible] = useState(false);
 
   // Filter customers by search query
   const filteredCustomers = customers.filter(
@@ -90,6 +94,55 @@ export const CustomerScreen = () => {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
+      <ReusableModal
+        state="danger"
+        visible={deleteModalVisible}
+        title="Delete this record?"
+        message="This action cannot be undone. Deleted data will be permanently removed."
+        buttons={[
+          {
+            label: 'Cancel',
+            onPress: () => setDeleteModalVisible(false),
+            variant: 'neutral',
+          },
+          {
+            label: 'Delete',
+            onPress: () => setDeleteModalVisible(false),
+            variant: 'danger',
+          },
+        ]}
+        onClose={() => setDeleteModalVisible(false)}
+      />
+      <ReusableModal
+        state="neutral"
+        visible={archiveModalVisible}
+        title="Archive this record?"
+        message="This record will be moved to archive. You can restore it later."
+        buttons={[
+          {
+            label: 'Cancel',
+            onPress: () => setArchiveModalVisible(false),
+            variant: 'neutral', // or 'dark'
+          },
+          {
+            label: 'Archive',
+            onPress: () => {
+              // TODO: call your archive logic here
+              setArchiveModalVisible(false);
+            },
+            variant: 'dark',
+          },
+        ]}
+        onClose={() => setArchiveModalVisible(false)}
+      />
+      {/* FOR MODAL TESTING */}
+
+      {/* <Pressable
+        style={{ padding: 10, backgroundColor: 'gray' }}
+        onPress={() => setModalVisible(true)}
+      >
+        <Text>Open Modal</Text>
+      </Pressable> */}
       <View style={{ flex: 1 }}>
         <SearchBar value={query} onChangeText={setQuery} placeholder="Search" />
 
@@ -102,7 +155,8 @@ export const CustomerScreen = () => {
           renderItem={({ item }) => (
             <Pressable
               onPress={() => {
-                navigation.push('/');
+                console.log('View Record');
+                // setArchiveModalVisible(true);
               }}
             >
               <SwipeableRow
@@ -112,6 +166,11 @@ export const CustomerScreen = () => {
                 onClose={() => setOpenRow(null)}
                 onDelete={() => {
                   console.log('deleted');
+                  setDeleteModalVisible(true);
+                }}
+                onArchive={() => {
+                  console.log('archived');
+                  setArchiveModalVisible(true);
                 }}
               >
                 <CustomerCard

@@ -87,7 +87,7 @@ export const LoginScreen = () => {
         {/* Title */}
         <Text style={styles.title}>Login</Text>
         <Text style={styles.helperText}>
-          Note: (<Text style={{ color: theme.colors.error }}>*</Text>) Required
+          Note: (<Text style={{ color: theme.colors.danger }}>*</Text>) Required
           field — please fill this in
         </Text>
 
@@ -192,8 +192,8 @@ const styles = StyleSheet.create({
     marginBottom: 30,
   },
   errorMsg: {
-    color: theme.colors.error,
-    backgroundColor: `${theme.colors.error}45`, // append hex alpha (80 = 50%)
+    color: theme.colors.danger,
+    backgroundColor: `${theme.colors.danger}45`, // append hex alpha (80 = 50%)
     padding: 10,
     marginBottom: 20,
     borderRadius: 4,

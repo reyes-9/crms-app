@@ -16,6 +16,7 @@ type Props = {
   onOpen: (id: string) => void;
   onClose: () => void;
   onDelete?: () => void;
+  onArchive?: () => void;
 };
 
 const SwipeableRow = ({
@@ -25,6 +26,7 @@ const SwipeableRow = ({
   onOpen,
   onClose,
   onDelete,
+  onArchive,
 }: Props) => {
   const translateX = useSharedValue(0);
   const startX = useSharedValue(0);
@@ -101,8 +103,13 @@ const SwipeableRow = ({
         <Animated.View
           style={[styles.actionBlock, styles.archive, actionAnimatedStyle]}
         >
-          <Feather name="archive" size={22} color="#6B7280" />
-          <Text style={styles.label}>Archive</Text>
+          <Pressable
+            style={[styles.actionBlock, styles.archive]}
+            onPress={onArchive}
+          >
+            <Feather name="archive" size={22} color="#6B7280" />
+            <Text style={styles.label}>Archive</Text>
+          </Pressable>
         </Animated.View>
 
         <View style={styles.divider} />

@@ -25,7 +25,9 @@ export const theme = {
     // Status
     success: '#1D9E75',
     warning: '#F59E0B',
-    error: '#EF4444',
+    danger: '#E74C3C',
+    neutral: '#6B7280',
+    info: '#3B82F6',
 
     // Navigation
     tabActive: '#0F6E56',

@@ -33,7 +33,7 @@ export const Input: React.FC<InputProps> = ({
           <TextInput
             // placeholder={placeholder}
             placeholderTextColor={
-              error ? theme.colors.error : theme.colors.textSecondary
+              error ? theme.colors.danger : theme.colors.textSecondary
             }
             style={[styles.input, { borderColor: theme.colors.primaryLight }]}
             value={value}
@@ -66,7 +66,7 @@ const styles = StyleSheet.create({
   },
 
   asterisk: {
-    color: theme.colors.error,
+    color: theme.colors.danger,
     fontSize: theme.typography.fontSize.sm,
   },
 
@@ -78,7 +78,7 @@ const styles = StyleSheet.create({
 
   error: {
     marginTop: 4,
-    color: theme.colors.error,
+    color: theme.colors.danger,
     fontSize: theme.typography.fontSize.xs,
   },
 });
