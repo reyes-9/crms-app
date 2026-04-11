@@ -4,7 +4,7 @@ import axios from 'axios';
 import { Platform } from 'react-native';
 
 const getBaseURL = () => {
-  if (Platform.OS === 'android') return 'http://192.168.68.112:8000'; // Android
+  if (Platform.OS === 'android') return 'http://192.168.68.113:8000'; // Android
   return 'http://localhost:8000'; // web
 };
 

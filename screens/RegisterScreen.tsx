@@ -17,14 +17,21 @@ import { ReusableModal } from '@/components/ReusableModal';
 import { useUser } from '@/hooks/useUser';
 import { theme } from '@/theme/colors';
 import { RegisterCredentials } from '@/types/auth';
-import { useRouter } from 'expo-router';
+import { useNavigation } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
 import { useForm } from 'react-hook-form';
+
+type RootStackParamList = {
+  Splash: undefined;
+  Login: undefined;
+  Dashboard: undefined;
+};
 
 export const RegisterScreen = () => {
   const EMAIL_REGEX = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
   const setFieldMessage = true;
 
-  const router = useRouter();
+  const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
   const { register } = useUser();
   const [modalVisible, setModalVisible] = useState(false);
 
@@ -71,7 +78,7 @@ export const RegisterScreen = () => {
 
       setTimeout(() => {
         setModalVisible(false);
-        router.replace('/auth/login');
+        navigation.replace('Login');
       }, 3500);
     } catch (err: any) {
       console.log(err);

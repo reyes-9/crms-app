@@ -1,19 +1,20 @@
 import { Feather } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { useNavigation } from '@react-navigation/native';
 import { Text, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { theme } from '../theme/colors';
 
 export const BackButton = () => {
-  const router = useRouter();
+  const navigation = useNavigation();
 
   const handleBack = () => {
-    if (router.canGoBack()) {
-      router.back();
-    } else {
-      // Fallback: navigate somewhere safe
-      router.push('/app/home'); // or your default screen
-    }
+    navigation.goBack();
+    // if (navigation.canGoBack()) {
+    //   navigation.goBack();
+    // } else {
+    //   // fallback screen (update to your actual route name)
+    //   // navigation.navigate('Main' as never);
+    // }
   };
 
   return (
@@ -23,13 +24,12 @@ export const BackButton = () => {
         style={{
           flexDirection: 'row',
           alignItems: 'center',
-          paddingTop: 10, // small spacing below safe area
+          paddingTop: 10,
           paddingLeft: 10,
-          // position: 'absolute',
         }}
       >
         <Feather name="arrow-left" size={32} color="#1D9E75" />
-        <Text style={{ color: theme.colors.primarySoft }}></Text>
+        <Text style={{ color: theme.colors.primarySoft }} />
       </TouchableOpacity>
     </SafeAreaView>
   );

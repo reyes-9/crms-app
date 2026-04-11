@@ -1,6 +1,6 @@
 {
   "name": "crms-app",
-  "main": "expo-router/entry",
+  "main": "node_modules/expo/AppEntry.js",
   "version": "1.0.0",
   "scripts": {
     "start": "expo start",
@@ -19,6 +19,7 @@
     "@react-navigation/bottom-tabs": "^7.4.0",
     "@react-navigation/elements": "^2.6.3",
     "@react-navigation/native": "^7.1.8",
+    "@react-navigation/stack": "^7.8.10",
     "axios": "^1.14.0",
     "eas-cli": "^18.4.0",
     "expo": "~54.0.33",

@@ -1,11 +1,7 @@
-// CREATE INTERFACES FOR CUSTOMERS ( customer.d.ts )
-// CREATE SERVICE ( customerService.ts )  contains the code that talks to the api
-// CREATE CONTEXT ( CustomerContext.tsx )  contains the code that manages the data recieved from the api
-// CREATE HOOK ( useCustomer.tsx )  contains the code that enables the screen to use the functions inside the CONTEXT (CustomerContext.tsx)
-
 import { useUser } from '@/hooks/useUser';
-import { useRouter } from 'expo-router';
-import { Alert, Button, Platform, Text, View } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { Button, Text, View } from 'react-native';
 
 // function showAlert(message: string) {
 //   if (Platform.OS === 'web') {
@@ -14,11 +10,16 @@ import { Alert, Button, Platform, Text, View } from 'react-native';
 //     Alert.alert(message);
 //   }
 // }
+type RootStackParamList = {
+  Splash: undefined;
+  Login: undefined;
+  Dashboard: undefined;
+};
 
 export const ProfileScreen = () => {
   const { logout } = useUser();
 
-  const router = useRouter();
+  const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
 
   return (
     <View>
@@ -26,14 +27,14 @@ export const ProfileScreen = () => {
       <Button
         title="Login"
         onPress={() => {
-          router.push('/auth/login');
+          navigation.push('Login');
         }}
       />
       <Button
         title="logout"
         onPress={async () => {
           await logout();
-          router.replace('/auth/login');
+          navigation.replace('Login');
         }}
       />
     </View>

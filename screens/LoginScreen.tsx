@@ -14,20 +14,34 @@ import { Input } from '@/components/Input';
 import { useUser } from '@/hooks/useUser';
 import { theme } from '@/theme/colors';
 import { LoginCredentials } from '@/types/auth';
-import { useRouter } from 'expo-router';
+import { useNavigation } from '@react-navigation/native';
 import { useForm } from 'react-hook-form';
+
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+
+// 1. Define your stack param list
+export type RootStackParamList = {
+  Splash: undefined;
+  Login: undefined;
+  Register: undefined;
+  Main: undefined;
+};
+
+type SplashScreenNavProp = NativeStackNavigationProp<
+  RootStackParamList,
+  'Splash'
+>;
 
 export const LoginScreen = () => {
   const { login, loadUser, user } = useUser();
   const [err, setErr] = useState('');
-
-  const router = useRouter();
+  const navigation = useNavigation<SplashScreenNavProp>();
 
   useEffect(() => {
     // console.log(user);
 
     if (user != null) {
-      router.push('/app/home');
+      navigation.replace('Main');
     }
   }, [user]);
 
@@ -46,7 +60,7 @@ export const LoginScreen = () => {
         password: data.password,
       });
 
-      (await loadUser(), router.push('/app/home'));
+      (await loadUser(), navigation.replace('Main'));
     } catch (err: any) {
       console.log(err.message);
       setErr(err.message);
@@ -54,7 +68,7 @@ export const LoginScreen = () => {
   };
 
   const handleSignUp = () => {
-    router.push('/auth/register');
+    navigation.navigate('Register');
   };
 
   return (

@@ -1,6 +1,5 @@
 import { CustomerProfile } from '@/types/customer';
-import { MaterialIcons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
+import { Feather } from '@expo/vector-icons';
 import { StyleSheet, Text, View } from 'react-native';
 
 export const CustomerCard = ({
@@ -10,108 +9,103 @@ export const CustomerCard = ({
   number,
 }: CustomerProfile) => {
   return (
-    <View
-      style={{
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-      }}
-    >
-      <LinearGradient
-        colors={['#10765c', '#0e634d']}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={styles.card}
-      >
-        <View
-          style={{
-            padding: 0,
-            borderRadius: 13,
-            flexDirection: 'row',
-            justifyContent: 'space-evenly',
-            alignItems: 'center',
-          }}
-        >
-          <View
-            style={{
-              flex: 1,
-              alignItems: 'center',
-              justifyContent: 'center',
-              borderEndWidth: 1,
-            }}
-          >
-            <MaterialIcons name="person" size={80} color="#F1EFE8" />
+    <View style={styles.container}>
+      <View style={styles.card}>
+        {/* Avatar */}
+        <View style={styles.avatar}>
+          <Feather name="user" size={28} color="#fff" />
+        </View>
+
+        {/* Content */}
+        <View style={styles.content}>
+          <Text style={styles.name}>{name}</Text>
+
+          <View style={styles.row}>
+            <Feather name="briefcase" size={16} color="#6B7280" />
+            <Text style={styles.text}>{company}</Text>
           </View>
 
-          <View style={{ gap: 5, flex: 2, paddingStart: 20 }}>
-            <View
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                marginBottom: 10,
-              }}
-            >
-              <MaterialIcons
-                name="person"
-                size={20}
-                color="#F1EFE8"
-                style={{ marginRight: 8 }}
-              />
-              <Text
-                style={{ color: '#F1EFE8', fontWeight: 'bold', fontSize: 20 }}
-              >
-                {name}
-              </Text>
-            </View>
+          <View style={styles.row}>
+            <Feather name="phone" size={16} color="#6B7280" />
+            <Text style={styles.text}>{number}</Text>
+          </View>
 
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <MaterialIcons
-                name="business"
-                size={18}
-                color="#F1EFE8"
-                style={{ marginRight: 8 }}
-              />
-              <Text style={{ color: '#F1EFE8' }}>{company}</Text>
-            </View>
-
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <MaterialIcons
-                name="phone"
-                size={18}
-                color="#F1EFE8"
-                style={{ marginRight: 8 }}
-              />
-              <Text style={{ color: '#F1EFE8' }}>{number}</Text>
-            </View>
-
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <MaterialIcons
-                name="email"
-                size={18}
-                color="#F1EFE8"
-                style={{ marginRight: 8 }}
-              />
-              <Text style={{ color: '#F1EFE8' }}>{email}</Text>
-            </View>
+          <View style={styles.row}>
+            <Feather name="mail" size={16} color="#6B7280" />
+            <Text style={styles.text}>{email}</Text>
           </View>
         </View>
-      </LinearGradient>
+      </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
+  container: {
+    paddingHorizontal: 22,
+    // marginTop: 10,
+  },
+
   card: {
-    width: '90%',
-    minHeight: 150,
-    borderRadius: 15, // same as border-radius: 50px
-    shadowColor: '#000',
-    shadowOffset: { width: 20, height: 20 },
-    shadowOpacity: 0.3,
-    shadowRadius: 60,
-    elevation: 10, // Android boxShadow
+    flexDirection: 'row',
+    backgroundColor: '#FFFFFF',
     alignItems: 'center',
+    // borderRadius: 16,
+    padding: 12,
+
+    // Modern subtle shadow
+    // shadowColor: '#000',
+    // shadowOffset: { width: 0, height: 4 },
+    // shadowOpacity: 0.08,
+    // shadowRadius: 10,
+    // elevation: 3,
+  },
+
+  avatar: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#0E9F6E', // modern green
     justifyContent: 'center',
-    marginBottom: 10,
+    alignItems: 'center',
+    marginRight: 14,
+  },
+
+  content: {
+    flex: 1,
+    justifyContent: 'center',
+  },
+
+  name: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#111827',
+    marginBottom: 6,
+  },
+
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    // marginTop: 2,
+  },
+
+  text: {
+    marginLeft: 8,
+    fontSize: 13,
+    color: '#6B7280',
+  },
+
+  rightAction: {
+    backgroundColor: '#E74C3C',
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: 80,
+    borderRadius: 16,
+    // marginVertical: 10,
+  },
+  actionText: {
+    color: '#fff',
+    fontSize: 12,
+    // marginTop: 4,
   },
 });

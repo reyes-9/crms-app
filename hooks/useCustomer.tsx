@@ -5,7 +5,7 @@ export function useCustomer() {
   const context = useContext(CustomerContext);
 
   if (!context) {
-    throw new Error('useCustomer must be used within a UserProvider');
+    throw new Error('useCustomer must be used within a CustomerProvider');
   }
 
   return context;

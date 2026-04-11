@@ -1,20 +1,29 @@
-import { useRouter } from 'expo-router';
+import { useNavigation } from '@react-navigation/native';
 import { useEffect, useRef } from 'react';
-import { Animated, Image, StyleSheet, Text, View } from 'react-native';
+import { Animated, Image, Text, View } from 'react-native';
+import { StackNavigationProp } from '@react-navigation/stack';
 
-export default function Index() {
+
+type RootStackParamList = {
+  Splash: undefined;
+  Login: undefined;
+  Dashboard: undefined;
+};
+
+export const SplashScreen = () => {
   const fadeAnim = useRef(new Animated.Value(0)).current;
-  const router = useRouter();
+
+  const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
 
   useEffect(() => {
-    Animated.timing(fadeAnim, {
+    const anim = Animated.timing(fadeAnim, {
       toValue: 1,
       duration: 1000,
       useNativeDriver: true,
-    }).start(async () => {
-      // @ts-ignore
-      router.replace('/auth/login');
     });
+    anim.start(() => navigation.replace('Login'));
+
+    return () => anim.stop();
   }, []);
 
   return (
@@ -45,6 +54,4 @@ export default function Index() {
       </View>
     </Animated.View>
   );
-}
-
-const styles = StyleSheet.create({});
+};
