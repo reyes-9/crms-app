@@ -7,6 +7,13 @@
 // TODO's: MAKE THE UI WORK (   ARCHIVE,  DELETE,  SEARCH    )
 // TODO's: MAKE THE UI WORK (   ARCHIVE,  DELETE,  SEARCH    )
 
+// TODO's: CREATE A LITTLE TOAST AT THE TOP THAT SAYS THE OPERATION IS COMPLETE (   ARCHIVE,  DELETE,  SEARCH    )
+// TODO's: CREATE A LITTLE TOAST AT THE TOP THAT SAYS THE OPERATION IS COMPLETE (   ARCHIVE,  DELETE,  SEARCH    )
+// TODO's: CREATE A LITTLE TOAST AT THE TOP THAT SAYS THE OPERATION IS COMPLETE (   ARCHIVE,  DELETE,  SEARCH    )
+// TODO's: CREATE A LITTLE TOAST AT THE TOP THAT SAYS THE OPERATION IS COMPLETE (   ARCHIVE,  DELETE,  SEARCH    )
+// TODO's: CREATE A LITTLE TOAST AT THE TOP THAT SAYS THE OPERATION IS COMPLETE (   ARCHIVE,  DELETE,  SEARCH    )
+// TODO's: CREATE A LITTLE TOAST AT THE TOP THAT SAYS THE OPERATION IS COMPLETE (   ARCHIVE,  DELETE,  SEARCH    )
+
 import { CustomerCard } from '@/components/CustomerCard';
 
 import { ReusableModal } from '@/components/ReusableModal';
@@ -17,6 +24,7 @@ import { useNavigation } from '@react-navigation/native';
 import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   FlatList,
   Pressable,
   RefreshControl,
@@ -28,7 +36,8 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 export const CustomerScreen = () => {
   const navigation = useNavigation<any>();
 
-  const { getCustomers, customers } = useCustomer();
+  const { deleteCustomer, archiveCustomer, getCustomers, customers } =
+    useCustomer();
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -39,6 +48,10 @@ export const CustomerScreen = () => {
 
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [archiveModalVisible, setArchiveModalVisible] = useState(false);
+
+  const [selectedCustomerId, setSelectedCustomerId] = useState<number | null>(
+    null,
+  );
 
   // Filter customers by search query
   const filteredCustomers = customers.filter(
@@ -94,6 +107,8 @@ export const CustomerScreen = () => {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
+      {/* Background Blur */}
+
       <ReusableModal
         state="danger"
         visible={deleteModalVisible}
@@ -107,7 +122,23 @@ export const CustomerScreen = () => {
           },
           {
             label: 'Delete',
-            onPress: () => setDeleteModalVisible(false),
+            onPress: async () => {
+              try {
+                if (selectedCustomerId !== null) {
+                  await deleteCustomer(selectedCustomerId);
+                  setSelectedCustomerId(null);
+                  setDeleteModalVisible(false);
+                  setLoading(true);
+                  await getCustomers();
+                  setLoading(false);
+                }
+              } catch (err: any) {
+                Alert.alert(
+                  'Error',
+                  err?.response?.data?.message || 'Failed to archive customer',
+                );
+              }
+            },
             variant: 'danger',
           },
         ]}
@@ -122,13 +153,26 @@ export const CustomerScreen = () => {
           {
             label: 'Cancel',
             onPress: () => setArchiveModalVisible(false),
-            variant: 'neutral', // or 'dark'
+            variant: 'neutral',
           },
           {
             label: 'Archive',
-            onPress: () => {
-              // TODO: call your archive logic here
-              setArchiveModalVisible(false);
+            onPress: async () => {
+              try {
+                if (selectedCustomerId !== null) {
+                  await archiveCustomer(selectedCustomerId);
+                  setSelectedCustomerId(null);
+                  setArchiveModalVisible(false);
+                  setLoading(true);
+                  await getCustomers();
+                  setLoading(false);
+                }
+              } catch (err: any) {
+                Alert.alert(
+                  'Error',
+                  err?.response?.data?.message || 'Failed to archive customer',
+                );
+              }
             },
             variant: 'dark',
           },
@@ -165,11 +209,13 @@ export const CustomerScreen = () => {
                 onOpen={(id) => setOpenRow(id)}
                 onClose={() => setOpenRow(null)}
                 onDelete={() => {
-                  console.log('deleted');
+                  console.log('delete is pressed');
+                  setSelectedCustomerId(item.id);
                   setDeleteModalVisible(true);
                 }}
                 onArchive={() => {
-                  console.log('archived');
+                  console.log('archive is pressed: ', typeof item.id);
+                  setSelectedCustomerId(item.id);
                   setArchiveModalVisible(true);
                 }}
               >

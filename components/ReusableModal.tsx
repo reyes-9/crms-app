@@ -43,7 +43,7 @@ const buttonVariantColors: Record<ButtonVariant, string> = {
 const stateConfig: Record<ModalState, { icon: IconName; color: string }> = {
   success: { icon: 'check-circle', color: theme.colors.success },
   danger: { icon: 'error', color: theme.colors.danger },
-  neutral: { icon: 'info', color: theme.colors.neutral },
+  neutral: { icon: 'info', color: theme.colors.dark },
 };
 
 export const ReusableModal = ({
@@ -76,6 +76,8 @@ export const ReusableModal = ({
 
   return (
     <Modal transparent visible={visible} animationType="none">
+      <View style={styles.dim} />
+
       <Animated.View style={[styles.centeredView, animatedStyle]}>
         <View style={styles.modalView}>
           <MaterialIcons
@@ -115,6 +117,17 @@ export const ReusableModal = ({
 
 // STYLES
 const styles = StyleSheet.create({
+  // overlay: {
+  //   flex: 1,
+  //   justifyContent: 'center',
+  //   alignItems: 'center',
+  // },
+
+  dim: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+  },
+
   centeredView: {
     flex: 1,
     justifyContent: 'center',
@@ -129,7 +142,7 @@ const styles = StyleSheet.create({
     borderColor: '#DDEEE7',
     borderRadius: 14,
     padding: 15,
-    paddingTop: 60,
+    paddingVertical: 30,
     alignItems: 'center',
     ...theme.elevation.xl,
   },
@@ -149,7 +162,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    width: '100%',
+    // width: '100%',
     gap: 30,
     marginTop: 10,
   },

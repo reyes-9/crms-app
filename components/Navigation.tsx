@@ -37,7 +37,7 @@ export const Navigation = () => {
       <Tab.Screen
         name="Customer"
         component={CustomerScreen}
-        options={{ tabBarBadge: 5 }}
+        options={{ tabBarBadge: 10 }}
       />
       <Tab.Screen name="Leads" component={LeadsScreen} />
       <Tab.Screen name="Profile" component={ProfileScreen} />

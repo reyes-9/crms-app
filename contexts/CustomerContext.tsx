@@ -16,15 +16,35 @@ export function CustomerProvider({ children }: CustomerProviderProps) {
   async function getCustomers() {
     try {
       const res = await customerService.getCustomers();
-      setCustomers(res.data); // update state only
+      const activeCustomers = res.data.filter((c: any) => !c.is_archived);
+      setCustomers(activeCustomers); // update state only
     } catch (err: any) {
       throw new Error(err);
-      //   console.error(err); // optional error handling
+      // throw new Error(err?.response?.data?.message || err.message);
+      // console.error(err); // optional error handling
+    }
+  }
+
+  async function archiveCustomer(id: number) {
+    try {
+      await customerService.archiveCustomer(id);
+    } catch (err: any) {
+      throw new Error(err);
+    }
+  }
+
+  async function deleteCustomer(id: number) {
+    try {
+      await customerService.deleteCustomer(id);
+    } catch (err: any) {
+      throw new Error(err);
     }
   }
 
   return (
-    <CustomerContext.Provider value={{ customers, getCustomers }}>
+    <CustomerContext.Provider
+      value={{ customers, getCustomers, archiveCustomer, deleteCustomer }}
+    >
       {children}
     </CustomerContext.Provider>
   );

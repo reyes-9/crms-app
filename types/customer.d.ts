@@ -15,6 +15,9 @@ export interface CustomerProfile {
 export interface CustomerContextType {
   customers: CustomerProfile[];
   getCustomers: () => Promise<void>;
+  archiveCustomer: (id: number) => Promise<void>;
+  deleteCustomer: (id: number) => Promise<void>;
+
 }
 
 // export interface UserContextType {
