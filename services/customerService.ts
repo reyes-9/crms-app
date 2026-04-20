@@ -15,6 +15,11 @@ export const customerService = {
     const res = await api.patch(`/customers/${id}/delete/`);
     return res;
   },
+
+  async searchCustomer(search: string){
+    const res = await api.get(`/customers/?search=${search}`)
+    return res;
+  }
 };
 // export const customerService = async () => {
 //   const res = await api.get('/customers/');

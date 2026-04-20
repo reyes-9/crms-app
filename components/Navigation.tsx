@@ -1,5 +1,8 @@
 import { Feather } from '@expo/vector-icons';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { getFocusedRouteNameFromRoute } from '@react-navigation/native';
+
+import { Header } from '@react-navigation/elements';
 import { CustomerScreen } from '../screens/CustomerScreen';
 import { DashboardScreen } from '../screens/DashboardScreen';
 import { LeadsScreen } from '../screens/LeadsScreen';
@@ -13,6 +16,11 @@ export const Navigation = () => {
     <Tab.Navigator
       // @ts-ignore
       screenOptions={({ route }) => ({
+        header: () => {
+                    const focusedRouteName = getFocusedRouteNameFromRoute(route) ?? route.name;
+          return <Header title={focusedRouteName} />;
+
+        },
         tabBarIcon: ({ color, size }) => {
           switch (route.name) {
             case 'Dashboard':

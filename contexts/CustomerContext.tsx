@@ -41,9 +41,25 @@ export function CustomerProvider({ children }: CustomerProviderProps) {
     }
   }
 
+  async function searchCustomer(search: string) {
+    try {
+      const res = await customerService.searchCustomer(search);
+      const activeCustomers = res.data.filter((c: any) => !c.is_archived);
+      setCustomers(activeCustomers); // update state only
+    } catch (err: any) {
+      throw new Error(err);
+    }
+  }
+
   return (
     <CustomerContext.Provider
-      value={{ customers, getCustomers, archiveCustomer, deleteCustomer }}
+      value={{
+        customers,
+        getCustomers,
+        archiveCustomer,
+        deleteCustomer,
+        searchCustomer,
+      }}
     >
       {children}
     </CustomerContext.Provider>

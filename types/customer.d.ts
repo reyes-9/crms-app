@@ -17,7 +17,7 @@ export interface CustomerContextType {
   getCustomers: () => Promise<void>;
   archiveCustomer: (id: number) => Promise<void>;
   deleteCustomer: (id: number) => Promise<void>;
-
+  searchCustomer: (search: string) => Promise<void>;
 }
 
 // export interface UserContextType {

@@ -1,23 +1,9 @@
-// TODO's: MAKE THE UI WORK (   ARCHIVE,  DELETE,  SEARCH    )
-// TODO's: MAKE THE UI WORK (   ARCHIVE,  DELETE,  SEARCH    )
-// TODO's: MAKE THE UI WORK (   ARCHIVE,  DELETE,  SEARCH    )
-// TODO's: MAKE THE UI WORK (   ARCHIVE,  DELETE,  SEARCH    )
-// TODO's: MAKE THE UI WORK (   ARCHIVE,  DELETE,  SEARCH    )
-// TODO's: MAKE THE UI WORK (   ARCHIVE,  DELETE,  SEARCH    )
-// TODO's: MAKE THE UI WORK (   ARCHIVE,  DELETE,  SEARCH    )
-// TODO's: MAKE THE UI WORK (   ARCHIVE,  DELETE,  SEARCH    )
-
-// TODO's: CREATE A LITTLE TOAST AT THE TOP THAT SAYS THE OPERATION IS COMPLETE (   ARCHIVE,  DELETE,  SEARCH    )
-// TODO's: CREATE A LITTLE TOAST AT THE TOP THAT SAYS THE OPERATION IS COMPLETE (   ARCHIVE,  DELETE,  SEARCH    )
-// TODO's: CREATE A LITTLE TOAST AT THE TOP THAT SAYS THE OPERATION IS COMPLETE (   ARCHIVE,  DELETE,  SEARCH    )
-// TODO's: CREATE A LITTLE TOAST AT THE TOP THAT SAYS THE OPERATION IS COMPLETE (   ARCHIVE,  DELETE,  SEARCH    )
-// TODO's: CREATE A LITTLE TOAST AT THE TOP THAT SAYS THE OPERATION IS COMPLETE (   ARCHIVE,  DELETE,  SEARCH    )
-// TODO's: CREATE A LITTLE TOAST AT THE TOP THAT SAYS THE OPERATION IS COMPLETE (   ARCHIVE,  DELETE,  SEARCH    )
+// TODO's: CREATE A CUSTOMER DETAIL SCREEN
 
 import { CustomerCard } from '@/components/CustomerCard';
 
 import { ReusableModal } from '@/components/ReusableModal';
-import SearchBar from '@/components/Searchbar';
+import SearchInput from '@/components/SearchInput';
 import SwipeableRow from '@/components/SwipeableRow'; // your wrapper
 import { useCustomer } from '@/hooks/useCustomer';
 import { useNavigation } from '@react-navigation/native';
@@ -36,15 +22,18 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 export const CustomerScreen = () => {
   const navigation = useNavigation<any>();
 
-  const { deleteCustomer, archiveCustomer, getCustomers, customers } =
-    useCustomer();
+  const {
+    searchCustomer,
+    deleteCustomer,
+    archiveCustomer,
+    getCustomers,
+    customers,
+  } = useCustomer();
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [openRow, setOpenRow] = useState<string | null>(null);
-
-  const [query, setQuery] = useState('');
 
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [archiveModalVisible, setArchiveModalVisible] = useState(false);
@@ -53,13 +42,12 @@ export const CustomerScreen = () => {
     null,
   );
 
-  // Filter customers by search query
-  const filteredCustomers = customers.filter(
-    (c) =>
-      c.name.toLowerCase().includes(query.toLowerCase()) ||
-      c.email.toLowerCase().includes(query.toLowerCase()) ||
-      c.company.toLowerCase().includes(query.toLowerCase()),
-  );
+  async function handleSearch(query: string) {
+    if (!query.trim()) {
+      await getCustomers();
+    }
+    await searchCustomer(query);
+  }
 
   // Fetch customers on mount
   useEffect(() => {
@@ -107,13 +95,11 @@ export const CustomerScreen = () => {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      {/* Background Blur */}
-
       <ReusableModal
         state="danger"
         visible={deleteModalVisible}
-        title="Delete this record?"
-        message="This action cannot be undone. Deleted data will be permanently removed."
+        title="Permanent Deletion"
+        message="Once deleted, this record cannot be recovered. If you think you might need it later, consider archiving instead."
         buttons={[
           {
             label: 'Cancel',
@@ -126,9 +112,11 @@ export const CustomerScreen = () => {
               try {
                 if (selectedCustomerId !== null) {
                   await deleteCustomer(selectedCustomerId);
+
                   setSelectedCustomerId(null);
                   setDeleteModalVisible(false);
                   setLoading(true);
+
                   await getCustomers();
                   setLoading(false);
                 }
@@ -161,9 +149,11 @@ export const CustomerScreen = () => {
               try {
                 if (selectedCustomerId !== null) {
                   await archiveCustomer(selectedCustomerId);
+
                   setSelectedCustomerId(null);
                   setArchiveModalVisible(false);
                   setLoading(true);
+
                   await getCustomers();
                   setLoading(false);
                 }
@@ -179,16 +169,9 @@ export const CustomerScreen = () => {
         ]}
         onClose={() => setArchiveModalVisible(false)}
       />
-      {/* FOR MODAL TESTING */}
 
-      {/* <Pressable
-        style={{ padding: 10, backgroundColor: 'gray' }}
-        onPress={() => setModalVisible(true)}
-      >
-        <Text>Open Modal</Text>
-      </Pressable> */}
       <View style={{ flex: 1 }}>
-        <SearchBar value={query} onChangeText={setQuery} placeholder="Search" />
+        <SearchInput onSearch={handleSearch} />
 
         <FlatList
           refreshControl={
@@ -210,11 +193,13 @@ export const CustomerScreen = () => {
                 onClose={() => setOpenRow(null)}
                 onDelete={() => {
                   console.log('delete is pressed');
+
                   setSelectedCustomerId(item.id);
                   setDeleteModalVisible(true);
                 }}
                 onArchive={() => {
                   console.log('archive is pressed: ', typeof item.id);
+
                   setSelectedCustomerId(item.id);
                   setArchiveModalVisible(true);
                 }}
