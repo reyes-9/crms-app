@@ -15,7 +15,7 @@ const Tab = createBottomTabNavigator();
 export const TabNavigator = () => {
   return (
     <SafeAreaView style={{ flex: 1 }}>
-      <Header />
+      <Header title={"Locus"}/>
       <Tab.Navigator
         screenOptions={({ route }) => ({
           tabBarIcon: ({ color, size }) => {

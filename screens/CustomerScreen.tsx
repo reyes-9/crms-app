@@ -183,6 +183,7 @@ export const CustomerScreen = () => {
             <Pressable
               onPress={() => {
                 console.log('View Record');
+                navigation.navigate('Customer Details');
                 // setArchiveModalVisible(true);
               }}
             >

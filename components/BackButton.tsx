@@ -1,8 +1,6 @@
 import { Feather } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { Text, TouchableOpacity } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { theme } from '../theme/colors';
 
 export const BackButton = () => {
   const navigation = useNavigation();
@@ -18,19 +16,27 @@ export const BackButton = () => {
   };
 
   return (
-    <SafeAreaView edges={['top', 'left']}>
-      <TouchableOpacity
-        onPress={handleBack}
+    <TouchableOpacity
+      onPress={handleBack}
+      activeOpacity={0.7}
+      style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 10,
+        borderRadius: 20,
+      }}
+    >
+      <Feather name="arrow-left" size={18} color="#1D9E75" />
+      <Text
         style={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          paddingTop: 10,
-          paddingLeft: 10,
+          marginLeft: 6,
+          color: '#1D9E75',
+          fontWeight: '500',
+          fontSize: 14,
         }}
       >
-        <Feather name="arrow-left" size={32} color="#1D9E75" />
-        <Text style={{ color: theme.colors.primarySoft }} />
-      </TouchableOpacity>
-    </SafeAreaView>
+        Back
+      </Text>
+    </TouchableOpacity>
   );
 };
