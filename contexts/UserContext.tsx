@@ -56,7 +56,7 @@ export function UserProvider({ children }: UserProviderProps) {
     } catch (loginErr: any) {
       const message =
         loginErr?.response?.data?.detail || loginErr?.message || 'Login failed';
-      console.log(message);
+      // console.log(message);
       throw new Error(message);
     }
   }

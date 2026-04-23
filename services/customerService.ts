@@ -12,16 +12,12 @@ export const customerService = {
   },
 
   async deleteCustomer(id: number) {
-    const res = await api.patch(`/customers/${id}/delete/`);
+    const res = await api.patch(`/customers/${id}/soft_delete/`);
     return res;
   },
 
-  async searchCustomer(search: string){
-    const res = await api.get(`/customers/?search=${search}`)
+  async searchCustomer(search: string) {
+    const res = await api.get(`/customers/?search=${search}`);
     return res;
-  }
+  },
 };
-// export const customerService = async () => {
-//   const res = await api.get('/customers/');
-//   return res.data;
-// };

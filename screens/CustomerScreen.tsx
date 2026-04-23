@@ -1,7 +1,4 @@
-// TODO's: CREATE A CUSTOMER DETAIL SCREEN
-
 import { CustomerCard } from '@/components/CustomerCard';
-
 import { ReusableModal } from '@/components/ReusableModal';
 import SearchInput from '@/components/SearchInput';
 import SwipeableRow from '@/components/SwipeableRow'; // your wrapper
@@ -21,7 +18,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 export const CustomerScreen = () => {
   const navigation = useNavigation<any>();
-
+  // console.log('useCustomer is:', typeof useCustomer);
   const {
     searchCustomer,
     deleteCustomer,
@@ -183,7 +180,10 @@ export const CustomerScreen = () => {
             <Pressable
               onPress={() => {
                 console.log('View Record');
-                navigation.navigate('Customer Details');
+                navigation.navigate('Customer Details', {
+                  customer_id: item.id,
+                });
+                console.log(item.id);
                 // setArchiveModalVisible(true);
               }}
             >

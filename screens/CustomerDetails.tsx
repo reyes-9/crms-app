@@ -1,6 +1,10 @@
 import { BackButton } from '@/components/BackButton';
+import { useOrder } from '@/hooks/useOrder';
 import { theme } from '@/theme/colors';
+import { RootStackParamList } from '@/types/navigation';
 import { MaterialIcons } from '@expo/vector-icons';
+import { RouteProp } from '@react-navigation/native';
+import { useEffect } from 'react';
 import {
   ScrollView,
   StyleSheet,
@@ -9,7 +13,13 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+
+import { useRoute } from '@react-navigation/native';
+
 export const CustomerDetails = () => {
+  const route = useRoute<RouteProp<RootStackParamList, 'CustomerDetails'>>();
+  const { customer_id } = route.params;
+
   const customer = {
     name: 'John Doe',
     id: 'CUST-1024',
@@ -26,7 +36,35 @@ export const CustomerDetails = () => {
       'Interested in premium plan upgrade',
     ],
   };
+  const { orders, getOrders } = useOrder();
 
+  useEffect(() => {
+    getOrders(customer_id);
+  }, []);
+
+  let ordersContent;
+  if (!orders || orders.length === 0) {
+    ordersContent = <Text>No order found.</Text>;
+  } else {
+    ordersContent = orders.map((order) => (
+      <Text key={order.id} style={styles.sectionItem}>
+        • Order #{order.id} - {order.status}
+      </Text>
+    ));
+  }
+
+  // let notesContent;
+  // if (!notes || notes.length === 0) {
+  //   notesContent = <Text>No notes found.</Text>;
+  // } else {
+  //   notesContent = notes.map((note, index) => (
+  //     <Text style={styles.sectionItem} key={index}>
+  //       • {note}
+  //     </Text>
+  //   ));
+  // }
+
+  // console.log('ORDERS: ', orders);
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <ScrollView>
@@ -55,21 +93,13 @@ export const CustomerDetails = () => {
         {/* Orders */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Orders</Text>
-          {customer.orders.map((order) => (
-            <Text key={order.id} style={styles.sectionItem}>
-              • Order #{order.id} - {order.status}
-            </Text>
-          ))}
+          <View style={styles.listContainer}>{ordersContent}</View>
         </View>
 
         {/* Notes */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Notes</Text>
-          {customer.notes.map((note, index) => (
-            <Text style={styles.sectionItem} key={index}>
-              • {note}
-            </Text>
-          ))}
+          {/* <View style={styles.listContainer}>{notesContent}</View> */}
         </View>
 
         {/* Actions */}
@@ -165,12 +195,19 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#555',
     marginBottom: 6,
+    borderWidth: 1,
+    borderColor: 'red',
   },
 
   sectionItem: {
+    // borderWidth: 1,
     fontSize: 14,
     color: '#333',
     marginBottom: 6,
+  },
+
+  listContainer: {
+    flexDirection: 'column',
   },
 
   actions: {

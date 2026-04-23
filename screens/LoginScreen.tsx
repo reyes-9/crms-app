@@ -16,21 +16,18 @@ import { theme } from '@/theme/colors';
 import { LoginCredentials } from '@/types/auth';
 import { useNavigation } from '@react-navigation/native';
 import { useForm } from 'react-hook-form';
-
+import { RootStackParamList } from "@/types/navigation"
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 // 1. Define your stack param list
-export type RootStackParamList = {
-  Splash: undefined;
-  Login: undefined;
-  Register: undefined;
-  Main: undefined;
-};
+// export type RootStackParamList = {
+//   Splash: undefined;
+//   Login: undefined;
+//   Register: undefined;
+//   Main: undefined;
+// };
 
-type SplashScreenNavProp = NativeStackNavigationProp<
-  RootStackParamList,
-  'Splash'
->;
+type SplashScreenNavProp = NativeStackNavigationProp<RootStackParamList, 'Splash'>;
 
 export const LoginScreen = () => {
   const { login, loadUser, user } = useUser();
