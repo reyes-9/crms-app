@@ -17,7 +17,7 @@ export function OrderProvider({ children }: OrderProviderProps) {
     try {
       const order = await orderService.getOrders(customer_id);
       setOrders(order.data);
-      console.log(orders);
+      // console.log(orders);
     } catch (err: any) {
       throw new Error(err);
     }

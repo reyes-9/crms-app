@@ -17,9 +17,9 @@ export const Navigation = () => {
       // @ts-ignore
       screenOptions={({ route }) => ({
         header: () => {
-                    const focusedRouteName = getFocusedRouteNameFromRoute(route) ?? route.name;
+          const focusedRouteName =
+            getFocusedRouteNameFromRoute(route) ?? route.name;
           return <Header title={focusedRouteName} />;
-
         },
         tabBarIcon: ({ color, size }) => {
           switch (route.name) {

@@ -2,6 +2,7 @@ import { theme } from '@/theme/colors';
 import { Feather } from '@expo/vector-icons';
 import { useRoute } from '@react-navigation/native';
 import { StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export const Header = ({ title }: { title: string }) => {
   const route = useRoute();
@@ -16,17 +17,19 @@ export const Header = ({ title }: { title: string }) => {
   console.log(title);
 
   return (
-    <View style={styles.container}>
-      <View>
-        <Feather name="menu" size={28} color="#333" />
+    <SafeAreaView style={{ padding: 10 }}>
+      <View style={styles.container}>
+        <View>
+          <Feather name="menu" size={28} color="#333" />
+        </View>
+        <View>
+          <Text style={styles.appName}>{title}</Text>
+        </View>
+        <View>
+          <Feather name="bell" size={24} color="#333" />
+        </View>
       </View>
-      <View>
-        <Text style={styles.appName}>{title}</Text>
-      </View>
-      <View>
-        <Feather name="bell" size={24} color="#333" />
-      </View>
-    </View>
+    </SafeAreaView>
   );
 };
 
@@ -36,7 +39,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     backgroundColor: 'none',
-    paddingVertical: 10,
     paddingHorizontal: 20,
   },
   appName: {

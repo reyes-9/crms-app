@@ -15,6 +15,7 @@ import {
   View,
 } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export const CustomerScreen = () => {
   const navigation = useNavigation<any>();
@@ -91,137 +92,139 @@ export const CustomerScreen = () => {
   }
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <ReusableModal
-        state="danger"
-        visible={deleteModalVisible}
-        title="Permanent Deletion"
-        message="Once deleted, this record cannot be recovered. If you think you might need it later, consider archiving instead."
-        buttons={[
-          {
-            label: 'Cancel',
-            onPress: () => setDeleteModalVisible(false),
-            variant: 'neutral',
-          },
-          {
-            label: 'Delete',
-            onPress: async () => {
-              try {
-                if (selectedCustomerId !== null) {
-                  await deleteCustomer(selectedCustomerId);
-
-                  setSelectedCustomerId(null);
-                  setDeleteModalVisible(false);
-                  setLoading(true);
-
-                  await getCustomers();
-                  setLoading(false);
-                }
-              } catch (err: any) {
-                Alert.alert(
-                  'Error',
-                  err?.response?.data?.message || 'Failed to archive customer',
-                );
-              }
+    // <SafeAreaView style={{ flex: 1, paddingTop: 15 }}>
+      <GestureHandlerRootView style={{ flex: 1, margin: 0, padding: 0 }}>
+        <ReusableModal
+          state="danger"
+          visible={deleteModalVisible}
+          title="Permanent Deletion"
+          message="Once deleted, this record cannot be recovered. If you think you might need it later, consider archiving instead."
+          buttons={[
+            {
+              label: 'Cancel',
+              onPress: () => setDeleteModalVisible(false),
+              variant: 'neutral',
             },
-            variant: 'danger',
-          },
-        ]}
-        onClose={() => setDeleteModalVisible(false)}
-      />
-      <ReusableModal
-        state="neutral"
-        visible={archiveModalVisible}
-        title="Archive this record?"
-        message="This record will be moved to archive. You can restore it later."
-        buttons={[
-          {
-            label: 'Cancel',
-            onPress: () => setArchiveModalVisible(false),
-            variant: 'neutral',
-          },
-          {
-            label: 'Archive',
-            onPress: async () => {
-              try {
-                if (selectedCustomerId !== null) {
-                  await archiveCustomer(selectedCustomerId);
+            {
+              label: 'Delete',
+              onPress: async () => {
+                try {
+                  if (selectedCustomerId !== null) {
+                    await deleteCustomer(selectedCustomerId);
 
-                  setSelectedCustomerId(null);
-                  setArchiveModalVisible(false);
-                  setLoading(true);
+                    setSelectedCustomerId(null);
+                    setDeleteModalVisible(false);
+                    setLoading(true);
 
-                  await getCustomers();
-                  setLoading(false);
+                    await getCustomers();
+                    setLoading(false);
+                  }
+                } catch (err: any) {
+                  Alert.alert(
+                    'Error',
+                    err?.response?.data?.message ||
+                      'Failed to archive customer',
+                  );
                 }
-              } catch (err: any) {
-                Alert.alert(
-                  'Error',
-                  err?.response?.data?.message || 'Failed to archive customer',
-                );
-              }
+              },
+              variant: 'danger',
             },
-            variant: 'dark',
-          },
-        ]}
-        onClose={() => setArchiveModalVisible(false)}
-      />
+          ]}
+          onClose={() => setDeleteModalVisible(false)}
+        />
+        <ReusableModal
+          state="neutral"
+          visible={archiveModalVisible}
+          title="Archive this record?"
+          message="This record will be moved to archive. You can restore it later."
+          buttons={[
+            {
+              label: 'Cancel',
+              onPress: () => setArchiveModalVisible(false),
+              variant: 'neutral',
+            },
+            {
+              label: 'Archive',
+              onPress: async () => {
+                try {
+                  if (selectedCustomerId !== null) {
+                    await archiveCustomer(selectedCustomerId);
 
-      <View style={{ flex: 1 }}>
-        <SearchInput onSearch={handleSearch} />
+                    setSelectedCustomerId(null);
+                    setArchiveModalVisible(false);
+                    setLoading(true);
 
-        <FlatList
-          refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-          }
-          data={customers}
-          keyExtractor={(item) => item.id.toString()}
-          renderItem={({ item }) => (
-            <Pressable
-              onPress={() => {
-                console.log('View Record');
-                navigation.navigate('Customer Details', {
-                  customer_id: item.id,
-                });
-                console.log(item.id);
-                // setArchiveModalVisible(true);
-              }}
-            >
-              <SwipeableRow
-                rowId={item.id.toString()}
-                isOpen={openRow === item.id.toString()}
-                onOpen={(id) => setOpenRow(id)}
-                onClose={() => setOpenRow(null)}
-                onDelete={() => {
-                  console.log('delete is pressed');
+                    await getCustomers();
+                    setLoading(false);
+                  }
+                } catch (err: any) {
+                  Alert.alert(
+                    'Error',
+                    err?.response?.data?.message ||
+                      'Failed to archive customer',
+                  );
+                }
+              },
+              variant: 'dark',
+            },
+          ]}
+          onClose={() => setArchiveModalVisible(false)}
+        />
 
-                  setSelectedCustomerId(item.id);
-                  setDeleteModalVisible(true);
-                }}
-                onArchive={() => {
-                  console.log('archive is pressed: ', typeof item.id);
+        <View style={{ flex: 1 }}>
+          <SearchInput onSearch={handleSearch} />
 
-                  setSelectedCustomerId(item.id);
-                  setArchiveModalVisible(true);
+          <FlatList
+            refreshControl={
+              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+            }
+            data={customers}
+            keyExtractor={(item) => item.id.toString()}
+            renderItem={({ item }) => (
+              <Pressable
+                onPress={() => {
+                  console.log('View Record');
+                  navigation.navigate('Customer Details', {
+                    customer: item,
+                  });
                 }}
               >
-                <CustomerCard
-                  id={item.id}
-                  name={item.name}
-                  email={item.email}
-                  company={item.company}
-                  number={item.number}
-                />
-              </SwipeableRow>
-            </Pressable>
-          )}
-          ListEmptyComponent={
-            <View style={{ padding: 20, alignItems: 'center' }}>
-              <Text>No customers found</Text>
-            </View>
-          }
-        />
-      </View>
-    </GestureHandlerRootView>
+                <SwipeableRow
+                  rowId={item.id.toString()}
+                  isOpen={openRow === item.id.toString()}
+                  onOpen={(id) => setOpenRow(id)}
+                  onClose={() => setOpenRow(null)}
+                  onDelete={() => {
+                    console.log('delete is pressed');
+
+                    setSelectedCustomerId(item.id);
+                    setDeleteModalVisible(true);
+                  }}
+                  onArchive={() => {
+                    console.log('archive is pressed: ', typeof item.id);
+
+                    setSelectedCustomerId(item.id);
+                    setArchiveModalVisible(true);
+                  }}
+                >
+                  <CustomerCard
+                    id={item.id}
+                    name={item.name}
+                    email={item.email}
+                    company={item.company}
+                    number={item.number}
+                  />
+                </SwipeableRow>
+              </Pressable>
+            )}
+            ListEmptyComponent={
+              <View style={{ padding: 20, alignItems: 'center' }}>
+                <Text>No customers found</Text>
+              </View>
+            }
+          />
+        </View>
+      </GestureHandlerRootView>
+    // </SafeAreaView>
   );
 };

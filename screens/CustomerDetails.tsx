@@ -1,10 +1,10 @@
-import { BackButton } from '@/components/BackButton';
+import { useCustomerNote } from '@/hooks/useCustomerNote';
 import { useOrder } from '@/hooks/useOrder';
 import { theme } from '@/theme/colors';
 import { RootStackParamList } from '@/types/navigation';
 import { MaterialIcons } from '@expo/vector-icons';
 import { RouteProp } from '@react-navigation/native';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import {
   ScrollView,
   StyleSheet,
@@ -12,34 +12,28 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-
+// import { SafeAreaView } from 'react-native-safe-area-context';
+import { BackButton } from '@/components/BackButton';
 import { useRoute } from '@react-navigation/native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export const CustomerDetails = () => {
   const route = useRoute<RouteProp<RootStackParamList, 'CustomerDetails'>>();
-  const { customer_id } = route.params;
 
-  const customer = {
-    name: 'John Doe',
-    id: 'CUST-1024',
-    email: 'john.doe@example.com',
-    phone: '+1 (555) 123-4567',
-    address: '123 Main Street, Springfield',
-    orders: [
-      { id: '1001', status: 'Delivered' },
-      { id: '1002', status: 'In Progress' },
-      { id: '1003', status: 'Cancelled' },
-    ],
-    notes: [
-      'VIP customer, prefers email contact',
-      'Interested in premium plan upgrade',
-    ],
-  };
+  const { customerNotes, getCustomerNotes } = useCustomerNote();
+
+  const { customer } = route.params;
   const { orders, getOrders } = useOrder();
 
+  const [showEditModal, setShowEditModal] = useState(false);
+
+  const handleEdit = () => {
+    setShowEditModal(true);
+  };
+
   useEffect(() => {
-    getOrders(customer_id);
+    getOrders(customer.id);
+    getCustomerNotes(customer.id);
   }, []);
 
   let ordersContent;
@@ -53,80 +47,176 @@ export const CustomerDetails = () => {
     ));
   }
 
-  // let notesContent;
-  // if (!notes || notes.length === 0) {
-  //   notesContent = <Text>No notes found.</Text>;
-  // } else {
-  //   notesContent = notes.map((note, index) => (
-  //     <Text style={styles.sectionItem} key={index}>
-  //       • {note}
-  //     </Text>
-  //   ));
-  // }
+  let notesContent;
+  if (!customerNotes || customerNotes.length === 0) {
+    notesContent = <Text>No notes found.</Text>;
+  } else {
+    notesContent = customerNotes.map((customerNotes, index) => (
+      <Text style={styles.sectionItem} key={index}>
+        • {customerNotes.description}
+      </Text>
+    ));
+  }
 
   // console.log('ORDERS: ', orders);
   return (
-    <SafeAreaView style={{ flex: 1 }}>
-      <ScrollView>
-        <View style={styles.header}>
-          <BackButton />
-          <Text style={styles.headerTitle}>Customer Details</Text>
-          <View style={styles.side} />
-        </View>
-        {/* Profile */}
-        <View style={styles.profile}>
-          <View style={[styles.avatar, styles.avatarPlaceholder]}>
-            <MaterialIcons name="person" size={48} color="#1D9E75" />
+    <SafeAreaView style={{ flex: 1, paddingTop: 15 }}>
+      <View>
+        <ScrollView>
+          <View style={styles.header}>
+            <BackButton />
+            <Text style={styles.headerTitle}>Customer Details</Text>
+            <View style={styles.side} />
           </View>
-          <Text style={styles.name}>{customer.name}</Text>
-          <Text style={styles.id}>ID: {customer.id}</Text>
-        </View>
+          {/* Profile */}
 
-        {/* Contact Info */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Contact Info</Text>
-          <Text style={styles.sectionText}>Email: {customer.email}</Text>
-          <Text style={styles.sectionText}>Phone: {customer.phone}</Text>
-          <Text style={styles.sectionText}>Address: {customer.address}</Text>
-        </View>
+          <View style={styles.section}>
+            <View style={styles.topRow}>
+              <View style={styles.avatar}>
+                <MaterialIcons name="person" size={32} color="#1D9E75" />
+              </View>
 
-        {/* Orders */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Orders</Text>
-          <View style={styles.listContainer}>{ordersContent}</View>
-        </View>
+              <View style={styles.info}>
+                <Text style={styles.name}>{customer.name}</Text>
+                <Text style={styles.meta}>ID: {customer.id}</Text>
+              </View>
 
-        {/* Notes */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Notes</Text>
-          {/* <View style={styles.listContainer}>{notesContent}</View> */}
-        </View>
+              <TouchableOpacity style={styles.editBtn} onPress={handleEdit}>
+                <MaterialIcons name="edit" size={16} color="#fff" />
+                <Text style={styles.editText}>Edit</Text>
+              </TouchableOpacity>
+            </View>
 
-        {/* Actions */}
-        <View style={styles.actions}>
-          <TouchableOpacity style={styles.primaryButton} onPress={() => {}}>
+            <View style={styles.metaRow}>
+              <Text style={styles.metaItem}>Active</Text>
+              <Text style={styles.metaDot}>•</Text>
+              <Text style={styles.metaItem}>Last order 2 days ago</Text>
+            </View>
+          </View>
+
+          {/* Contact Info */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Contact Info</Text>
+            <Text style={styles.sectionText}>Email: {customer.email}</Text>
+            <Text style={styles.sectionText}>Phone: {customer.number}</Text>
+            <Text style={styles.sectionText}>Company: {customer.company}</Text>
+          </View>
+
+          {/* Orders */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Orders</Text>
+            <View style={styles.listContainer}>{ordersContent}</View>
+          </View>
+
+          {/* Notes */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Notes</Text>
+            <View style={styles.listContainer}>{notesContent}</View>
+          </View>
+
+          {/* Actions */}
+          <View style={styles.actions}>
+            {/* <TouchableOpacity style={styles.primaryButton} onPress={() => {}}>
             <MaterialIcons name="edit" size={18} color="#FFF" />
             <Text style={styles.primaryButtonText}>Edit Details</Text>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
 
-          <View style={styles.secondaryRow}>
-            <TouchableOpacity style={styles.secondaryButton} onPress={() => {}}>
-              <MaterialIcons name="phone" size={18} color="#1D9E75" />
-              <Text style={styles.secondaryButtonText}>Call</Text>
-            </TouchableOpacity>
+            <View style={styles.secondaryRow}>
+              <TouchableOpacity
+                style={styles.secondaryButton}
+                onPress={() => {}}
+              >
+                <MaterialIcons name="phone" size={18} color="#1D9E75" />
+                <Text style={styles.secondaryButtonText}>Call</Text>
+              </TouchableOpacity>
 
-            <TouchableOpacity style={styles.secondaryButton} onPress={() => {}}>
-              <MaterialIcons name="email" size={18} color="#1D9E75" />
-              <Text style={styles.secondaryButtonText}>Email</Text>
-            </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.secondaryButton}
+                onPress={() => {}}
+              >
+                <MaterialIcons name="email" size={18} color="#1D9E75" />
+                <Text style={styles.secondaryButtonText}>Email</Text>
+              </TouchableOpacity>
+            </View>
           </View>
-        </View>
-      </ScrollView>
+        </ScrollView>
+      </View>
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  profile: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 16,
+    elevation: 3,
+  },
+
+  topRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+
+  avatar: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    backgroundColor: '#E1F5EE',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+
+  info: {
+    flex: 1,
+  },
+
+  name: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#1A1A1A',
+  },
+
+  meta: {
+    fontSize: 12,
+    color: '#777',
+    marginTop: 2,
+  },
+
+  editBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#0F6E56',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    gap: 6,
+  },
+
+  editText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: '500',
+  },
+
+  metaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 12,
+  },
+
+  metaItem: {
+    fontSize: 12,
+    color: '#555',
+  },
+
+  metaDot: {
+    marginHorizontal: 6,
+    color: '#999',
+  },
+
   container: {
     flex: 1,
     backgroundColor: '#fff',
@@ -150,26 +240,12 @@ const styles = StyleSheet.create({
     paddingLeft: 12,
   },
 
-  profile: {
-    alignItems: 'center',
-    marginBottom: 24,
-  },
-  avatar: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    marginBottom: 8,
-  },
   avatarPlaceholder: {
     backgroundColor: '#E6F7F1',
     justifyContent: 'center',
     alignItems: 'center',
   },
-  name: {
-    fontSize: 20,
-    fontWeight: '600',
-  },
-  id: { color: '#666' },
+
   section: {
     backgroundColor: '#FFFFFF',
     padding: 16,
@@ -195,12 +271,9 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#555',
     marginBottom: 6,
-    borderWidth: 1,
-    borderColor: 'red',
   },
 
   sectionItem: {
-    // borderWidth: 1,
     fontSize: 14,
     color: '#333',
     marginBottom: 6,

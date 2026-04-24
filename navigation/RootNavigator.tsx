@@ -1,7 +1,7 @@
+import { CustomerDetails } from '@/screens/CustomerDetails';
 import { LoginScreen } from '@/screens/LoginScreen';
 import { RegisterScreen } from '@/screens/RegisterScreen';
 import { SplashScreen } from '@/screens/SplashScreen';
-import { CustomerDetails } from '@/screens/CustomerDetails';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import { TabNavigator } from './TabNavigator';
@@ -23,3 +23,5 @@ export const RootNavigator = () => {
     </Stack.Navigator>
   );
 };
+
+
