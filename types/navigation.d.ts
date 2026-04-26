@@ -9,4 +9,7 @@ export type RootStackParamList = ParamListBase & {
   CustomerDetails: {
     customer: CustomerProfile;
   };
+  EditCustomer: {
+    customer: CustomerProfile;
+  };
 };

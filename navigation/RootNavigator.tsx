@@ -1,4 +1,6 @@
-import { CustomerDetails } from '@/screens/CustomerDetails';
+import { Header } from '@/components/Header';
+import { CustomerDetailsScreen } from '@/screens/CustomerDetailsScreen';
+import { EditCustomerScreen } from '@/screens/EditCustomerScreen';
 import { LoginScreen } from '@/screens/LoginScreen';
 import { RegisterScreen } from '@/screens/RegisterScreen';
 import { SplashScreen } from '@/screens/SplashScreen';
@@ -11,17 +13,45 @@ const Stack = createNativeStackNavigator();
 export const RootNavigator = () => {
   return (
     <Stack.Navigator
-      initialRouteName="Splash" // ALWAYS START HERE
-      screenOptions={{ headerShown: false }}
+      initialRouteName="Splash"
+      screenOptions={{
+        headerShown: false,
+        statusBarStyle: 'dark',
+        contentStyle: {
+          backgroundColor: '#fff',
+        },
+      }}
     >
       <Stack.Screen name="Splash" component={SplashScreen} />
       <Stack.Screen name="Login" component={LoginScreen} />
       <Stack.Screen name="Register" component={RegisterScreen} />
-      <Stack.Screen name="Customer Details" component={CustomerDetails} />
+      <Stack.Screen
+        name="CustomerDetails"
+        component={CustomerDetailsScreen}
+        options={{
+          headerShown: true,
+          header: () => <Header title="CustomerDetails" isReturn={true} />,
+        }}
+      />
+      <Stack.Screen
+        name="EditCustomer"
+        component={EditCustomerScreen}
+        options={{
+          headerShown: true,
+          header: () => <Header title="EditCustomer" isReturn={true} />,
+        }}
+      />
+      
+      {/* <Stack.Screen
+        name="CustomerDetails"
+        component={CustomerDetails}
+        options={{
+          headerShown: true,
+          title: 'TEST HEADER',
+        }}
+      /> */}
       <Stack.Screen name="Main" component={TabNavigator} />
       {/* <Stack.Screen name="Customer" component={CustomerScreen} /> */}
     </Stack.Navigator>
   );
 };
-
-

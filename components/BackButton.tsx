@@ -6,27 +6,29 @@ export const BackButton = () => {
   const navigation = useNavigation();
 
   const handleBack = () => {
-    navigation.goBack();
-    // if (navigation.canGoBack()) {
-    //   navigation.goBack();
-    // } else {
-    //   // fallback screen (update to your actual route name)
-    //   // navigation.navigate('Main' as never);
-    // }
+    console.log('BACK');
+    if (navigation.canGoBack()) {
+      navigation.goBack();
+    }
   };
 
   return (
     <TouchableOpacity
       onPress={handleBack}
       activeOpacity={0.7}
+      hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
       style={{
         flexDirection: 'row',
         alignItems: 'center',
-        paddingHorizontal: 10,
-        borderRadius: 20,
+        paddingVertical: 10,
+        justifyContent: 'center',
+        // IMPORTANT: force it to be a real touch region
+        alignSelf: 'auto',
+        zIndex: 10,
       }}
     >
       <Feather name="arrow-left" size={18} color="#1D9E75" />
+
       <Text
         style={{
           marginLeft: 6,
@@ -34,6 +36,7 @@ export const BackButton = () => {
           fontWeight: '500',
           fontSize: 14,
         }}
+        pointerEvents="none"
       >
         Back
       </Text>

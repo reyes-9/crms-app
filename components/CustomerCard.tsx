@@ -42,16 +42,26 @@ export const CustomerCard = ({
 
 const styles = StyleSheet.create({
   container: {
-    paddingHorizontal: 22,
-    // marginTop: 10,
+    backgroundColor: '#FFFFFF',
+    margin: 0,
   },
 
   card: {
     flexDirection: 'row',
-    backgroundColor: '#FFFFFF',
     alignItems: 'center',
+
+    width: '100%',
+
+    padding: 14,
+    backgroundColor: '#fff',
+
+    // borderBottomWidth: 1,
+    // borderBottomColor: '#E5E7EB',
+    // borderColor: 'navy',
+
+    // margin: 20,
+    // backgroundColor: '#FFFFFF',
     // borderRadius: 16,
-    padding: 12,
 
     // Modern subtle shadow
     // shadowColor: '#000',
@@ -86,26 +96,11 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    // marginTop: 2,
   },
 
   text: {
     marginLeft: 8,
     fontSize: 13,
     color: '#6B7280',
-  },
-
-  rightAction: {
-    backgroundColor: '#E74C3C',
-    justifyContent: 'center',
-    alignItems: 'center',
-    width: 80,
-    borderRadius: 16,
-    // marginVertical: 10,
-  },
-  actionText: {
-    color: '#fff',
-    fontSize: 12,
-    // marginTop: 4,
   },
 });

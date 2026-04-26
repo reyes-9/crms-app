@@ -6,6 +6,7 @@ import Animated, {
   runOnJS,
   useAnimatedStyle,
   useSharedValue,
+  withSequence,
   withSpring,
 } from 'react-native-reanimated';
 
@@ -17,34 +18,69 @@ type Props = {
   onClose: () => void;
   onDelete?: () => void;
   onArchive?: () => void;
+  isHint?: boolean;
+  resetSignal?: number;
 };
+
+// SESSION FLAG (key part)
+let hasShownSwipeHintThisSession = false;
 
 const SwipeableRow = ({
   children,
   rowId,
   isOpen,
+  isHint,
   onOpen,
   onClose,
   onDelete,
   onArchive,
+  resetSignal,
 }: Props) => {
   const translateX = useSharedValue(0);
   const startX = useSharedValue(0);
 
-  const MAX_SWIPE_LEFT = -180; // adjusted to match button width
+  const hintOpacity = useSharedValue(0);
+  const hintTranslate = useSharedValue(0);
+
+  const MAX_SWIPE_LEFT = -180;
   const MAX_SWIPE_RIGHT = 0;
 
-  // Sync with parent state (only when needed)
   useEffect(() => {
     const target = isOpen ? MAX_SWIPE_LEFT : 0;
 
     if (translateX.value !== target) {
       translateX.value = withSpring(target, {
-        damping: 60, // moderate damping to avoid bounce
-        stiffness: 400, // strong pull back for speed
+        damping: 60,
+        stiffness: 400,
       });
     }
   }, [isOpen]);
+
+  useEffect(() => {
+    translateX.value = withSpring(0, {
+      damping: 60,
+      stiffness: 400,
+    });
+  }, [resetSignal]);
+
+  // ONBOARDING HINT (ONLY ONCE PER SESSION)
+  useEffect(() => {
+    if (!isHint) return;
+    if (hasShownSwipeHintThisSession) return;
+
+    hasShownSwipeHintThisSession = true;
+
+    hintOpacity.value = withSequence(
+      withSpring(0.15, { damping: 20, stiffness: 200 }),
+      withSpring(1, { damping: 20, stiffness: 200 }),
+      withSpring(0, { damping: 20, stiffness: 200 }),
+    );
+
+    hintTranslate.value = withSequence(
+      withSpring(8, { damping: 20, stiffness: 200 }),
+      withSpring(0, { damping: 20, stiffness: 200 }),
+    );
+  }, [isHint]);
 
   const actionAnimatedStyle = useAnimatedStyle(() => {
     const progress = Math.min(Math.abs(translateX.value) / 190, 1);
@@ -55,12 +91,17 @@ const SwipeableRow = ({
     };
   });
 
+  const hintStyle = useAnimatedStyle(() => ({
+    opacity: hintOpacity.value,
+    transform: [{ translateX: hintTranslate.value }],
+  }));
+
   const panGesture = Gesture.Pan()
     .activeOffsetX([-20, 20])
     .failOffsetY([-20, 20])
 
     .onStart(() => {
-      startX.value = translateX.value; // ✅ critical fix
+      startX.value = translateX.value;
     })
 
     .onUpdate((event) => {
@@ -74,16 +115,13 @@ const SwipeableRow = ({
 
     .onEnd(() => {
       const shouldOpen = translateX.value <= MAX_SWIPE_LEFT / 2;
-
       const target = shouldOpen ? MAX_SWIPE_LEFT : 0;
 
-      // ✅ Always snap immediately
       translateX.value = withSpring(target, {
-        damping: 60, // moderate damping to avoid bounce
-        stiffness: 400, // strong pull back for speed
+        damping: 60,
+        stiffness: 400,
       });
 
-      // Then sync parent state
       if (shouldOpen) {
         runOnJS(onOpen)(rowId);
       } else {
@@ -99,7 +137,6 @@ const SwipeableRow = ({
     <View style={styles.container}>
       {/* Background actions */}
       <View style={styles.actionsContainer}>
-        {/* Archive */}
         <Animated.View
           style={[styles.actionBlock, styles.archive, actionAnimatedStyle]}
         >
@@ -114,7 +151,6 @@ const SwipeableRow = ({
 
         <View style={styles.divider} />
 
-        {/* Delete */}
         <Animated.View
           style={[styles.actionBlock, styles.delete, actionAnimatedStyle]}
         >
@@ -132,11 +168,17 @@ const SwipeableRow = ({
       <GestureDetector gesture={panGesture}>
         <Animated.View style={[styles.foreground, animatedStyle]}>
           {children}
+
+          {/* Swipe hint */}
+          <Animated.View style={[styles.swipeHint, hintStyle]}>
+            <Text style={styles.swipeHintText}>← swipe</Text>
+          </Animated.View>
         </Animated.View>
       </GestureDetector>
     </View>
   );
 };
+
 const styles = StyleSheet.create({
   container: {
     marginVertical: 4,
@@ -145,11 +187,10 @@ const styles = StyleSheet.create({
   divider: {
     height: '70%',
     width: 1,
-    backgroundColor: '#b3b3b3', // light gray line
+    backgroundColor: '#b3b3b3',
     marginVertical: 8,
   },
 
-  // Background actions container (Archive + Delete)
   actionsContainer: {
     ...StyleSheet.absoluteFillObject,
     flexDirection: 'row',
@@ -158,7 +199,6 @@ const styles = StyleSheet.create({
     marginEnd: 5,
   },
 
-  // Each action block (Archive/Delete)
   actionBlock: {
     width: 90,
     justifyContent: 'center',
@@ -167,13 +207,8 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
 
-  archive: {
-    backgroundColor: '#F3F4F6', // soft gray
-  },
-
-  delete: {
-    // backgroundColor: '#EF4444', // modern red
-  },
+  archive: {},
+  delete: {},
 
   label: {
     marginTop: 6,
@@ -182,14 +217,19 @@ const styles = StyleSheet.create({
     color: '#374151',
   },
 
-  // Foreground card
-  foreground: {
-    backgroundColor: '#fff',
-    borderRadius: 16,
-    shadowColor: '#000',
-    shadowOpacity: 0.08,
-    shadowRadius: 10,
-    elevation: 3,
+  foreground: {},
+
+  swipeHint: {
+    position: 'absolute',
+    right: 14,
+    top: '50%',
+    transform: [{ translateY: -10 }],
+  },
+
+  swipeHintText: {
+    fontSize: 12,
+    color: '#74777c',
+    fontWeight: '500',
   },
 });
 
