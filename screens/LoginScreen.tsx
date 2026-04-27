@@ -14,10 +14,10 @@ import { Input } from '@/components/Input';
 import { useUser } from '@/hooks/useUser';
 import { theme } from '@/theme/colors';
 import { LoginCredentials } from '@/types/auth';
+import { RootStackParamList } from '@/types/navigation';
 import { useNavigation } from '@react-navigation/native';
-import { useForm } from 'react-hook-form';
-import { RootStackParamList } from "@/types/navigation"
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useForm } from 'react-hook-form';
 
 // 1. Define your stack param list
 // export type RootStackParamList = {
@@ -27,7 +27,10 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 //   Main: undefined;
 // };
 
-type SplashScreenNavProp = NativeStackNavigationProp<RootStackParamList, 'Splash'>;
+type SplashScreenNavProp = NativeStackNavigationProp<
+  RootStackParamList,
+  'Splash'
+>;
 
 export const LoginScreen = () => {
   const { login, loadUser, user } = useUser();
@@ -100,6 +103,7 @@ export const LoginScreen = () => {
             rules={{
               required: true,
             }}
+            variant="dark"
           />
 
           <Input
@@ -110,6 +114,7 @@ export const LoginScreen = () => {
             rules={{
               required: true,
             }}
+            variant="dark"
           />
 
           <Pressable

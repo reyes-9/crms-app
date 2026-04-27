@@ -60,6 +60,7 @@ export const RegisterScreen = () => {
   // You are telling TypeScript:
   // "I know this data is an object where keys are field names and values are arrays of error strings."
   // This allows you to use Object.entries safely.
+  
   type BackendErrorResponse = Record<string, string[]>;
 
   const onSubmit = async (data: RegisterCredentials) => {
@@ -98,8 +99,11 @@ export const RegisterScreen = () => {
   };
 
   return (
-    <SafeAreaView edges={['bottom', 'right']} style={styles.container}>
-      <BackButton />
+    <SafeAreaView edges={['top']} style={styles.container}>
+      <View style={{ alignItems: 'flex-start', marginStart: 20 }}>
+        <BackButton />
+      </View>
+
       <ReusableModal
         state="success"
         buttons={[]}
@@ -132,6 +136,7 @@ export const RegisterScreen = () => {
                 placeholder="First Name"
                 control={control}
                 rules={{ required: setFieldMessage }}
+                variant="dark"
               />
             </View>
             <View style={styles.half}>
@@ -140,6 +145,7 @@ export const RegisterScreen = () => {
                 placeholder="Last Name"
                 control={control}
                 rules={{ required: setFieldMessage }}
+                variant="dark"
               />
             </View>
           </View>
@@ -153,6 +159,7 @@ export const RegisterScreen = () => {
               required: setFieldMessage,
               pattern: { value: EMAIL_REGEX, message: 'Invalid email.' },
             }}
+            variant="dark"
           />
 
           {/* Username + Phone */}
@@ -173,6 +180,7 @@ export const RegisterScreen = () => {
                     message: 'It should be maximum 25 characters long.',
                   },
                 }}
+                variant="dark"
               />
             </View>
 
@@ -194,6 +202,7 @@ export const RegisterScreen = () => {
                       'Phone Number should be maximum 11 characters long.',
                   },
                 }}
+                variant="dark"
               />
             </View>
           </View>
@@ -204,6 +213,7 @@ export const RegisterScreen = () => {
             placeholder="Address"
             control={control}
             rules={{ required: setFieldMessage }}
+            variant="dark"
           />
 
           {/* Password */}
@@ -219,6 +229,7 @@ export const RegisterScreen = () => {
                 message: 'Password should be minimum 8 characters long.',
               },
             }}
+            variant="dark"
           />
 
           {/* Confirm Password */}
@@ -232,6 +243,7 @@ export const RegisterScreen = () => {
               validate: (value) =>
                 value === password || 'Password do not match',
             }}
+            variant="dark"
           />
 
           <Pressable
@@ -285,6 +297,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     padding: 40,
+    paddingTop: 0,
   },
   brand: {
     flexDirection: 'row',

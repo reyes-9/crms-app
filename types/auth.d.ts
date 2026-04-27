@@ -34,4 +34,5 @@ export interface InputProps {
   placeholder?: string;
   secureTextEntry?: boolean;
   rules: RegisterOptions;
+  variant?: 'light' | 'dark';
 }

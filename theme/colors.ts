@@ -11,6 +11,7 @@ export const theme = {
     // Neutral
     dark: '#2C2C2A',
     light: '#F1EFE8',
+    lightSecondary: '#a5a5a5',
 
     // UI
     background: '#FFFFFF',
@@ -19,7 +20,7 @@ export const theme = {
 
     // Text
     textPrimary: '#2C2C2A',
-    textSecondary: '#6B7280',
+    textSecondary: '#606672',
     textInverse: '#FFFFFF',
 
     // Status

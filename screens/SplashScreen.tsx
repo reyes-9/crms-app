@@ -1,8 +1,7 @@
 import { useNavigation } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
 import { useEffect, useRef } from 'react';
 import { Animated, Image, Text, View } from 'react-native';
-import { StackNavigationProp } from '@react-navigation/stack';
-
 
 type RootStackParamList = {
   Splash: undefined;

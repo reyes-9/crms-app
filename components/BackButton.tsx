@@ -6,7 +6,6 @@ export const BackButton = () => {
   const navigation = useNavigation();
 
   const handleBack = () => {
-    console.log('BACK');
     if (navigation.canGoBack()) {
       navigation.goBack();
     }

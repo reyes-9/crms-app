@@ -1,9 +1,18 @@
+import { CustomerProfile } from '@/types/customer';
 import { api } from './api';
 
 export const customerService = {
   async getCustomers() {
     const res = await api.get('/customers/');
     return res;
+  },
+
+  async editCustomer(id: number, data: CustomerProfile) {
+    const res = await api.patch<CustomerProfile>(
+      `/customers/${id}/edit/`,
+      data,
+    );
+    return res.data;
   },
 
   async archiveCustomer(id: number) {

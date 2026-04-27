@@ -4,7 +4,10 @@ import { NavigationContainer } from '@react-navigation/native';
 
 import 'react-native-gesture-handler';
 
+import { toastConfig } from '@/utils/toastConfig';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import Toast from 'react-native-toast-message';
 import { CustomerNoteProvider } from './contexts/CustomerNoteContext';
 import { OrderProvider } from './contexts/OrderContext';
 import { RootNavigator } from './navigation/RootNavigator';
@@ -17,8 +20,11 @@ export default function App() {
           <CustomerNoteProvider>
             <SafeAreaProvider>
               <NavigationContainer>
-                <RootNavigator />
+                <GestureHandlerRootView style={{ flex: 1 }}>
+                  <RootNavigator />
+                </GestureHandlerRootView>
               </NavigationContainer>
+              <Toast config={toastConfig} />
             </SafeAreaProvider>
           </CustomerNoteProvider>
         </OrderProvider>

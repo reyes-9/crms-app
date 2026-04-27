@@ -14,7 +14,9 @@ export interface CustomerProfile {
 
 export interface CustomerContextType {
   customers: CustomerProfile[];
+  setCustomers: Dispatch<SetStateAction<CustomerProfile[]>>;
   getCustomers: () => Promise<void>;
+  editCustomer: (id: number, data: CustomerProfile) => Promise<CustomerProfile>;
   archiveCustomer: (id: number) => Promise<void>;
   deleteCustomer: (id: number) => Promise<void>;
   searchCustomer: (search: string) => Promise<void>;

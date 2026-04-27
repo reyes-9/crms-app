@@ -9,6 +9,7 @@
 // (ORDERS: MANAGE ORDERS)  --  POSSIBLY DIFFERENT PAGE
 // (NOTES: ADD NOTES)       --  MAYBE JUST A MODAL
 
+import { useCustomer } from '@/hooks/useCustomer';
 import { useCustomerNote } from '@/hooks/useCustomerNote';
 import { useOrder } from '@/hooks/useOrder';
 import { theme } from '@/theme/colors';
@@ -16,7 +17,7 @@ import { RootStackParamList } from '@/types/navigation';
 import { MaterialIcons } from '@expo/vector-icons';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   ScrollView,
   StyleSheet,
@@ -27,14 +28,22 @@ import {
 
 export const CustomerDetailsScreen = () => {
   const route = useRoute<RouteProp<RootStackParamList, 'CustomerDetails'>>();
-const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
+  const { customers } = useCustomer();
   const { customerNotes, getCustomerNotes } = useCustomerNote();
 
-  const { customer } = route.params;
+  const { customer: routeCustomer } = route.params;
   const { orders, getOrders } = useOrder();
 
   const [showEditModal, setShowEditModal] = useState(false);
+
+  // Get the updated customer from context, fallback to route params
+  const customer = useMemo(
+    () => customers.find((c) => c.id === routeCustomer.id) || routeCustomer,
+    [customers, routeCustomer.id],
+  );
 
   const handleOrders = () => {
     console.log('Orders is pressed');
@@ -45,7 +54,6 @@ const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>(
     setShowEditModal(true);
   };
   const handleEdit = () => {
-    console.log('Profile is pressed');
     navigation.navigate('EditCustomer', { customer });
   };
 

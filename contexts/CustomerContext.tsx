@@ -25,6 +25,26 @@ export function CustomerProvider({ children }: CustomerProviderProps) {
     }
   }
 
+  async function editCustomer(
+    id: number,
+    data: CustomerProfile,
+  ): Promise<CustomerProfile> {
+    try {
+      const res = await customerService.editCustomer(id, data);
+      console.log('RES: ', res);
+      const updatedCustomer = res;
+
+      // Update the customers array with the updated customer
+      setCustomers((prev) =>
+        prev.map((c) => (c.id === id ? updatedCustomer : c)),
+      );
+
+      return updatedCustomer;
+    } catch (err: any) {
+      throw new Error(err);
+    }
+  }
+
   async function archiveCustomer(id: number) {
     try {
       await customerService.archiveCustomer(id);
@@ -55,7 +75,9 @@ export function CustomerProvider({ children }: CustomerProviderProps) {
     <CustomerContext.Provider
       value={{
         customers,
+        setCustomers,
         getCustomers,
+        editCustomer,
         archiveCustomer,
         deleteCustomer,
         searchCustomer,
