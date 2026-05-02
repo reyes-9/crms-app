@@ -3,6 +3,8 @@ import { ReusableModal } from '@/components/ReusableModal';
 import SearchInput from '@/components/SearchInput';
 import SwipeableRow from '@/components/SwipeableRow';
 import { useCustomer } from '@/hooks/useCustomer';
+import { theme } from '@/theme/colors';
+import { Feather } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import React, { useEffect, useState } from 'react';
 import {
@@ -11,6 +13,7 @@ import {
   FlatList,
   Pressable,
   RefreshControl,
+  StyleSheet,
   Text,
   View,
 } from 'react-native';
@@ -92,7 +95,7 @@ export const CustomerScreen = () => {
   }
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
+    <GestureHandlerRootView style={{ flex: 1, margin: 16 }}>
       {/* Delete Modal */}
       <ReusableModal
         state="danger"
@@ -170,6 +173,29 @@ export const CustomerScreen = () => {
       />
 
       <View style={{ flex: 1 }}>
+        <View style={styles.header}>
+          <Text style={styles.headerTitle}>Customers</Text>
+
+          <Pressable
+            style={({ pressed }) => [
+              theme.components.button.base,
+              theme.components.button.sizes.sm.container,
+              theme.components.button.variants.primary,
+              pressed && styles.buttonPressed,
+            ]}
+          >
+            <Feather
+              name="plus"
+              size={18}
+              color="#fff"
+              style={{ marginRight: 6 }}
+            />
+            <Text style={theme.components.button.text.variants.primary}>
+              Add Customers
+            </Text>
+          </Pressable>
+        </View>
+
         <SearchInput onSearch={handleSearch} />
 
         <FlatList
@@ -178,6 +204,7 @@ export const CustomerScreen = () => {
           }
           data={customers}
           keyExtractor={(item) => item.id.toString()}
+          style={{ marginTop: 12 }}
           renderItem={({ item, index }) => (
             <SwipeableRow
               rowId={item.id.toString()}
@@ -224,3 +251,27 @@ export const CustomerScreen = () => {
     </GestureHandlerRootView>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    margin: 16,
+  },
+
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+
+  headerTitle: {
+    fontSize: theme.typography.fontSize.xl,
+    fontWeight: '600',
+  },
+
+  buttonPressed: {
+    opacity: 0.85,
+    transform: [{ scale: 0.98 }],
+  },
+});

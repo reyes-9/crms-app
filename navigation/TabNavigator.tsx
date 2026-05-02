@@ -58,7 +58,6 @@ export const TabNavigator = () => {
         component={CustomerScreen}
         options={{
           header: () => <Header title="Customer" isReturn={false} />,
-          tabBarBadge: 5,
           tabBarIcon: ({ color, size }) => (
             <Feather name="users" size={size} color={color} />
           ),

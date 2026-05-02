@@ -1,5 +1,6 @@
 // src/theme/theme.js
-
+import { TextStyle, ViewStyle } from 'react-native';
+type ButtonSize = 'sm' | 'md' | 'lg';
 export const theme = {
   colors: {
     // Brand
@@ -56,6 +57,7 @@ export const theme = {
       bold: 'System',
     },
     fontSize: {
+      xxs: 10,
       xs: 12,
       sm: 14,
       md: 16,
@@ -93,6 +95,93 @@ export const theme = {
       boxShadowOpacity: 0.25,
       boxShadowRadius: 16,
       boxShadowOffset: { width: 0, height: 8 },
+    },
+  },
+
+  components: {
+    button: {
+      base: {
+        borderRadius: 10,
+        alignItems: 'center',
+        justifyContent: 'center',
+        flexDirection: 'row',
+      } as ViewStyle,
+
+      sizes: {
+        sm: {
+          container: {
+            height: 36,
+            paddingHorizontal: 12,
+          } as ViewStyle,
+          text: {
+            fontSize: 12,
+          } as TextStyle,
+        },
+
+        md: {
+          container: {
+            height: 44,
+            paddingHorizontal: 16,
+          } as ViewStyle,
+          text: {
+            fontSize: 14,
+          } as TextStyle,
+        },
+
+        lg: {
+          container: {
+            height: 52,
+            paddingHorizontal: 20,
+          } as ViewStyle,
+          text: {
+            fontSize: 16,
+          } as TextStyle,
+        },
+      },
+
+      variants: {
+        primary: {
+          backgroundColor: '#0F6E56',
+        } as ViewStyle,
+
+        secondary: {
+          backgroundColor: '#E1F5EE',
+          borderWidth: 1,
+          borderColor: '#0F6E56',
+        } as ViewStyle,
+
+        ghost: {
+          backgroundColor: 'transparent',
+        } as ViewStyle,
+
+        danger: {
+          backgroundColor: '#E74C3C',
+        } as ViewStyle,
+      },
+
+      text: {
+        base: {
+          fontWeight: '600',
+        } as TextStyle,
+
+        variants: {
+          primary: {
+            color: '#FFFFFF',
+          } as TextStyle,
+
+          secondary: {
+            color: '#0F6E56',
+          } as TextStyle,
+
+          ghost: {
+            color: '#0F6E56',
+          } as TextStyle,
+
+          danger: {
+            color: '#FFFFFF',
+          } as TextStyle,
+        },
+      },
     },
   },
 };

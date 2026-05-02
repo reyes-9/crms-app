@@ -1,6 +1,6 @@
 import { Feather } from '@expo/vector-icons';
 import { useEffect, useState } from 'react';
-import { StyleSheet, TextInput, View, ActivityIndicator } from 'react-native';
+import { StyleSheet, TextInput, View } from 'react-native';
 
 interface SearchInputProps {
   onSearch: (query: string) => void;
@@ -37,20 +37,37 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#e3e3e3', // light gray background
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    // paddingVertical: 2,
-    marginVertical: 8,
-    marginHorizontal: 12,
+
+    backgroundColor: '#F9FAFB', // softer, near-white
+    borderRadius: 14,
+
+    paddingHorizontal: 14,
+    height: 48,
+
+    borderWidth: 1,
+    borderColor: '#E5E7EB', // subtle border
+
+    // subtle shadow (iOS)
+    shadowColor: '#000',
+    shadowOpacity: 0.04,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 2 },
+
+    // elevation (Android)
+    elevation: 2,
   },
+
   icon: {
-    marginRight: 8,
+    marginRight: 10,
+    opacity: 0.7, // softer icon tone
   },
+
   input: {
     flex: 1,
-    fontSize: 16,
-    color: '#111827', // dark text
+    fontSize: 15, // slightly refined
+    color: '#111827',
+
+    paddingVertical: 0, // prevent weird vertical stretching
   },
 });
 

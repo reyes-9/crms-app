@@ -52,8 +52,15 @@ const styles = StyleSheet.create({
 
     width: '100%',
 
-    padding: 14,
-    backgroundColor: '#fff',
+    backgroundColor: '#F9FAFB',
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+
+    // padding: 14,
+    // backgroundColor: '#fff',
 
     // borderBottomWidth: 1,
     // borderBottomColor: '#E5E7EB',

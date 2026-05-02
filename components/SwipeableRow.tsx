@@ -180,15 +180,12 @@ const SwipeableRow = ({
 };
 
 const styles = StyleSheet.create({
-  container: {
-    marginVertical: 4,
-  },
+  container: {},
 
   divider: {
     height: '70%',
     width: 1,
     backgroundColor: '#b3b3b3',
-    marginVertical: 8,
   },
 
   actionsContainer: {
