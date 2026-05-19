@@ -145,9 +145,9 @@ export const theme = {
         } as ViewStyle,
 
         secondary: {
-          backgroundColor: '#E1F5EE',
+          backgroundColor: '#F5F5F5',
           borderWidth: 1,
-          borderColor: '#0F6E56',
+          borderColor: '#D1D5DB',
         } as ViewStyle,
 
         ghost: {
@@ -170,7 +170,7 @@ export const theme = {
           } as TextStyle,
 
           secondary: {
-            color: '#0F6E56',
+            color: '#374151',
           } as TextStyle,
 
           ghost: {
