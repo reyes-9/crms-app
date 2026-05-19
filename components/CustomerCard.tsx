@@ -12,9 +12,9 @@ export const CustomerCard = ({
     <View style={styles.container}>
       <View style={styles.card}>
         {/* Avatar */}
-        <View style={styles.avatar}>
+        {/* <View style={styles.avatar}>
           <Feather name="user" size={28} color="#fff" />
-        </View>
+        </View> */}
 
         {/* Content */}
         <View style={styles.content}>

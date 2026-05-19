@@ -18,6 +18,7 @@ export const Header = ({
     Profile: 'Profile',
     CustomerDetails: 'Customer Details',
     EditCustomer: 'Edit Customer',
+    LeadDetails: 'Lead Details',
   };
 
   return (

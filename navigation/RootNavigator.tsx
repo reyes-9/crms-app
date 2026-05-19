@@ -1,6 +1,7 @@
 import { Header } from '@/components/Header';
 import { CustomerDetailsScreen } from '@/screens/CustomerDetailsScreen';
 import { EditCustomerScreen } from '@/screens/EditCustomerScreen';
+import { LeadDetailsScreen } from '@/screens/LeadDetailsScreen';
 import { LoginScreen } from '@/screens/LoginScreen';
 import { RegisterScreen } from '@/screens/RegisterScreen';
 import { SplashScreen } from '@/screens/SplashScreen';
@@ -41,7 +42,15 @@ export const RootNavigator = () => {
           header: () => <Header title="EditCustomer" isReturn={true} />,
         }}
       />
-      
+      <Stack.Screen
+        name="LeadDetails"
+        component={LeadDetailsScreen}
+        options={{
+          headerShown: true,
+          header: () => <Header title="LeadDetails" isReturn={true} />,
+        }}
+      />
+
       {/* <Stack.Screen
         name="CustomerDetails"
         component={CustomerDetails}

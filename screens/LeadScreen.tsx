@@ -1,6 +1,7 @@
 import SearchInput from '@/components/SearchInput';
 import { theme } from '@/theme/colors';
 import { Feather } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
 import { useRef, useState } from 'react';
 import {
   Animated,
@@ -16,8 +17,11 @@ import {
 type Lead = {
   id: string;
   name: string;
+  email: string;
+  number: string;
   company: string;
   status: LeadStatus;
+  source: string;
 };
 
 type LeadStatus =
@@ -92,47 +96,97 @@ const SortMenu = ({
 };
 
 // ─── Screen ────────────────────────────────────────────
-export const LeadsScreen = () => {
+export const LeadScreen = () => {
   const dummyLeads: Lead[] = [
-    { id: '1', name: 'John Doe', company: 'Acme Corp', status: 'new' },
-    { id: '2', name: 'Jane Smith', company: 'Globex Inc', status: 'contacted' },
+    {
+      id: '1',
+      name: 'John Doe',
+      company: 'Acme Corp',
+      email: 'john@acme.com',
+      number: '09171234567',
+      status: 'new',
+      source: 'website',
+    },
+    {
+      id: '2',
+      name: 'Jane Smith',
+      company: 'Globex Inc',
+      email: 'jane@globex.com',
+      number: '09181234567',
+      status: 'contacted',
+      source: 'referral',
+    },
     {
       id: '3',
       name: 'Michael Johnson',
       company: 'Initech',
+      email: 'michael@initech.com',
+      number: '09192345678',
       status: 'qualified',
+      source: 'email',
     },
-    { id: '4', name: 'Emily Davis', company: 'Umbrella Co', status: 'lost' },
-    { id: '5', name: 'Robert Brown', company: 'Soylent Corp', status: 'new' },
+    {
+      id: '4',
+      name: 'Emily Davis',
+      company: 'Umbrella Co',
+      email: 'emily@umbrella.com',
+      number: '09175551234',
+      status: 'lost',
+      source: 'social',
+    },
+    {
+      id: '5',
+      name: 'Robert Brown',
+      company: 'Soylent Corp',
+      email: 'robert@soylent.com',
+      number: '09176667777',
+      status: 'new',
+      source: 'website',
+    },
     {
       id: '6',
       name: 'Laura Wilson',
       company: 'Stark Industries',
+      email: 'laura@stark.com',
+      number: '09178889999',
       status: 'contacted',
+      source: 'referral',
     },
     {
       id: '7',
       name: 'David Miller',
       company: 'Wayne Enterprises',
+      email: 'david@wayne.com',
+      number: '09179990000',
       status: 'qualified',
+      source: 'website',
     },
     {
       id: '8',
       name: 'Sophia Taylor',
       company: 'Wonka Industries',
+      email: 'sophia@wonka.com',
+      number: '09171112222',
       status: 'lost',
+      source: 'social',
     },
     {
       id: '9',
       name: 'James Anderson',
       company: 'Cyberdyne Systems',
+      email: 'james@cyberdyne.com',
+      number: '09173334444',
       status: 'new',
+      source: 'email',
     },
     {
       id: '10',
       name: 'Olivia Martinez',
       company: 'Tyrell Corp',
+      email: 'olivia@tyrell.com',
+      number: '09174445555',
       status: 'contacted',
+      source: 'website',
     },
   ];
 
@@ -161,6 +215,9 @@ export const LeadsScreen = () => {
     'qualified',
     'converted',
   ];
+
+  const navigation = useNavigation<any>();
+
   const [refreshing, setRefreshing] = useState(false);
   const [selectedSort, setSelectedSort] = useState<SortOption>('all');
 
@@ -189,6 +246,7 @@ export const LeadsScreen = () => {
       style={[styles.leadItem, { borderLeftColor: statusColor[item.status] }]}
       onPress={() => {
         console.log('pressed');
+        navigation.navigate('LeadDetails');
       }}
     >
       <Text style={styles.leadName}>{item.name}</Text>

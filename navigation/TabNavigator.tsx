@@ -3,7 +3,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 
 import { CustomerScreen } from '@/screens/CustomerScreen';
 import { DashboardScreen } from '@/screens/DashboardScreen';
-import { LeadsScreen } from '@/screens/LeadsScreen';
+import { LeadScreen } from '@/screens/LeadScreen';
 import { ProfileScreen } from '@/screens/ProfileScreen';
 import { theme } from '@/theme/colors';
 
@@ -66,7 +66,7 @@ export const TabNavigator = () => {
 
       <Tab.Screen
         name="Leads"
-        component={LeadsScreen}
+        component={LeadScreen}
         options={{
           header: () => <Header title="Leads" isReturn={false} />,
           tabBarIcon: ({ color, size }) => (
