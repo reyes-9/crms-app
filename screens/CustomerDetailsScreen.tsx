@@ -91,10 +91,10 @@ export const CustomerDetailsScreen = () => {
   if (!customerNotes || customerNotes.length === 0) {
     notesContent = <Text>No notes found.</Text>;
   } else {
-    notesContent = customerNotes.map((customerNotes, index) => (
-      <View>
-        <View key={index} style={styles.noteCard}>
-          <Text style={styles.noteText}>{customerNotes.description}</Text>
+    notesContent = customerNotes.map((customerNote) => (
+      <View key={customerNote.id}>
+        <View style={styles.noteCard}>
+          <Text style={styles.noteText}>{customerNote.description}</Text>
 
           <Text style={styles.noteMeta}>Apr 10, 2025 · you</Text>
         </View>
@@ -229,7 +229,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '600',
     color: '#1A1A1A',
-    textTransform: 'uppercase',
+    // textTransform: 'uppercase',
   },
 
   meta: {
