@@ -9,6 +9,10 @@
 // (ORDERS: MANAGE ORDERS)  --  POSSIBLY DIFFERENT PAGE
 // (NOTES: ADD NOTES)       --  MAYBE JUST A MODAL
 
+// I THINK I ACCIDENTALLY hARCODED THE NOTES AND ORDERS
+// I THINK I ACCIDENTALLY hARCODED THE NOTES AND ORDERS
+// I THINK I ACCIDENTALLY hARCODED THE NOTES AND ORDERS
+
 import { useCustomer } from '@/hooks/useCustomer';
 import { useCustomerNote } from '@/hooks/useCustomerNote';
 import { useOrder } from '@/hooks/useOrder';
@@ -67,9 +71,19 @@ export const CustomerDetailsScreen = () => {
     ordersContent = <Text>No order found.</Text>;
   } else {
     ordersContent = orders.map((order) => (
-      <Text key={order.id} style={styles.sectionItem}>
-        • Order #{order.id} - {order.status}
-      </Text>
+      <View key={order.id} style={styles.orderCard}>
+        <View style={styles.orderHeader}>
+          <View>
+            <Text style={styles.orderTitle}>Order #{order.id}</Text>
+
+            <Text style={styles.orderDate}>Created Mar 10, 2025</Text>
+          </View>
+
+          <View style={styles.statusBadge}>
+            <Text style={styles.statusText}>{order.status}</Text>
+          </View>
+        </View>
+      </View>
     ));
   }
 
@@ -78,25 +92,28 @@ export const CustomerDetailsScreen = () => {
     notesContent = <Text>No notes found.</Text>;
   } else {
     notesContent = customerNotes.map((customerNotes, index) => (
-      <Text style={styles.sectionItem} key={index}>
-        • {customerNotes.description}
-      </Text>
+      <View>
+        <View key={index} style={styles.noteCard}>
+          <Text style={styles.noteText}>{customerNotes.description}</Text>
+
+          <Text style={styles.noteMeta}>Apr 10, 2025 · you</Text>
+        </View>
+        <View style={styles.divider} />
+      </View>
     ));
   }
 
-  // console.log('ORDERS: ', orders);
   return (
     <ScrollView
       contentContainerStyle={{
         flex: 1,
-        paddingTop: 30,
         backgroundColor: '#ffffff',
       }}
     >
       {/* Profile */}
-
+      <View style={styles.divider} />
       <View style={styles.section}>
-        <View style={styles.row}>
+        <View style={styles.sectionHeader}>
           <View style={styles.avatar}>
             <MaterialIcons name="person" size={32} color="#1D9E75" />
           </View>
@@ -107,72 +124,87 @@ export const CustomerDetailsScreen = () => {
           </View>
 
           <TouchableOpacity style={styles.editBtn} onPress={handleEdit}>
-            <MaterialIcons name="edit" size={16} color="#fff" />
+            <MaterialIcons name="edit" size={16} color="#1D9E75" />
             <Text style={styles.editText}>Edit Customer</Text>
           </TouchableOpacity>
         </View>
 
         <View style={styles.metaRow}>
-          <Text style={styles.metaItem}>Active</Text>
+          <Text style={styles.metaItemPill}>Active</Text>
           <Text style={styles.metaDot}>•</Text>
           <Text style={styles.metaItem}>Last order 2 days ago</Text>
         </View>
+
+        {/* Actions */}
+        <View style={styles.actions}>
+          <TouchableOpacity style={styles.actionBtn} onPress={() => {}}>
+            <MaterialIcons name="phone" size={18} color="#1D9E75" />
+            <Text style={styles.actionBtnText}>Call</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.actionBtn} onPress={() => {}}>
+            <MaterialIcons name="email" size={18} color="#1D9E75" />
+            <Text style={styles.actionBtnText}>Email</Text>
+          </TouchableOpacity>
+        </View>
       </View>
+      <View style={styles.divider} />
+      {/* <View style={styles.actions}></View> */}
 
       {/* Contact Info */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Contact Info</Text>
-        <Text style={styles.sectionText}>Email: {customer.email}</Text>
-        <Text style={styles.sectionText}>Phone: {customer.number}</Text>
-        <Text style={styles.sectionText}>Company: {customer.company}</Text>
+        <Text style={styles.sectionTitle}>CONTACT INFO</Text>
+
+        <View style={styles.sectionRow}>
+          <Text style={styles.sectionLabel}>Email:</Text>
+          <Text style={styles.sectionValue}>{customer.email}</Text>
+        </View>
+        <View style={styles.divider} />
+        <View style={styles.sectionRow}>
+          <Text style={styles.sectionLabel}>Phone:</Text>
+          <Text style={styles.sectionValue}>{customer.number}</Text>
+        </View>
+        <View style={styles.divider} />
+        <View style={styles.sectionRow}>
+          <Text style={styles.sectionLabel}>Company:</Text>
+          <Text style={styles.sectionValue}>{customer.company}</Text>
+        </View>
       </View>
+      <View style={styles.divider} />
 
       {/* Orders */}
       <View style={styles.section}>
-        <View style={styles.row}>
-          <Text style={styles.sectionTitle}>Orders</Text>
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>ORDERS</Text>
           <TouchableOpacity style={styles.editBtn} onPress={handleOrders}>
-            <MaterialIcons name="inventory" size={16} color="#fff" />
+            <MaterialIcons name="inventory" size={16} color="#1D9E75" />
             <Text style={styles.editText}>Manage Orders</Text>
           </TouchableOpacity>
         </View>
 
         <View style={styles.listContainer}>{ordersContent}</View>
       </View>
+      <View style={styles.divider} />
 
       {/* Notes */}
       <View style={styles.section}>
-        <View style={styles.row}>
-          <Text style={styles.sectionTitle}>Notes</Text>
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>NOTES</Text>
           <TouchableOpacity style={styles.editBtn} onPress={handleNotes}>
-            <MaterialIcons name="note" size={16} color="#fff" />
+            <MaterialIcons name="note" size={16} color="#1D9E75" />
             <Text style={styles.editText}>Manage Notes</Text>
           </TouchableOpacity>
         </View>
 
         <View style={styles.listContainer}>{notesContent}</View>
       </View>
-
-      {/* Actions */}
-      <View style={styles.actions}>
-        <View style={styles.secondaryRow}>
-          <TouchableOpacity style={styles.secondaryButton} onPress={() => {}}>
-            <MaterialIcons name="phone" size={18} color="#1D9E75" />
-            <Text style={styles.secondaryButtonText}>Call</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.secondaryButton} onPress={() => {}}>
-            <MaterialIcons name="email" size={18} color="#1D9E75" />
-            <Text style={styles.secondaryButtonText}>Email</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
+      <View style={styles.divider} />
     </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
-  row: {
+  sectionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -197,6 +229,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '600',
     color: '#1A1A1A',
+    textTransform: 'uppercase',
   },
 
   meta: {
@@ -208,17 +241,17 @@ const styles = StyleSheet.create({
   editBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#0F6E56',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 20,
-    gap: 6,
+    justifyContent: 'center',
+    ...theme.components.button.base,
+    ...theme.components.button.sizes.sm.container,
+    ...theme.components.button.variants.secondary,
+    gap: theme.spacing.xs,
   },
 
   editText: {
-    color: '#fff',
-    fontSize: 12,
-    fontWeight: '500',
+    ...theme.components.button.text.base,
+    ...theme.components.button.text.variants.secondary,
+    fontSize: theme.components.button.sizes.sm.text.fontSize,
   },
 
   metaRow: {
@@ -232,42 +265,57 @@ const styles = StyleSheet.create({
     color: '#555',
   },
 
+  metaItemPill: {
+    fontSize: 12,
+    color: '#555',
+    backgroundColor: '#E1F5EE',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 999,
+    alignSelf: 'flex-start',
+  },
+
   metaDot: {
     marginHorizontal: 6,
     color: '#999',
   },
 
   section: {
-    // backgroundColor: '#FFFFFF',
-    padding: 16,
-    marginHorizontal: 16,
-    paddingTop: 22,
-    borderRadius: 15,
-    borderBottomWidth: 1,
+    marginHorizontal: 12,
+    paddingVertical: 10,
+  },
 
-    // shadowColor: '#000',
-    // shadowOpacity: 0.05,
-    // shadowRadius: 8,
-    // shadowOffset: { width: 0, height: 2 },
+  divider: {
+    height: 1,
+    backgroundColor: '#E0E0E0', // light gray line
+    width: '100%',
+    marginVertical: 6, // spacing above and below
   },
 
   sectionTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#1D1D1D',
+    color: '#1d1d1d',
     marginBottom: 10,
+    textAlign: 'left',
   },
 
-  sectionText: {
+  sectionRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between', // pushes label left, value right
+    alignItems: 'center',
+    marginVertical: 4,
+  },
+
+  sectionLabel: {
     fontSize: 14,
     color: '#555',
-    marginBottom: 6,
   },
 
-  sectionItem: {
+  sectionValue: {
     fontSize: 14,
-    color: '#333',
-    marginBottom: 6,
+    color: '#000', // darker for emphasis
+    textAlign: 'right',
   },
 
   listContainer: {
@@ -275,35 +323,94 @@ const styles = StyleSheet.create({
   },
 
   actions: {
-    marginTop: theme.spacing.lg,
-    paddingHorizontal: theme.spacing.md,
-    marginBottom: theme.spacing.xl,
-  },
-
-  secondaryRow: {
     flexDirection: 'row',
     marginTop: theme.spacing.sm,
     gap: theme.spacing.sm,
   },
 
-  secondaryButton: {
-    flex: 1,
-    borderWidth: 1,
-    borderColor: theme.colors.primary,
-    backgroundColor: theme.colors.primaryBackground,
-
-    paddingVertical: theme.spacing.sm,
-    borderRadius: theme.radius.md,
-
+  actionBtn: {
     flexDirection: 'row',
-    justifyContent: 'center',
+    flex: 1,
     alignItems: 'center',
+    justifyContent: 'center',
     gap: theme.spacing.xs,
+    ...theme.components.button.base,
+    ...theme.components.button.sizes.sm.container,
+    ...theme.components.button.variants.secondary,
   },
 
-  secondaryButtonText: {
+  actionBtnText: {
+    ...theme.components.button.text.base,
+    ...theme.components.button.text.variants.secondary,
+    fontSize: theme.components.button.sizes.sm.text.fontSize,
+  },
+
+  // ORDERS
+  orderCard: {
+    backgroundColor: theme.colors.offWhite,
+    borderRadius: theme.radius.md,
+
+    paddingVertical: theme.spacing.sm,
+    paddingHorizontal: theme.spacing.sm,
+
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+
+    marginBottom: theme.spacing.sm,
+  },
+
+  orderHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+
+  orderTitle: {
+    fontSize: theme.typography.fontSize.sm,
+    fontWeight: '600',
+    color: theme.colors.textPrimary,
+    marginBottom: 2,
+  },
+
+  orderDate: {
+    fontSize: theme.typography.fontSize.xs,
+    color: theme.colors.textSecondary,
+  },
+
+  statusBadge: {
+    backgroundColor: theme.colors.primaryBackground,
+
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+
+    borderRadius: 999,
+
+    borderWidth: 1,
+    borderColor: theme.colors.primarySoft,
+  },
+
+  statusText: {
+    fontSize: theme.typography.fontSize.xs,
+    fontWeight: '600',
     color: theme.colors.primary,
+    textTransform: 'capitalize',
+  },
+
+  // NOTES
+  noteCard: {
+    marginBottom: theme.spacing.sm,
+  },
+
+  noteText: {
     fontSize: theme.typography.fontSize.sm,
     fontWeight: '500',
+    lineHeight: 24,
+    color: theme.colors.textSecondary,
+    marginBottom: theme.spacing.sm,
+  },
+
+  noteMeta: {
+    fontSize: theme.typography.fontSize.sm,
+    color: theme.colors.textSecondary,
   },
 });
