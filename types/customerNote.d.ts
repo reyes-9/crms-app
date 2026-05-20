@@ -4,7 +4,7 @@ export interface CustomerNoteProviderProps {
 
 export interface CustomerNoteDetails {
   id: number;
-  description: string;
+  content: string;
 }
 
 export interface CustomerNoteContextType {
