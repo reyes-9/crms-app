@@ -94,7 +94,7 @@ export const CustomerDetailsScreen = () => {
     notesContent = customerNotes.map((customerNote) => (
       <View key={customerNote.id}>
         <View style={styles.noteCard}>
-          <Text style={styles.noteText}>{customerNote.description}</Text>
+          <Text style={styles.noteText}>{customerNote.content}</Text>
 
           <Text style={styles.noteMeta}>Apr 10, 2025 · you</Text>
         </View>

@@ -213,13 +213,15 @@ export const LeadScreen = () => {
     'new',
     'contacted',
     'qualified',
+    'unqualified',
     'converted',
+    'lost',
   ];
 
   const navigation = useNavigation<any>();
 
   const [refreshing, setRefreshing] = useState(false);
-  const [selectedSort, setSelectedSort] = useState<SortOption>('all');
+  const [selectedSort, setSelectedSort] = useState<SortOption>('new');
 
   const filteredLeads =
     selectedSort === 'all'
@@ -245,7 +247,7 @@ export const LeadScreen = () => {
     <Pressable
       style={[styles.leadItem, { borderLeftColor: statusColor[item.status] }]}
       onPress={() => {
-        console.log('pressed');
+        // console.log('pressed');
         navigation.navigate('LeadDetails');
       }}
     >
