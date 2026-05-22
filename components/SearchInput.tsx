@@ -38,7 +38,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
 
-    backgroundColor: '#F9FAFB', // softer, near-white
+    backgroundColor: '#ffffff', // softer, near-white
     borderRadius: 14,
 
     paddingHorizontal: 14,
@@ -54,7 +54,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
 
     // elevation (Android)
-    elevation: 2,
+    // elevation: 2,
   },
 
   icon: {

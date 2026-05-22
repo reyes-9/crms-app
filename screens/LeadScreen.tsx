@@ -41,60 +41,6 @@ type SortOption =
   | 'converted'
   | 'lost';
 
-// ─── Sort Menu ─────────────────────────────────────────
-
-const SortMenu = ({
-  sortOptions,
-  selectedSort,
-  setSelectedSort,
-}: {
-  sortOptions: SortOption[];
-  selectedSort: SortOption;
-  setSelectedSort: (o: SortOption) => void;
-}) => {
-  const [open, setOpen] = useState(false);
-
-  return (
-    <View style={styles.dropdownWrapper}>
-      {/* ─── Trigger ───────────────────────────── */}
-      <Pressable
-        onPress={() => setOpen((prev) => !prev)}
-        style={styles.dropdownTrigger}
-      >
-        <Text style={styles.triggerText}>{selectedSort.toUpperCase()}</Text>
-
-        <Text style={styles.arrow}>{open ? '▲' : '▼'}</Text>
-      </Pressable>
-
-      {/* ─── Dropdown List ─────────────────────── */}
-      {open && (
-        <View style={styles.dropdown}>
-          {sortOptions.map((option) => {
-            const isActive = selectedSort === option;
-
-            return (
-              <Pressable
-                key={option}
-                onPress={() => {
-                  setSelectedSort(option);
-                  setOpen(false);
-                }}
-                style={[styles.item, isActive && styles.itemActive]}
-              >
-                <Text
-                  style={[styles.itemText, isActive && styles.itemTextActive]}
-                >
-                  {option.toUpperCase()}
-                </Text>
-              </Pressable>
-            );
-          })}
-        </View>
-      )}
-    </View>
-  );
-};
-
 // ─── Screen ────────────────────────────────────────────
 export const LeadScreen = () => {
   const dummyLeads: Lead[] = [
@@ -258,6 +204,60 @@ export const LeadScreen = () => {
       </Text>
     </Pressable>
   );
+
+  // ─── Sort Menu ─────────────────────────────────────────
+
+  const SortMenu = ({
+    sortOptions,
+    selectedSort,
+    setSelectedSort,
+  }: {
+    sortOptions: SortOption[];
+    selectedSort: SortOption;
+    setSelectedSort: (o: SortOption) => void;
+  }) => {
+    const [open, setOpen] = useState(false);
+
+    return (
+      <View style={styles.dropdownWrapper}>
+        {/* ─── Trigger ───────────────────────────── */}
+        <Pressable
+          onPress={() => setOpen((prev) => !prev)}
+          style={styles.dropdownTrigger}
+        >
+          <Text style={styles.triggerText}>{selectedSort.toUpperCase()}</Text>
+
+          <Text style={styles.arrow}>{open ? '▲' : '▼'}</Text>
+        </Pressable>
+
+        {/* ─── Dropdown List ─────────────────────── */}
+        {open && (
+          <View style={styles.dropdown}>
+            {sortOptions.map((option) => {
+              const isActive = selectedSort === option;
+
+              return (
+                <Pressable
+                  key={option}
+                  onPress={() => {
+                    setSelectedSort(option);
+                    setOpen(false);
+                  }}
+                  style={[styles.item, isActive && styles.itemActive]}
+                >
+                  <Text
+                    style={[styles.itemText, isActive && styles.itemTextActive]}
+                  >
+                    {option.toUpperCase()}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+        )}
+      </View>
+    );
+  };
 
   const ListHeader = () => {
     return (
