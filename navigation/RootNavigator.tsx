@@ -3,6 +3,7 @@ import { CustomerDetailsScreen } from '@/screens/CustomerDetailsScreen';
 import { EditCustomerScreen } from '@/screens/EditCustomerScreen';
 import { LeadDetailsScreen } from '@/screens/LeadDetailsScreen';
 import { LoginScreen } from '@/screens/LoginScreen';
+import { OrdersScreen } from '@/screens/OrdersScreen';
 import { RegisterScreen } from '@/screens/RegisterScreen';
 import { SplashScreen } from '@/screens/SplashScreen';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -48,6 +49,14 @@ export const RootNavigator = () => {
         options={{
           headerShown: true,
           header: () => <Header title="LeadDetails" isReturn={true} />,
+        }}
+      />
+      <Stack.Screen
+        name="Orders"
+        component={OrdersScreen}
+        options={{
+          headerShown: true,
+          header: () => <Header title="Orders" isReturn={true} />,
         }}
       />
 
