@@ -3,6 +3,7 @@ import { useCustomer } from '@/hooks/useCustomer';
 import { theme } from '@/theme/colors';
 import { CustomerProfile } from '@/types/customer';
 import { RootStackParamList } from '@/types/navigation';
+import { Feather } from '@expo/vector-icons';
 import { RouteProp, useRoute } from '@react-navigation/native';
 import { useForm } from 'react-hook-form';
 import {
@@ -21,14 +22,15 @@ export const EditCustomerScreen = () => {
   const route = useRoute<RouteProp<RootStackParamList, 'CustomerDetails'>>();
 
   const { customer } = route.params;
+
   const { editCustomer } = useCustomer();
 
-  const EMAIL_REGEX = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
-  const setFieldMessage = true;
+  const EMAIL_REGEX = /^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/;
 
   const {
     control,
     handleSubmit,
+    watch,
     formState: { isSubmitting },
   } = useForm<CustomerProfile>({
     defaultValues: {
@@ -40,155 +42,321 @@ export const EditCustomerScreen = () => {
     },
   });
 
+  const watchedName = watch('name');
+  const watchedCompany = watch('company');
+
   const onSubmit = async (data: CustomerProfile) => {
     try {
       await editCustomer(customer.id, data);
+
       Toast.show({
         type: 'success',
-        text1: 'Saved',
-        text2: 'Profile updated',
+        text1: 'Customer Updated',
+        text2: 'Customer profile saved successfully',
       });
+
       console.log('Customer updated successfully');
     } catch (err) {
       console.error('Update failed:', err);
+
+      Toast.show({
+        type: 'error',
+        text1: 'Update Failed',
+        text2: 'Something went wrong while saving changes',
+      });
     }
   };
 
   return (
-    <ScrollView
-      style={styles.screen}
-      contentContainerStyle={{ flexGrow: 1 }}
-      keyboardShouldPersistTaps="handled"
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      // keyboardVerticalOffset={10} // tweak if needed
     >
-      <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        keyboardVerticalOffset={80}
+      <ScrollView
+        style={styles.screen}
+        contentContainerStyle={styles.contentContainer}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
       >
-        <View style={styles.card}>
-          <View style={styles.header}>
-            <Text style={styles.title}>Customer Profile</Text>
-            <Text style={styles.subtitle}>Edit and manage customer data</Text>
+        {/* Header */}
+        <View style={styles.header}>
+          <Text style={styles.title}>Edit Customer</Text>
+
+          <Text style={styles.subtitle}>
+            Update customer details and contact information
+          </Text>
+        </View>
+
+        {/* Profile Summary */}
+        <View style={styles.profileCard}>
+          <View style={styles.avatar}>
+            <Text style={styles.avatarText}>
+              {customer.name?.charAt(0).toUpperCase()}
+            </Text>
           </View>
 
-          <Text style={styles.note}>
-            Note: (<Text style={{ color: theme.colors.danger }}>*</Text>)
-            Required field — please fill this in
-          </Text>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.customerName}>{watchedName}</Text>
 
+            <Text style={styles.customerCompany}>
+              {watchedCompany || 'No company'}
+            </Text>
+          </View>
+
+          <View style={styles.badge}>
+            <Feather name="user" size={14} color={theme.colors.primary} />
+
+            <Text style={styles.badgeText}>Customer</Text>
+          </View>
+        </View>
+
+        {/* Form Card */}
+        {/* Form Card */}
+        <View style={styles.card}>
+          {/* Section Header */}
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Customer Information</Text>
+
+            <Text style={styles.sectionSubtitle}>
+              Update the customer's profile and contact details
+            </Text>
+          </View>
+
+          {/* Name */}
           <Input
             name="name"
-            placeholder="Name"
-            control={control}
-            rules={{ required: true }}
-          />
-          <Input
-            name="email"
-            placeholder="Email"
+            label="Full Name"
+            placeholder="Juan Dela Cruz"
             control={control}
             rules={{
-              required: setFieldMessage,
-              pattern: { value: EMAIL_REGEX, message: 'Invalid email.' },
+              required: 'Name is required',
             }}
           />
+
+          {/* Email */}
           <Input
-            name="company"
-            placeholder="Company"
+            name="email"
+            label="Email Address"
+            placeholder="juan@email.com"
             control={control}
-            rules={{ required: true }}
-          />
-          <Input
-            name="number"
-            placeholder="Number"
-            control={control}
-            rules={{ required: true }}
+            rules={{
+              required: 'Email is required',
+              pattern: {
+                value: EMAIL_REGEX,
+                message: 'Invalid email address',
+              },
+            }}
           />
 
+          {/* Phone */}
+          <Input
+            name="number"
+            label="Phone Number"
+            placeholder="09123456789"
+            control={control}
+            rules={{
+              required: 'Phone number is required',
+            }}
+          />
+
+          {/* Company */}
+          <Input
+            name="company"
+            label="Company"
+            placeholder="Locus CRM Inc."
+            control={control}
+            rules={{
+              required: 'Company is required',
+            }}
+          />
+
+          {/* Submit Button */}
           <Pressable
             onPress={handleSubmit(onSubmit)}
             disabled={isSubmitting}
             style={({ pressed }) => [
               styles.button,
               pressed && styles.buttonPressed,
+              isSubmitting && styles.buttonDisabled,
             ]}
           >
             {isSubmitting ? (
               <View style={styles.loadingContainer}>
-                <ActivityIndicator
-                  size="small"
-                  color={theme.colors.textInverse}
-                />
-                <Text style={styles.btnText}>Applying Changes...</Text>
+                <ActivityIndicator size="small" color="#FFFFFF" />
+
+                <Text style={styles.buttonText}>Saving Changes...</Text>
               </View>
             ) : (
-              <Text style={styles.btnText}>Save Changes</Text>
+              <>
+                <Feather name="save" size={18} color="#FFFFFF" />
+
+                <Text style={styles.buttonText}>Save Changes</Text>
+              </>
             )}
           </Pressable>
         </View>
-      </KeyboardAvoidingView>
-    </ScrollView>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 };
 
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    paddingHorizontal: 16,
-    paddingTop: 10,
+    backgroundColor: '#F3F4F6',
   },
 
-  header: {},
+  contentContainer: {
+    padding: 16,
+    paddingBottom: 40,
+  },
+
+  header: {
+    marginBottom: 24,
+  },
 
   title: {
-    fontSize: 22,
+    fontSize: 28,
     fontWeight: '700',
     color: '#111827',
   },
 
-  card: {
-    borderRadius: 14,
-    padding: 16,
+  subtitle: {
+    marginTop: 6,
+    fontSize: 14,
+    lineHeight: 20,
+    color: '#6B7280',
+  },
+
+  profileCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 24,
+    padding: 18,
+
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: 14,
+
+    marginBottom: 20,
+
+    shadowColor: '#000',
+    shadowOpacity: 0.05,
+    shadowRadius: 12,
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+
+    elevation: 2,
+  },
+
+  avatar: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+
+    backgroundColor: '#DCFCE7',
+
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  avatarText: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#15803D',
+  },
+
+  customerName: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#111827',
+  },
+
+  customerCompany: {
+    marginTop: 4,
+    fontSize: 13,
+    color: '#6B7280',
+  },
+
+  badge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+
+    borderRadius: 999,
+
+    backgroundColor: '#EFF6FF',
+  },
+
+  badgeText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: theme.colors.primary,
+  },
+
+  // FORM
+  card: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    padding: 20,
+
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+  },
+
+  sectionHeader: {
+    marginBottom: 20,
+  },
+
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#111827',
+  },
+
+  sectionSubtitle: {
+    marginTop: 4,
+    fontSize: 13,
+    lineHeight: 18,
+    color: '#6B7280',
   },
 
   button: {
-    marginTop: 10,
-    backgroundColor: '#1D9E75',
-    paddingVertical: 14,
-    borderRadius: 12,
+    marginTop: 8,
+
+    height: 54,
+    borderRadius: 14,
+
+    backgroundColor: theme.colors.primary,
+
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
   },
 
   buttonPressed: {
-    opacity: 0.85,
-    transform: [{ scale: 0.98 }],
+    opacity: 0.9,
   },
 
-  btnText: {
-    color: '#fff',
-    fontSize: 16,
+  buttonDisabled: {
+    opacity: 0.7,
+  },
+
+  buttonText: {
+    color: '#FFFFFF',
+    fontSize: 15,
     fontWeight: '600',
-  },
-
-  subtitle: {
-    fontSize: 12,
-    fontStyle: 'italic',
-    color: theme.colors.textSecondary,
-    alignSelf: 'flex-start',
-    marginBottom: 5,
-  },
-
-  note: {
-    fontSize: 12,
-    fontStyle: 'italic',
-    color: theme.colors.textSecondary,
-    marginBottom: 10,
   },
 
   loadingContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
     gap: 10,
   },
 });

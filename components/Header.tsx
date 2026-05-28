@@ -20,6 +20,7 @@ export const Header = ({
     EditCustomer: 'Edit Customer',
     LeadDetails: 'Lead Details',
     Orders: 'Orders',
+    OrderForm: 'Order Form',
   };
 
   return (

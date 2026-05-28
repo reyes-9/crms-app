@@ -6,10 +6,17 @@ export type RootStackParamList = ParamListBase & {
   Login: undefined;
   Register: undefined;
   Main: undefined;
+  Customer: {};
   CustomerDetails: {
     customer: CustomerProfile;
   };
   EditCustomer: {
     customer: CustomerProfile;
   };
+
+  Orders: { customer_id: number };
+
+  OrderFormScreen:
+    | { mode: 'create'; customerId: number }
+    | { mode: 'edit'; orderId: number };
 };

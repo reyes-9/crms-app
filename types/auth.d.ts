@@ -31,8 +31,11 @@ export interface UserContextType {
 export interface InputProps {
   control: any; // Replace 'any' with the proper type from react-hook-form (e.g., Control<FieldValues>)
   name: string;
+  label: string;
   placeholder?: string;
   secureTextEntry?: boolean;
   rules: RegisterOptions;
   variant?: 'light' | 'dark';
+  defaultValue?: string;
+  disabled?: boolean;
 }
