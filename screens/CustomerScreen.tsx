@@ -95,7 +95,8 @@ export const CustomerScreen = () => {
   }
 
   return (
-    <GestureHandlerRootView style={{ flex: 1, margin: 16 }}>
+    <GestureHandlerRootView style={{ margin: 16 }}>
+      {/* <ScrollView> */}
       {/* Delete Modal */}
       <ReusableModal
         state="danger"
@@ -172,7 +173,7 @@ export const CustomerScreen = () => {
         onClose={() => setArchiveModalVisible(false)}
       />
 
-      <View style={{ flex: 1 }}>
+      <View style={{  }}>
         <View style={styles.header}>
           <Text style={styles.headerTitle}>Customers</Text>
 
@@ -199,6 +200,7 @@ export const CustomerScreen = () => {
         <SearchInput onSearch={handleSearch} />
 
         <FlatList
+          contentContainerStyle={{ paddingBottom: 20 }}
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
           }
@@ -248,6 +250,7 @@ export const CustomerScreen = () => {
           }
         />
       </View>
+      {/* </ScrollView> */}
     </GestureHandlerRootView>
   );
 };

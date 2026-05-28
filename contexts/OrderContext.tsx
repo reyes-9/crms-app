@@ -23,6 +23,17 @@ export function OrderProvider({ children }: OrderProviderProps) {
       throw new Error(err);
     }
   }
+  
+  async function getOrdersByCustomerIdLimit(customer_id: number) {
+    try {
+      const order = await orderService.getOrdersByCustomerIdLimit(customer_id);
+      setOrders(order.data);
+      // console.log(orders);
+    } catch (err: any) {
+      throw new Error(err);
+    }
+  }
+
   async function getOrdersById(id: number) {
     try {
       const order = await orderService.getOrdersById(id);
@@ -30,9 +41,9 @@ export function OrderProvider({ children }: OrderProviderProps) {
       // console.log('Return Data: ', order.data);
       return order.data;
     } catch (err: any) {
-      console.error(err);
-      return null;
-      // throw new Error(err);
+      // console.error(err);
+      throw new Error(err);
+      // return null;
     }
   }
 
@@ -141,6 +152,7 @@ export function OrderProvider({ children }: OrderProviderProps) {
       value={{
         orders,
         getOrdersByCustomerId,
+        getOrdersByCustomerIdLimit,
         getOrdersById,
         searchOrder,
         editOrder,

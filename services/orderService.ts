@@ -7,6 +7,11 @@ export const orderService = {
     return res;
   },
 
+  async getOrdersByCustomerIdLimit(customer_id: number) {
+    const res = await api.get(`/orders/?customer_id=${customer_id}&limit=${5}`);
+    return res;
+  },
+
   async getOrdersById(id: number) {
     const res = await api.get(`/orders/${id}`);
     return res;

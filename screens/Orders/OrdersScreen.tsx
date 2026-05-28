@@ -1,13 +1,3 @@
-// FUNCTIONALITY:   DELETE Order
-// FUNCTIONALITY:   CANCEL Order
-// FUNCTIONALITY:   ADVANCE Order
-// BOTH USES A MODAL TO CONFIRM
-
-// FUNCTIONALITY:   DELETE Order
-// FUNCTIONALITY:   CANCEL Order
-// FUNCTIONALITY:   ADVANCE Order
-// BOTH USES A MODAL TO CONFIRM
-
 import { ReusableModal } from '@/components/ReusableModal';
 import SearchInput from '@/components/SearchInput';
 import { useOrder } from '@/hooks/useOrder';
@@ -31,9 +21,7 @@ import {
 } from 'react-native';
 import Toast from 'react-native-toast-message';
 
-/* =========================================================
-   TYPES
-========================================================= */
+/* ==================== TYPES=====================*/
 
 type FilterLabel =
   | 'All Orders'
@@ -49,9 +37,7 @@ type TransitionResult = {
   status?: OrderStatusType;
   message?: string;
 };
-/* =========================================================
-   MAIN SCREEN
-========================================================= */
+/* ==================== MAIN SCREEN ===================== */
 
 export const OrdersScreen = () => {
   const route = useRoute();
@@ -110,6 +96,10 @@ export const OrdersScreen = () => {
 
   const [advanceModalVisible, setAdvanceModalVisible] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<OrderDetails | null>(null);
+
+  const [detailsModalVisible, setDetailsModalVisible] = useState(false);
+  const [orderDetailsToView, setOrderDetailsToView] =
+    useState<OrderDetails | null>(null);
 
   /* ================= FILTER DATA ================= */
 
@@ -298,6 +288,11 @@ export const OrdersScreen = () => {
     setAdvanceModalVisible(true);
   };
 
+  const handleViewDetails = (order: OrderDetails) => {
+    setOrderDetailsToView(order);
+    setDetailsModalVisible(true);
+  };
+
   const confirmDelete = async () => {
     if (deleteOrderId !== null) {
       try {
@@ -415,6 +410,7 @@ export const OrdersScreen = () => {
                   onCancel={handleCancel}
                   onDelete={handleDelete}
                   onAdvance={handleAdvance}
+                  onViewDetails={handleViewDetails}
                   btnLabels={BUTTON_LABELS[order.status]}
                 />
               ))}
@@ -489,9 +485,56 @@ export const OrdersScreen = () => {
         ]}
         onClose={() => setAdvanceModalVisible(false)}
       />
+
+      <ReusableModal
+        state="neutral"
+        visible={detailsModalVisible}
+        title="Order Details"
+        buttons={[
+          {
+            label: 'Close',
+            onPress: () => setDetailsModalVisible(false),
+            variant: 'primary',
+          },
+        ]}
+        onClose={() => setDetailsModalVisible(false)}
+      >
+        {orderDetailsToView && (
+          <OrderDetailsContent order={orderDetailsToView} />
+        )}
+      </ReusableModal>
     </>
   );
 };
+
+const OrderDetailsContent = ({ order }: { order: OrderDetails }) => (
+  <View style={styles.detailsContent}>
+    <DetailRow label="Order ID" value={String(order.id).padStart(5, '0')} />
+    <DetailRow label="Description" value={order.description} />
+    <DetailRow
+      label="Status"
+      value={order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+    />
+    <DetailRow label="Price" value={formatCurrency(order.price)} />
+    <DetailRow
+      label="Created Date"
+      value={new Date(order.created_at).toLocaleDateString()}
+    />
+    {order.updated_at && (
+      <DetailRow
+        label="Updated Date"
+        value={new Date(order.updated_at).toLocaleDateString()}
+      />
+    )}
+  </View>
+);
+
+const DetailRow = ({ label, value }: { label: string; value: string }) => (
+  <View style={styles.detailRow}>
+    <Text style={styles.detailLabel}>{label}</Text>
+    <Text style={styles.detailValue}>{value}</Text>
+  </View>
+);
 
 /* =========================================================
    SUB COMPONENTS 
@@ -572,6 +615,7 @@ const OrderItemCard = ({
   onCancel,
   onDelete,
   onAdvance,
+  onViewDetails,
   btnLabels,
   setMenuLayout,
   menuLayout,
@@ -650,6 +694,7 @@ const OrderItemCard = ({
           onCancel={() => onCancel(order.id)}
           onDelete={() => onDelete(order.id)}
           onAdvance={() => onAdvance(order)}
+          onViewDetails={() => onViewDetails(order)}
           close={() => setOpenMenu(null)}
           orderStatus={order.status}
           btnLabels={btnLabels}
@@ -668,13 +713,20 @@ const OrderMenu = ({
   onCancel,
   onDelete,
   onAdvance,
+  onViewDetails,
   close,
   style,
   orderStatus,
   btnLabels,
 }: any) => (
   <View style={style}>
-    <TouchableOpacity style={styles.menuItem} onPress={close}>
+    <TouchableOpacity
+      style={styles.menuItem}
+      onPress={() => {
+        onViewDetails();
+        close();
+      }}
+    >
       <Feather name="eye" size={14} />
       <Text style={styles.menuText}>View Details</Text>
     </TouchableOpacity>
@@ -983,5 +1035,32 @@ const styles = StyleSheet.create({
 
   emptyStateText: {
     color: '#9CA3AF',
+  },
+
+  detailsContent: {
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    width: '100%',
+    // borderWidth: 1,
+  },
+
+  detailRow: {
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
+    // borderWidth: 1,
+  },
+
+  detailLabel: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#6B7280',
+    marginBottom: 4,
+  },
+
+  detailValue: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#1F2937',
   },
 });

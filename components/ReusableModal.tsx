@@ -1,6 +1,6 @@
 import { theme } from '@/theme/colors';
 import { MaterialIcons } from '@expo/vector-icons';
-import type { ComponentProps } from 'react';
+import type { ComponentProps, ReactNode } from 'react';
 import { useEffect } from 'react';
 import { Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Animated, {
@@ -25,10 +25,11 @@ interface ModalButton {
 interface ModalProps {
   visible: boolean;
   onClose: () => void;
-  message: string;
+  message?: string;
   title: string;
   state: ModalState;
   buttons?: ModalButton[];
+  children?: ReactNode;
 }
 
 const buttonVariantColors: Record<ButtonVariant, string> = {
@@ -53,6 +54,7 @@ export const ReusableModal = ({
   title,
   state,
   buttons = [],
+  children,
 }: ModalProps) => {
   const translateY = useSharedValue(300);
 
@@ -80,14 +82,25 @@ export const ReusableModal = ({
 
       <Animated.View style={[styles.centeredView, animatedStyle]}>
         <View style={styles.modalView}>
-          <MaterialIcons
-            name={stateConfig[state].icon}
-            size={65}
-            color={stateConfig[state].color}
-          />
+          {!children && (
+            <>
+              <MaterialIcons
+                name={stateConfig[state].icon}
+                size={65}
+                color={stateConfig[state].color}
+              />
 
-          <Text style={styles.modalTextHead}>{title}</Text>
-          <Text style={styles.modalTextBody}>{message}</Text>
+              <Text style={styles.modalTextHead}>{title}</Text>
+              <Text style={styles.modalTextBody}>{message}</Text>
+            </>
+          )}
+
+          {children && (
+            <>
+              <Text style={styles.modalTextHead}>{title}</Text>
+              {children}
+            </>
+          )}
 
           {/* BUTTONS */}
           {buttons.length > 0 && (
@@ -130,11 +143,13 @@ const styles = StyleSheet.create({
 
   centeredView: {
     flex: 1,
+    width: 'auto',
     justifyContent: 'center',
     alignItems: 'center',
   },
   modalView: {
     margin: 15,
+    width: '85%',
     // backgroundColor: theme.colors.offWhite,
     // backgroundColor: '#EEF3F1',
     backgroundColor: '#F3F7F5',
@@ -150,7 +165,7 @@ const styles = StyleSheet.create({
     fontFamily: theme.typography.fontFamily.bold,
     fontSize: theme.typography.fontSize.xl,
     // color: theme.colors.primary,
-    textAlign: 'center',
+    // textAlign: 'center',
     marginTop: 20,
   },
   modalTextBody: {

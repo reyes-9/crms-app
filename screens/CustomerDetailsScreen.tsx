@@ -1,14 +1,14 @@
-// COMPLETE THE FUNCTIONALITY
-// COMPLETE THE FUNCTIONALITY
-// COMPLETE THE FUNCTIONALITY
-// COMPLETE THE FUNCTIONALITY
-// COMPLETE THE FUNCTIONALITY
+// CREATE THE MANAGE NOTES SCREEN
+// CREATE THE MANAGE NOTES SCREEN
+// CREATE THE MANAGE NOTES SCREEN
 
-// IT SHOULD BE COMPLETED IN 2 DAYS
-// IT SHOULD BE COMPLETED IN 2 DAYS
-// IT SHOULD BE COMPLETED IN 2 DAYS
-// IT SHOULD BE COMPLETED IN 2 DAYS
-// IT SHOULD BE COMPLETED IN 2 DAYS2
+// COMPLETE IT ALL TOMMOROW
+// COMPLETE IT ALL TOMMOROW
+// COMPLETE IT ALL TOMMOROW
+
+// UI - PROCESSES
+// UI - PROCESSES
+// UI - PROCESSES
 
 import { useCustomer } from '@/hooks/useCustomer';
 import { useCustomerNote } from '@/hooks/useCustomerNote';
@@ -32,11 +32,20 @@ export const CustomerDetailsScreen = () => {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
+  const statusColors: Record<string, string> = {
+    pending: '#C2410C',
+    confirmed: '#1D4ED8',
+    processing: '#5B21B6',
+    shipped: '#0E7490',
+    delivered: '#047857',
+    cancelled: '#991B1B',
+  };
+
   const { customers } = useCustomer();
   const { customerNotes, getCustomerNotes } = useCustomerNote();
 
   const { customer: routeCustomer } = route.params;
-  const { orders, getOrdersByCustomerId } = useOrder();
+  const { orders, getOrdersByCustomerIdLimit } = useOrder();
 
   const [showEditModal, setShowEditModal] = useState(false);
 
@@ -60,29 +69,53 @@ export const CustomerDetailsScreen = () => {
   };
 
   useEffect(() => {
-    getOrdersByCustomerId(customer.id);
+    getOrdersByCustomerIdLimit(customer.id);
     getCustomerNotes(customer.id);
   }, []);
 
   let ordersContent;
+
   if (!orders || orders.length === 0) {
     ordersContent = <Text>No order found.</Text>;
   } else {
-    ordersContent = orders.map((order) => (
-      <View key={order.id} style={styles.orderCard}>
-        <View style={styles.orderHeader}>
-          <View>
-            <Text style={styles.orderTitle}>Order #{order.id}</Text>
+    ordersContent = orders.map((order) => {
+      const statusColor = statusColors[order.status.toLowerCase()] || '#6B7280';
 
-            <Text style={styles.orderDate}>Created Mar 10, 2025</Text>
-          </View>
+      return (
+        <View key={order.id} style={styles.orderCard}>
+          <View style={styles.orderHeader}>
+            <View>
+              <Text style={styles.orderTitle}>{order.description}</Text>
 
-          <View style={styles.statusBadge}>
-            <Text style={styles.statusText}>{order.status}</Text>
+              <Text style={styles.orderDetails}>ID: {order.id}</Text>
+
+              <Text style={styles.orderDetails}>Created Mar 10, 2025</Text>
+            </View>
+
+            <View
+              style={[
+                styles.statusBadge,
+                {
+                  backgroundColor: `${statusColor}20`, // transparent background
+                  borderColor: statusColor,
+                },
+              ]}
+            >
+              <Text
+                style={[
+                  styles.statusText,
+                  {
+                    color: statusColor,
+                  },
+                ]}
+              >
+                {order.status}
+              </Text>
+            </View>
           </View>
         </View>
-      </View>
-    ));
+      );
+    });
   }
 
   let notesContent;
@@ -367,33 +400,27 @@ const styles = StyleSheet.create({
     fontSize: theme.typography.fontSize.sm,
     fontWeight: '600',
     color: theme.colors.textPrimary,
-    marginBottom: 2,
+    marginBottom: 6,
   },
 
-  orderDate: {
+  orderDetails: {
     fontSize: theme.typography.fontSize.xs,
     color: theme.colors.textSecondary,
   },
 
   statusBadge: {
-    backgroundColor: theme.colors.primaryBackground,
-
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-
+    paddingHorizontal: 10,
+    paddingVertical: 5,
     borderRadius: 999,
-
     borderWidth: 1,
-    borderColor: theme.colors.primarySoft,
+    alignSelf: 'center',
   },
 
   statusText: {
-    fontSize: theme.typography.fontSize.xs,
+    fontSize: 12,
     fontWeight: '600',
-    color: theme.colors.primary,
     textTransform: 'capitalize',
   },
-
   // NOTES
   noteCard: {
     marginBottom: theme.spacing.sm,
