@@ -8,7 +8,7 @@
 // IT SHOULD BE COMPLETED IN 2 DAYS
 // IT SHOULD BE COMPLETED IN 2 DAYS
 // IT SHOULD BE COMPLETED IN 2 DAYS
-// IT SHOULD BE COMPLETED IN 2 DAYS
+// IT SHOULD BE COMPLETED IN 2 DAYS2
 
 import { useCustomer } from '@/hooks/useCustomer';
 import { useCustomerNote } from '@/hooks/useCustomerNote';
@@ -36,7 +36,7 @@ export const CustomerDetailsScreen = () => {
   const { customerNotes, getCustomerNotes } = useCustomerNote();
 
   const { customer: routeCustomer } = route.params;
-  const { orders, getOrders } = useOrder();
+  const { orders, getOrdersByCustomerId } = useOrder();
 
   const [showEditModal, setShowEditModal] = useState(false);
 
@@ -48,7 +48,8 @@ export const CustomerDetailsScreen = () => {
 
   const handleOrders = () => {
     console.log('Orders is pressed');
-    navigation.navigate('Orders');
+    console.log('CUSTOMER ID: ', customer.id);
+    navigation.navigate('Orders', { customer_id: customer.id });
   };
   const handleNotes = () => {
     console.log('Notes is pressed');
@@ -59,7 +60,7 @@ export const CustomerDetailsScreen = () => {
   };
 
   useEffect(() => {
-    getOrders(customer.id);
+    getOrdersByCustomerId(customer.id);
     getCustomerNotes(customer.id);
   }, []);
 

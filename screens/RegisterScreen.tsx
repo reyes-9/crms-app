@@ -60,7 +60,7 @@ export const RegisterScreen = () => {
   // You are telling TypeScript:
   // "I know this data is an object where keys are field names and values are arrays of error strings."
   // This allows you to use Object.entries safely.
-  
+
   type BackendErrorResponse = Record<string, string[]>;
 
   const onSubmit = async (data: RegisterCredentials) => {
@@ -121,28 +121,30 @@ export const RegisterScreen = () => {
         <View style={styles.content}>
           {/* Title */}
           <Text style={styles.title}>Register</Text>
+
           <Text style={styles.helperText}>
             Note: (<Text style={{ color: theme.colors.danger }}>*</Text>)
             Required field — please fill this in
           </Text>
-
-          {/* Form */}
 
           {/* First Name + Last Name */}
           <View style={styles.row}>
             <View style={styles.half}>
               <Input
                 name="first_name"
-                placeholder="First Name"
+                label="First Name"
+                placeholder="Juan"
                 control={control}
                 rules={{ required: setFieldMessage }}
                 variant="dark"
               />
             </View>
+
             <View style={styles.half}>
               <Input
                 name="last_name"
-                placeholder="Last Name"
+                label="Last Name"
+                placeholder="Dela Cruz"
                 control={control}
                 rules={{ required: setFieldMessage }}
                 variant="dark"
@@ -153,11 +155,15 @@ export const RegisterScreen = () => {
           {/* Email */}
           <Input
             name="email"
-            placeholder="Email"
+            label="Email"
+            placeholder="juan@email.com"
             control={control}
             rules={{
               required: setFieldMessage,
-              pattern: { value: EMAIL_REGEX, message: 'Invalid email.' },
+              pattern: {
+                value: EMAIL_REGEX,
+                message: 'Invalid email.',
+              },
             }}
             variant="dark"
           />
@@ -167,7 +173,8 @@ export const RegisterScreen = () => {
             <View style={styles.half}>
               <Input
                 name="username"
-                placeholder="Username"
+                label="Username"
+                placeholder="juandelacruz"
                 control={control}
                 rules={{
                   required: setFieldMessage,
@@ -187,7 +194,8 @@ export const RegisterScreen = () => {
             <View style={styles.half}>
               <Input
                 name="phone_number"
-                placeholder="Phone Number"
+                label="Phone Number"
+                placeholder="09123456789"
                 control={control}
                 rules={{
                   required: setFieldMessage,
@@ -210,7 +218,8 @@ export const RegisterScreen = () => {
           {/* Address */}
           <Input
             name="address"
-            placeholder="Address"
+            label="Address"
+            placeholder="Quezon City, Metro Manila"
             control={control}
             rules={{ required: setFieldMessage }}
             variant="dark"
@@ -219,7 +228,8 @@ export const RegisterScreen = () => {
           {/* Password */}
           <Input
             name="password"
-            placeholder="Password"
+            label="Password"
+            placeholder="••••••••"
             secureTextEntry
             control={control}
             rules={{
@@ -235,7 +245,8 @@ export const RegisterScreen = () => {
           {/* Confirm Password */}
           <Input
             name="confirm_password"
-            placeholder="Confirm Password"
+            label="Confirm Password"
+            placeholder="••••••••"
             secureTextEntry
             control={control}
             rules={{
@@ -251,9 +262,11 @@ export const RegisterScreen = () => {
             disabled={isSubmitting}
             style={({ pressed }) => [
               styles.button,
-              pressed && { backgroundColor: theme.colors.primaryLight }, // subtle feedback
-              { opacity: pressed ? 0.7 : 1 }, // increase opacity when pressed,
-              isSubmitting && { opacity: 0.7 }, // dim when disabled
+              pressed && {
+                backgroundColor: theme.colors.primaryLight,
+                opacity: 0.85,
+              },
+              isSubmitting && { opacity: 0.7 },
             ]}
           >
             {isSubmitting ? (
@@ -262,6 +275,7 @@ export const RegisterScreen = () => {
                   size="small"
                   color={theme.colors.textInverse}
                 />
+
                 <Text style={[styles.buttonText, { marginLeft: 8 }]}>
                   Creating account...
                 </Text>
@@ -271,17 +285,7 @@ export const RegisterScreen = () => {
             )}
           </Pressable>
 
-          {/* FOR MODAL TESTING */}
-
-          {/* <Pressable
-            style={{ padding: 10, backgroundColor: 'gray' }}
-            onPress={() => setModalVisible(true)}
-          >
-            <Text style={styles.buttonText}>Open Modal</Text>
-          </Pressable> */}
-
-          {/* Footer Links */}
-          <View style={styles.footer}></View>
+          <View style={styles.footer} />
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>

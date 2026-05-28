@@ -98,7 +98,8 @@ export const LoginScreen = () => {
         <View style={styles.form}>
           <Input
             name="username"
-            placeholder="Username"
+            placeholder="user123"
+            label="Username"
             control={control}
             rules={{
               required: true,
@@ -108,7 +109,8 @@ export const LoginScreen = () => {
 
           <Input
             name="password"
-            placeholder="Password"
+            placeholder="********"
+            label="Password"
             secureTextEntry
             control={control}
             rules={{

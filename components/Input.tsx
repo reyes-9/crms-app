@@ -1,48 +1,40 @@
 import { theme } from '@/theme/colors';
 import { InputProps } from '@/types/auth';
-import { useEffect, useRef, useState } from 'react';
 import { Controller } from 'react-hook-form';
-import { Animated, StyleSheet, Text, TextInput, View } from 'react-native';
+import { StyleSheet, Text, TextInput, View } from 'react-native';
 
 export const Input: React.FC<InputProps> = ({
   control,
   name,
+  label,
   placeholder,
   secureTextEntry,
   rules,
   variant,
+  defaultValue = '',
+  disabled = false,
 }) => {
   const isDark = variant === 'dark';
-  const [isFocused, setIsFocused] = useState(false);
-
-  const animateUp = () => {
-    Animated.spring(anim, {
-      toValue: 1,
-      useNativeDriver: false,
-      tension: 120,
-      friction: 14,
-    }).start();
-  };
-
-  const animateDown = () => {
-    Animated.spring(anim, {
-      toValue: 0,
-      useNativeDriver: false,
-      tension: 120,
-      friction: 14,
-    }).start();
-  };
-
-  const anim = useRef(new Animated.Value(0)).current;
 
   const colors = {
     text: isDark ? theme.colors.light : theme.colors.dark,
-    border: isDark ? theme.colors.primaryLight : theme.colors.primary,
-    // placeholder: isDark ? theme.colors.primary : theme.colors.primary,
+
+    border: isDark ? '#374151' : '#D1D5DB',
+
+    borderFocused: isDark
+      ? theme.colors.primaryLight
+      : theme.colors.primary,
+
+    background: isDark ? '#111827' : '#FFFFFF',
+
+    label: isDark ? '#D1D5DB' : '#374151',
+
+    placeholder: isDark ? '#6B7280' : '#9CA3AF',
+
     error: theme.colors.danger,
-    background: isDark ? theme.colors.dark : theme.colors.light,
-    label: isDark ? theme.colors.lightSecondary : theme.colors.textSecondary,
-    labelFocused: isDark ? theme.colors.primaryLight : theme.colors.primary,
+
+    disabledBackground: '#F3F4F6',
+    disabledText: '#9CA3AF',
   };
 
   return (
@@ -50,93 +42,58 @@ export const Input: React.FC<InputProps> = ({
       control={control}
       name={name}
       rules={rules}
+      defaultValue={defaultValue}
       render={({
         field: { onChange, onBlur, value },
         fieldState: { error },
       }) => {
-        const shouldFloat = isFocused || !!value;
-
-        useEffect(() => {
-          Animated.timing(anim, {
-            toValue: shouldFloat ? 1 : 0,
-            duration: 180,
-            useNativeDriver: false,
-          }).start();
-        }, [shouldFloat]);
-
         return (
           <View style={styles.container}>
+            {label && (
+              <Text
+                style={[
+                  styles.label,
+                  {
+                    color: error ? colors.error : colors.label,
+                  },
+                ]}
+              >
+                {label}
+                {rules?.required && (
+                  <Text style={styles.asterisk}> *</Text>
+                )}
+              </Text>
+            )}
+
             <View
               style={[
                 styles.inputWrapper,
                 {
-                  borderColor: error
-                    ? colors.error
-                    : isFocused
-                      ? colors.border
-                      : colors.border,
-                  backgroundColor: colors.background,
+                  borderColor: error ? colors.error : colors.border,
+                  backgroundColor: disabled
+                    ? colors.disabledBackground
+                    : colors.background,
                 },
               ]}
             >
-              {/* Floating Label */}
-              <Animated.Text
-                style={[
-                  styles.label,
-                  {
-                    color: error
-                      ? colors.error
-                      : isFocused
-                        ? colors.labelFocused
-                        : colors.label,
-                    top: anim.interpolate({
-                      inputRange: [0, 1],
-                      outputRange: [18, 6],
-                    }),
-
-                    fontSize: anim.interpolate({
-                      inputRange: [0, 1],
-                      outputRange: [
-                        theme.typography.fontSize.md,
-                        theme.typography.fontSize.xs,
-                      ],
-                    }),
-                  },
-                ]}
-              >
-                {placeholder}
-                {rules?.required && error && (
-                  <Text style={styles.asterisk}> * </Text>
-                )}
-              </Animated.Text>
-
               <TextInput
                 value={value}
                 secureTextEntry={secureTextEntry}
+                editable={!disabled}
+                placeholder={placeholder}
+                placeholderTextColor={colors.placeholder}
                 onChangeText={onChange}
-                onFocus={() => {
-                  setIsFocused(true);
-                  animateUp();
-                }}
-                onBlur={() => {
-                  setIsFocused(false);
-                  onBlur();
-
-                  if (!value) {
-                    animateDown();
-                  }
-                }}
+                onBlur={onBlur}
                 style={[
                   styles.input,
                   {
-                    color: colors.text,
-                    paddingTop: 12,
+                    color: disabled ? colors.disabledText : colors.text,
                   },
                 ]}
               />
             </View>
 
-            {error?.message && (
+            {!!error?.message && (
               <Text style={styles.error}>{error.message}</Text>
             )}
           </View>
@@ -148,45 +105,37 @@ export const Input: React.FC<InputProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    marginBottom: 12,
+    marginBottom: 18,
+  },
+
+  label: {
+    marginBottom: 8,
+    fontSize: theme.typography.fontSize.sm,
+    fontWeight: '600',
   },
 
   inputWrapper: {
     borderWidth: 1,
     borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingBottom: 8,
-    paddingTop: 16,
-    position: 'relative',
-
-    shadowColor: '#000',
-    shadowOpacity: 0.05,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 2,
+    paddingHorizontal: 14,
+    height: 52,
+    justifyContent: 'center',
   },
 
   input: {
     fontSize: theme.typography.fontSize.md,
-    padding: 0,
-  },
-
-  label: {
-    position: 'absolute',
-    left: 15,
-    zIndex: 10,
     fontWeight: '500',
+    padding: 0,
   },
 
   error: {
     marginTop: 6,
+    marginLeft: 2,
     color: theme.colors.danger,
     fontSize: theme.typography.fontSize.xs,
-    paddingHorizontal: 2,
   },
 
   asterisk: {
     color: theme.colors.danger,
-    fontSize: theme.typography.fontSize.sm,
   },
 });
