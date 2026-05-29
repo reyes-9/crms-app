@@ -1,8 +1,9 @@
 import { Header } from '@/components/Header';
-import { CustomerDetailsScreen } from '@/screens/CustomerDetailsScreen';
+import { CustomerDetailsScreen } from '@/screens/Customer/CustomerDetailsScreen';
 import { EditCustomerScreen } from '@/screens/EditCustomerScreen';
 import { LeadDetailsScreen } from '@/screens/LeadDetailsScreen';
 import { LoginScreen } from '@/screens/LoginScreen';
+import { CustomerNotes } from '@/screens/Notes/CustomerNotes';
 import { OrderFormScreen } from '@/screens/Orders/OrderFormScreen';
 import { OrdersScreen } from '@/screens/Orders/OrdersScreen';
 import { RegisterScreen } from '@/screens/RegisterScreen';
@@ -66,6 +67,14 @@ export const RootNavigator = () => {
         options={{
           headerShown: true,
           header: () => <Header title="OrderForm" isReturn={true} />,
+        }}
+      />
+      <Stack.Screen
+        name="CustomerNotes"
+        component={CustomerNotes}
+        options={{
+          headerShown: true,
+          header: () => <Header title="CustomerNotes" isReturn={true} />,
         }}
       />
 

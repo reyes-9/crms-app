@@ -19,4 +19,6 @@ export type RootStackParamList = ParamListBase & {
   OrderFormScreen:
     | { mode: 'create'; customerId: number }
     | { mode: 'edit'; orderId: number };
+
+  CustomerNotes: { customer_id: number };
 };

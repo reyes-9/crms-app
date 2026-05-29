@@ -29,6 +29,7 @@ export interface OrderDetails {
 
 export interface OrderContextType {
   orders: OrderDetails[];
+  limitedOrders: OrderDetails[];
   getOrdersByCustomerId: (customer_id: number) => Promise<void>;
   getOrdersByCustomerIdLimit: (customer_id: number) => Promise<void>;
   getOrdersById: (id: number) => Promise<OrderDetails>;

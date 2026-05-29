@@ -1,7 +1,6 @@
 import { ReusableModal } from '@/components/ReusableModal';
 import SearchInput from '@/components/SearchInput';
 import { useOrder } from '@/hooks/useOrder';
-import { theme } from '@/theme/colors';
 import { RootStackParamList } from '@/types/navigation';
 import { OrderDetails, OrderStatusType } from '@/types/order';
 import { formatCurrency } from '@/utils/formatCurrency';
@@ -65,8 +64,8 @@ export const OrdersScreen = () => {
     confirmed: 'Start Processing',
     processing: 'Mark as Shipped',
     shipped: 'Mark as Delivered',
-    delivered: undefined, // Explicitly no button
-    cancelled: undefined, // Explicitly no button
+    // delivered: undefined, // Explicitly no button
+    // cancelled: undefined, // Explicitly no button
   };
 
   const { customer_id } = route.params as { customer_id: number };
@@ -380,7 +379,7 @@ export const OrdersScreen = () => {
 
   return (
     <>
-      <ScrollView style={{ margin: 10 }} showsVerticalScrollIndicator={false}>
+      <ScrollView style={{}} showsVerticalScrollIndicator={false}>
         <Pressable style={{ flex: 1 }} onPress={() => setOpenMenu(null)}>
           <View style={styles.container}>
             <HeaderSection />
@@ -543,7 +542,7 @@ const DetailRow = ({ label, value }: { label: string; value: string }) => (
 const HeaderSection = () => (
   <View style={styles.pageHeader}>
     <View>
-      <Text style={styles.pageEyebrow}>Operations</Text>
+      {/* <Text style={styles.pageEyebrow}>Operations</Text> */}
       <Text style={styles.pageTitle}>Order Management</Text>
       <Text style={styles.pageSubtitle}>
         Search, filter, and manage all customer orders
@@ -557,25 +556,31 @@ const HeaderSection = () => (
 );
 
 const AddButton = ({ onPress }: any) => (
-  <View style={styles.addBtnContainer}>
-    <Pressable
-      onPress={onPress}
-      style={({ pressed }) => [
-        {
-          backgroundColor: '#2563EB',
-          width: '50%',
-          paddingVertical: 10,
-          borderRadius: 10,
-          alignItems: 'center',
-          opacity: pressed ? 0.85 : 1,
-        },
-      ]}
-    >
-      <Text style={theme.components.button.text.variants.primary}>
-        Add Orders
-      </Text>
+  <View style={styles.actionContainer}>
+    <Pressable style={styles.addButton} onPress={onPress}>
+      <Feather name="plus" size={18} color="#FFFFFF" />
+      <Text style={styles.addButtonText}>Add Note</Text>
     </Pressable>
   </View>
+  // <View style={styles.addBtnContainer}>
+  //   <Pressable
+  //     onPress={onPress}
+  //     style={({ pressed }) => [
+  //       {
+  //         backgroundColor: '#2563EB',
+  //         width: '50%',
+  //         paddingVertical: 10,
+  //         borderRadius: 10,
+  //         alignItems: 'center',
+  //         opacity: pressed ? 0.85 : 1,
+  //       },
+  //     ]}
+  //   >
+  //     <Text style={theme.components.button.text.variants.primary}>
+  //       Add Orders
+  //     </Text>
+  //   </Pressable>
+  // </View>
 );
 
 const OrderFilters = ({ filters, selected, colors, onSelect }: any) => (
@@ -884,15 +889,34 @@ const styles = StyleSheet.create({
   container: {},
 
   pageHeader: {
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 16,
     flexDirection: 'row',
+    alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 15,
   },
 
-  pageEyebrow: {
-    fontSize: 11,
-    color: '#6B7280',
-    textTransform: 'uppercase',
+  actionContainer: {
+    paddingHorizontal: 20,
+    marginBottom: 16,
+  },
+
+  addButton: {
+    height: 52,
+    borderRadius: 14,
+    backgroundColor: '#2563EB',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    elevation: 3,
+  },
+
+  addButtonText: {
+    marginLeft: 8,
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#FFFFFF',
   },
 
   pageTitle: {

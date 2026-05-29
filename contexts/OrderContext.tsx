@@ -13,6 +13,7 @@ export const OrderContext = createContext<OrderContextType | undefined>(
 
 export function OrderProvider({ children }: OrderProviderProps) {
   const [orders, setOrders] = useState<OrderDetails[]>([]);
+  const [limitedOrders, setLimitedOrders] = useState<OrderDetails[]>([]);
 
   async function getOrdersByCustomerId(customer_id: number) {
     try {
@@ -27,7 +28,7 @@ export function OrderProvider({ children }: OrderProviderProps) {
   async function getOrdersByCustomerIdLimit(customer_id: number) {
     try {
       const order = await orderService.getOrdersByCustomerIdLimit(customer_id);
-      setOrders(order.data);
+      setLimitedOrders(order.data);
       // console.log(orders);
     } catch (err: any) {
       throw new Error(err);
@@ -151,6 +152,7 @@ export function OrderProvider({ children }: OrderProviderProps) {
     <OrderContext.Provider
       value={{
         orders,
+        limitedOrders,
         getOrdersByCustomerId,
         getOrdersByCustomerIdLimit,
         getOrdersById,

@@ -1,7 +1,7 @@
 import { Feather } from '@expo/vector-icons';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 
-import { CustomerScreen } from '@/screens/CustomerScreen';
+import { CustomerScreen } from '@/screens/Customer/CustomerScreen';
 import { DashboardScreen } from '@/screens/DashboardScreen';
 import { LeadScreen } from '@/screens/LeadScreen';
 import { ProfileScreen } from '@/screens/ProfileScreen';

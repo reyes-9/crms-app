@@ -45,7 +45,7 @@ export const CustomerDetailsScreen = () => {
   const { customerNotes, getCustomerNotes } = useCustomerNote();
 
   const { customer: routeCustomer } = route.params;
-  const { orders, getOrdersByCustomerIdLimit } = useOrder();
+  const { limitedOrders, getOrdersByCustomerIdLimit } = useOrder();
 
   const [showEditModal, setShowEditModal] = useState(false);
 
@@ -62,7 +62,7 @@ export const CustomerDetailsScreen = () => {
   };
   const handleNotes = () => {
     console.log('Notes is pressed');
-    setShowEditModal(true);
+    navigation.navigate('CustomerNotes', { customer_id: customer.id });
   };
   const handleEdit = () => {
     navigation.navigate('EditCustomer', { customer });
@@ -75,10 +75,10 @@ export const CustomerDetailsScreen = () => {
 
   let ordersContent;
 
-  if (!orders || orders.length === 0) {
+  if (!limitedOrders || limitedOrders.length === 0) {
     ordersContent = <Text>No order found.</Text>;
   } else {
-    ordersContent = orders.map((order) => {
+    ordersContent = limitedOrders.map((order) => {
       const statusColor = statusColors[order.status.toLowerCase()] || '#6B7280';
 
       return (
@@ -137,7 +137,6 @@ export const CustomerDetailsScreen = () => {
   return (
     <ScrollView
       contentContainerStyle={{
-        flex: 1,
         backgroundColor: '#ffffff',
       }}
     >

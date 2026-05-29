@@ -173,9 +173,10 @@ export const CustomerScreen = () => {
         onClose={() => setArchiveModalVisible(false)}
       />
 
-      <View style={{  }}>
+      <View style={{}}>
         <View style={styles.header}>
           <Text style={styles.headerTitle}>Customers</Text>
+
 
           <Pressable
             style={({ pressed }) => [

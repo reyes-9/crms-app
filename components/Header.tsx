@@ -21,6 +21,7 @@ export const Header = ({
     LeadDetails: 'Lead Details',
     Orders: 'Orders',
     OrderForm: 'Order Form',
+    CustomerNotes: 'Customer Notes',
   };
 
   return (
