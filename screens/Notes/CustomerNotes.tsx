@@ -1,15 +1,18 @@
-import Feather from '@expo/vector-icons/Feather';
+import { Feather } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import {
   FlatList,
   Pressable,
   SafeAreaView,
-  StatusBar,
   StyleSheet,
   Text,
   TextInput,
+  TouchableOpacity,
   View,
 } from 'react-native';
+import { DS } from '@/theme/design';
+
+/* ─── Types ─────────────────────────────────────── */
 
 interface CustomerNote {
   id: number;
@@ -19,7 +22,9 @@ interface CustomerNote {
   pinned?: boolean;
 }
 
-const mockNotes: CustomerNote[] = [
+/* ─── Mock Data ─────────────────────────────────── */
+
+const MOCK_NOTES: CustomerNote[] = [
   {
     id: 1,
     title: 'Delivery Preference',
@@ -41,283 +46,381 @@ const mockNotes: CustomerNote[] = [
   },
 ];
 
+/* ─── Screen ─────────────────────────────────────── */
+
 export const CustomerNotes = () => {
   const [search, setSearch] = useState('');
+  const [openMenu, setOpenMenu] = useState<number | null>(null);
 
-  const filteredNotes = mockNotes.filter(
-    (note) =>
-      note.title.toLowerCase().includes(search.toLowerCase()) ||
-      note.content.toLowerCase().includes(search.toLowerCase()),
+  const filtered = MOCK_NOTES.filter(
+    (n) =>
+      n.title.toLowerCase().includes(search.toLowerCase()) ||
+      n.content.toLowerCase().includes(search.toLowerCase()),
   );
 
-  const renderNote = ({ item }: { item: CustomerNote }) => {
-    return (
-      <Pressable style={styles.noteCard}>
-        <View style={styles.noteHeader}>
-          <View style={styles.noteTitleWrapper}>
-            <Text style={styles.noteTitle}>{item.title}</Text>
+  const pinned = filtered.filter((n) => n.pinned);
+  const unpinned = filtered.filter((n) => !n.pinned);
 
-            {item.pinned && (
-              <View style={styles.pinBadge}>
-                <Feather name="bookmark" size={12} color="#2563EB" />
-                <Text style={styles.pinText}>Pinned</Text>
-              </View>
-            )}
+  const renderNote = ({ item }: { item: CustomerNote }) => (
+    <Pressable style={styles.noteCard} onPress={() => setOpenMenu(null)}>
+      {/* Header row */}
+      <View style={styles.noteHeader}>
+        <View style={styles.noteTitleRow}>
+          {item.pinned && (
+            <View style={styles.pinBadge}>
+              <Feather name="bookmark" size={11} color={DS.color.primary} />
+              <Text style={styles.pinText}>Pinned</Text>
+            </View>
+          )}
+          <Text style={styles.noteTitle}>{item.title}</Text>
+        </View>
+
+        {/* 3-dot menu */}
+        <View>
+          <TouchableOpacity
+            style={styles.menuBtn}
+            onPress={() => setOpenMenu(openMenu === item.id ? null : item.id)}
+          >
+            <Feather
+              name="more-vertical"
+              size={16}
+              color={DS.color.textSecondary}
+            />
+          </TouchableOpacity>
+
+          {openMenu === item.id && (
+            <View style={styles.menu}>
+              <TouchableOpacity
+                style={styles.menuItem}
+                onPress={() => {
+                  setOpenMenu(null);
+                  // TODO: handle edit
+                }}
+              >
+                <Feather name="edit-2" size={13} color={DS.color.textPrimary} />
+                <Text style={styles.menuItemText}>Edit</Text>
+              </TouchableOpacity>
+
+              <View style={styles.menuDivider} />
+
+              <TouchableOpacity
+                style={styles.menuItem}
+                onPress={() => {
+                  setOpenMenu(null);
+                  // TODO: handle delete
+                }}
+              >
+                <Feather name="trash-2" size={13} color={DS.color.danger} />
+                <Text style={[styles.menuItemText, { color: DS.color.danger }]}>
+                  Delete
+                </Text>
+              </TouchableOpacity>
+            </View>
+          )}
+        </View>
+      </View>
+
+      {/* Content */}
+      <Text style={styles.noteContent}>{item.content}</Text>
+
+      {/* Footer */}
+      <View style={styles.noteFooter}>
+        <Feather name="clock" size={11} color={DS.color.textMuted} />
+        <Text style={styles.noteDate}>{item.created_at}</Text>
+      </View>
+    </Pressable>
+  );
+
+  return (
+    <SafeAreaView style={styles.screen}>
+      <Pressable style={{ flex: 1 }} onPress={() => setOpenMenu(null)}>
+        {/* ── HEADER ───────────────────────────── */}
+        <View style={styles.header}>
+          <View>
+            <Text style={styles.eyebrow}>CUSTOMER</Text>
+            <Text style={styles.pageTitle}>Notes</Text>
+            <Text style={styles.pageSubtitle}>
+              Store and manage important customer information
+            </Text>
           </View>
+          <View style={styles.headerIconBtn}>
+            <Feather name="file-text" size={18} color={DS.color.primary} />
+          </View>
+        </View>
 
-          <Pressable style={styles.menuButton}>
-            <Feather name="more-vertical" size={18} color="#64748B" />
+        {/* ── ADD BUTTON ───────────────────────── */}
+        <View style={styles.actionContainer}>
+          <Pressable style={styles.addButton}>
+            <Feather name="plus" size={18} color={DS.color.textInverse} />
+            <Text style={styles.addButtonText}>Add Note</Text>
           </Pressable>
         </View>
 
-        <Text style={styles.noteContent}>{item.content}</Text>
-
-        <View style={styles.noteFooter}>
-          <View style={styles.dateWrapper}>
-            <Feather name="clock" size={13} color="#94A3B8" />
-            <Text style={styles.noteDate}>{item.created_at}</Text>
-          </View>
-        </View>
-      </Pressable>
-    );
-  };
-
-  return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#F8FAFC" />
-
-      <View style={styles.header}>
-        <View>
-          <Text style={styles.headerTitle}>Customer Notes</Text>
-          <Text style={styles.headerSubtitle}>
-            Store and manage important customer information.
-          </Text>
+        {/* ── SEARCH ───────────────────────────── */}
+        <View style={styles.searchContainer}>
+          <Feather name="search" size={16} color={DS.color.textMuted} />
+          <TextInput
+            placeholder="Search notes…"
+            placeholderTextColor={DS.color.textMuted}
+            value={search}
+            onChangeText={setSearch}
+            style={styles.searchInput}
+          />
+          {search.length > 0 && (
+            <TouchableOpacity onPress={() => setSearch('')}>
+              <Feather name="x" size={15} color={DS.color.textMuted} />
+            </TouchableOpacity>
+          )}
         </View>
 
-        <Pressable style={styles.headerIconButton}>
-          <Feather name="bell" size={20} color="#2563EB" />
-        </Pressable>
-      </View>
-
-      <View style={styles.actionContainer}>
-        <Pressable style={styles.addButton}>
-          <Feather name="plus" size={18} color="#FFFFFF" />
-          <Text style={styles.addButtonText}>Add Note</Text>
-        </Pressable>
-      </View>
-
-      <View style={styles.searchContainer}>
-        <Feather name="search" size={18} color="#94A3B8" />
-
-        <TextInput
-          placeholder="Search notes"
-          placeholderTextColor="#94A3B8"
-          value={search}
-          onChangeText={setSearch}
-          style={styles.searchInput}
+        {/* ── LIST ─────────────────────────────── */}
+        <FlatList
+          data={[...pinned, ...unpinned]}
+          keyExtractor={(item) => item.id.toString()}
+          renderItem={renderNote}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.listContent}
+          ListHeaderComponent={
+            pinned.length > 0 ? (
+              <Text style={styles.groupLabel}>PINNED</Text>
+            ) : null
+          }
+          ListEmptyComponent={<EmptyState />}
         />
-      </View>
-
-      <FlatList
-        data={filteredNotes}
-        keyExtractor={(item) => item.id.toString()}
-        renderItem={renderNote}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.listContent}
-        ListEmptyComponent={
-          <View style={styles.emptyContainer}>
-            <Feather name="file-text" size={42} color="#CBD5E1" />
-            <Text style={styles.emptyTitle}>No Notes Found</Text>
-            <Text style={styles.emptyDescription}>
-              Customer notes will appear here.
-            </Text>
-          </View>
-        }
-      />
+      </Pressable>
     </SafeAreaView>
   );
 };
 
+/* ─── Sub-components ──────────────────────────────── */
+
+const EmptyState = () => (
+  <View style={styles.empty}>
+    <View style={styles.emptyIconWrap}>
+      <Feather name="file-text" size={28} color={DS.color.textMuted} />
+    </View>
+    <Text style={styles.emptyTitle}>No Notes Found</Text>
+    <Text style={styles.emptyDesc}>Customer notes will appear here.</Text>
+  </View>
+);
+
+/* ─── Styles ──────────────────────────────────────── */
+
 const styles = StyleSheet.create({
-  container: {
+  screen: {
     flex: 1,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: DS.color.bg,
   },
 
+  // HEADER
   header: {
-    paddingHorizontal: 20,
-    paddingTop: 20,
-    paddingBottom: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-
-  headerTitle: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: '#0F172A',
-  },
-
-  headerSubtitle: {
-    marginTop: 4,
-    fontSize: 14,
-    color: '#64748B',
-  },
-
-  actionContainer: {
-    paddingHorizontal: 20,
-    marginBottom: 16,
-  },
-
-  addButton: {
-    height: 52,
-    borderRadius: 14,
-    backgroundColor: '#2563EB',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    elevation: 3,
-  },
-
-  addButtonText: {
-    marginLeft: 8,
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#FFFFFF',
-  },
-
-  headerIconButton: {
-    width: 46,
-    height: 46,
-    borderRadius: 14,
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-
-  searchContainer: {
-    marginHorizontal: 20,
-    marginBottom: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-    borderRadius: 14,
-    paddingHorizontal: 14,
-    height: 52,
-  },
-
-  searchInput: {
-    flex: 1,
-    marginLeft: 10,
-    fontSize: 15,
-    color: '#0F172A',
-  },
-
-  listContent: {
-    paddingHorizontal: 20,
-    paddingBottom: 24,
-  },
-
-  noteCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 18,
-    padding: 18,
-    marginBottom: 14,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-  },
-
-  noteHeader: {
+    paddingHorizontal: DS.spacing.xl,
+    paddingTop: DS.spacing.xl,
+    paddingBottom: DS.spacing.lg,
     flexDirection: 'row',
     alignItems: 'flex-start',
     justifyContent: 'space-between',
   },
-
-  noteTitleWrapper: {
-    flex: 1,
-    paddingRight: 12,
+  eyebrow: {
+    ...DS.typography.eyebrow,
+    marginBottom: 2,
   },
-
-  noteTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#0F172A',
+  pageTitle: {
+    ...DS.typography.screenTitle,
   },
-
-  pinBadge: {
-    marginTop: 8,
-    alignSelf: 'flex-start',
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#DBEAFE',
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 999,
+  pageSubtitle: {
+    fontSize: 13,
+    color: DS.color.textSecondary,
+    marginTop: 4,
   },
-
-  pinText: {
-    marginLeft: 4,
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#2563EB',
-  },
-
-  menuButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
+  headerIconBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: DS.radius.md,
+    backgroundColor: DS.color.primaryMuted,
+    borderWidth: 1,
+    borderColor: DS.color.primaryLight,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#F8FAFC',
+    marginTop: 4,
   },
 
+  // ADD BUTTON
+  actionContainer: {
+    paddingHorizontal: DS.spacing.xl,
+    marginBottom: DS.spacing.md,
+  },
+  addButton: {
+    height: 52,
+    borderRadius: DS.radius.md,
+    backgroundColor: DS.color.primary,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    ...DS.shadow.sm,
+  },
+  addButtonText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: DS.color.textInverse,
+  },
+
+  // SEARCH
+  searchContainer: {
+    marginHorizontal: DS.spacing.xl,
+    marginBottom: DS.spacing.md,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: DS.color.card,
+    borderWidth: 1,
+    borderColor: DS.color.border,
+    borderRadius: DS.radius.md,
+    paddingHorizontal: DS.spacing.md,
+    height: 48,
+    gap: DS.spacing.sm,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 14,
+    color: DS.color.textPrimary,
+  },
+
+  // GROUP LABEL
+  groupLabel: {
+    ...DS.typography.eyebrow,
+    marginBottom: DS.spacing.sm,
+  },
+
+  // LIST
+  listContent: {
+    paddingHorizontal: DS.spacing.xl,
+    paddingBottom: 32,
+  },
+
+  // NOTE CARD
+  noteCard: {
+    backgroundColor: DS.color.card,
+    borderRadius: DS.radius.lg,
+    borderWidth: 1,
+    borderColor: DS.color.border,
+    padding: DS.spacing.lg,
+    marginBottom: DS.spacing.md,
+    ...DS.shadow.sm,
+  },
+  noteHeader: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    marginBottom: DS.spacing.sm,
+  },
+  noteTitleRow: {
+    flex: 1,
+    gap: DS.spacing.xs,
+    paddingRight: DS.spacing.sm,
+  },
+  pinBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    alignSelf: 'flex-start',
+    backgroundColor: DS.color.primaryMuted,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: DS.radius.full,
+    marginBottom: DS.spacing.xs,
+  },
+  pinText: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: DS.color.primary,
+  },
+  noteTitle: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: DS.color.textPrimary,
+  },
   noteContent: {
-    marginTop: 14,
     fontSize: 14,
     lineHeight: 22,
-    color: '#475569',
+    color: DS.color.textSecondary,
+    marginBottom: DS.spacing.md,
   },
-
   noteFooter: {
-    marginTop: 18,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    gap: 4,
   },
-
-  dateWrapper: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-
   noteDate: {
-    marginLeft: 6,
-    fontSize: 12,
-    color: '#94A3B8',
+    fontSize: 11,
+    color: DS.color.textMuted,
   },
 
-  emptyContainer: {
+  // MENU
+  menuBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: DS.radius.sm,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 80,
+    backgroundColor: DS.color.bg,
+    borderWidth: 1,
+    borderColor: DS.color.border,
+  },
+  menu: {
+    position: 'absolute',
+    right: 0,
+    top: 36,
+    backgroundColor: DS.color.card,
+    borderRadius: DS.radius.sm,
+    borderWidth: 1,
+    borderColor: DS.color.border,
+    width: 130,
+    zIndex: 99,
+    ...DS.shadow.md,
+  },
+  menuItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingVertical: DS.spacing.sm,
+    paddingHorizontal: DS.spacing.md,
+  },
+  menuItemText: {
+    fontSize: 13,
+    fontWeight: '500',
+    color: DS.color.textPrimary,
+  },
+  menuDivider: {
+    height: 1,
+    backgroundColor: DS.color.border,
   },
 
+  // EMPTY
+  empty: {
+    alignItems: 'center',
+    paddingVertical: 60,
+    gap: DS.spacing.sm,
+  },
+  emptyIconWrap: {
+    width: 64,
+    height: 64,
+    borderRadius: DS.radius.xl,
+    backgroundColor: DS.color.card,
+    borderWidth: 1,
+    borderColor: DS.color.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: DS.spacing.xs,
+  },
   emptyTitle: {
-    marginTop: 16,
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '700',
-    color: '#334155',
+    color: DS.color.textPrimary,
   },
-
-  emptyDescription: {
-    marginTop: 6,
-    fontSize: 14,
-    color: '#94A3B8',
+  emptyDesc: {
+    fontSize: 13,
+    color: DS.color.textMuted,
     textAlign: 'center',
   },
 });

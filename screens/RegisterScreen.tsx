@@ -1,12 +1,16 @@
+import { StackNavigationProp } from '@react-navigation/stack';
 import { useState } from 'react';
+import { useForm } from 'react-hook-form';
 import {
   ActivityIndicator,
   Alert,
   KeyboardAvoidingView,
   Platform,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
+  TouchableOpacity,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -15,11 +19,8 @@ import { BackButton } from '@/components/BackButton';
 import { Input } from '@/components/Input';
 import { ReusableModal } from '@/components/ReusableModal';
 import { useUser } from '@/hooks/useUser';
-import { theme } from '@/theme/colors';
+import { DS } from '@/theme/design';
 import { RegisterCredentials } from '@/types/auth';
-import { useNavigation } from '@react-navigation/native';
-import { StackNavigationProp } from '@react-navigation/stack';
-import { useForm } from 'react-hook-form';
 
 type RootStackParamList = {
   Splash: undefined;
@@ -27,11 +28,11 @@ type RootStackParamList = {
   Dashboard: undefined;
 };
 
-export const RegisterScreen = () => {
-  const EMAIL_REGEX = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
-  const setFieldMessage = true;
+type NavProp = StackNavigationProp<RootStackParamList, 'Login'>;
 
-  const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
+export const RegisterScreen = ({ navigation }: { navigation: NavProp }) => {
+  const EMAIL_REGEX = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
+
   const { register } = useUser();
   const [modalVisible, setModalVisible] = useState(false);
 
@@ -41,25 +42,9 @@ export const RegisterScreen = () => {
     watch,
     setError,
     formState: { isSubmitting },
-  } = useForm<RegisterCredentials>({
-    /*can have default values for the inputs*/
-    // FOR TESTING ONLY
-    defaultValues: {
-      username: 'testuser',
-      first_name: 'Test',
-      last_name: 'User',
-      phone_number: '12345678901',
-      address: '123 Test Street',
-      email: 'test@example.com',
-      password: 'testpassword',
-      // confirmPassword: 'testpassword',
-    },
-  });
-  // for validating the confirm password real-time
+  } = useForm<RegisterCredentials>();
+
   const password = watch('password');
-  // You are telling TypeScript:
-  // "I know this data is an object where keys are field names and values are arrays of error strings."
-  // This allows you to use Object.entries safely.
 
   type BackendErrorResponse = Record<string, string[]>;
 
@@ -80,16 +65,17 @@ export const RegisterScreen = () => {
       setTimeout(() => {
         setModalVisible(false);
         navigation.replace('Login');
-      }, 3500);
+      }, 2500);
     } catch (err: any) {
-      console.log(err);
-      if (err.response && err.response.data) {
+      if (err.response?.data) {
         const errorData = err.response.data as BackendErrorResponse;
 
         Object.entries(errorData).forEach(([field, messages]) => {
-          setError(field as keyof RegisterCredentials, {
+          setError(field as any, {
             type: 'manual',
-            message: Array.isArray(messages) ? messages.join(', ') : messages,
+            message: Array.isArray(messages)
+              ? messages.join(', ')
+              : String(messages),
           });
         });
       } else {
@@ -99,194 +85,174 @@ export const RegisterScreen = () => {
   };
 
   return (
-    <SafeAreaView edges={['top']} style={styles.container}>
-      <View style={{ alignItems: 'flex-start', marginStart: 20 }}>
-        <BackButton />
-      </View>
-
-      <ReusableModal
-        state="success"
-        buttons={[]}
-        visible={modalVisible}
-        title="Account Created Successfully!"
-        message="Now you can login and use our services."
-        onClose={() => setModalVisible(false)}
-      />
-
+    <SafeAreaView style={styles.container}>
       <KeyboardAvoidingView
         style={{ flex: 1 }}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        keyboardVerticalOffset={20} // tweak if needed
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
-        <View style={styles.content}>
-          {/* Title */}
-          <Text style={styles.title}>Register</Text>
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          contentContainerStyle={styles.scroll}
+        >
+          <BackButton />
 
-          <Text style={styles.helperText}>
-            Note: (<Text style={{ color: theme.colors.danger }}>*</Text>)
-            Required field — please fill this in
-          </Text>
+          <ReusableModal
+            state="success"
+            buttons={[]}
+            visible={modalVisible}
+            title="Account Created"
+            message="You can now sign in to your workspace."
+            onClose={() => setModalVisible(false)}
+          />
 
-          {/* First Name + Last Name */}
-          <View style={styles.row}>
-            <View style={styles.half}>
-              <Input
-                name="first_name"
-                label="First Name"
-                placeholder="Juan"
-                control={control}
-                rules={{ required: setFieldMessage }}
-                variant="dark"
-              />
-            </View>
-
-            <View style={styles.half}>
-              <Input
-                name="last_name"
-                label="Last Name"
-                placeholder="Dela Cruz"
-                control={control}
-                rules={{ required: setFieldMessage }}
-                variant="dark"
-              />
-            </View>
+          {/* HEADER */}
+          <View style={styles.header}>
+            <Text style={styles.eyebrow}>LOCUS CRM</Text>
+            <Text style={styles.title}>Create Account</Text>
+            <Text style={styles.subtitle}>
+              Set up your workspace to manage customers, orders, and notes.
+            </Text>
           </View>
 
-          {/* Email */}
-          <Input
-            name="email"
-            label="Email"
-            placeholder="juan@email.com"
-            control={control}
-            rules={{
-              required: setFieldMessage,
-              pattern: {
-                value: EMAIL_REGEX,
-                message: 'Invalid email.',
-              },
-            }}
-            variant="dark"
-          />
+          {/* FORM CARD */}
+          <View style={styles.card}>
+            {/* PERSONAL INFO */}
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Personal Information</Text>
 
-          {/* Username + Phone */}
-          <View style={styles.row}>
-            <View style={styles.half}>
-              <Input
-                name="username"
-                label="Username"
-                placeholder="juandelacruz"
-                control={control}
-                rules={{
-                  required: setFieldMessage,
-                  minLength: {
-                    value: 3,
-                    message: 'It should be minimum 3 characters long.',
-                  },
-                  maxLength: {
-                    value: 25,
-                    message: 'It should be maximum 25 characters long.',
-                  },
-                }}
-                variant="dark"
-              />
-            </View>
+              <View style={styles.row}>
+                <View style={styles.half}>
+                  <Input
+                    name="first_name"
+                    label="First Name"
+                    placeholder="Juan"
+                    control={control}
+                    rules={{ required: true }}
+                    variant="light"
+                  />
+                </View>
 
-            <View style={styles.half}>
-              <Input
-                name="phone_number"
-                label="Phone Number"
-                placeholder="09123456789"
-                control={control}
-                rules={{
-                  required: setFieldMessage,
-                  minLength: {
-                    value: 11,
-                    message:
-                      'Phone Number should be minimum 11 characters long.',
-                  },
-                  maxLength: {
-                    value: 11,
-                    message:
-                      'Phone Number should be maximum 11 characters long.',
-                  },
-                }}
-                variant="dark"
-              />
-            </View>
-          </View>
-
-          {/* Address */}
-          <Input
-            name="address"
-            label="Address"
-            placeholder="Quezon City, Metro Manila"
-            control={control}
-            rules={{ required: setFieldMessage }}
-            variant="dark"
-          />
-
-          {/* Password */}
-          <Input
-            name="password"
-            label="Password"
-            placeholder="••••••••"
-            secureTextEntry
-            control={control}
-            rules={{
-              required: setFieldMessage,
-              minLength: {
-                value: 8,
-                message: 'Password should be minimum 8 characters long.',
-              },
-            }}
-            variant="dark"
-          />
-
-          {/* Confirm Password */}
-          <Input
-            name="confirm_password"
-            label="Confirm Password"
-            placeholder="••••••••"
-            secureTextEntry
-            control={control}
-            rules={{
-              required: setFieldMessage,
-              validate: (value) =>
-                value === password || 'Password do not match',
-            }}
-            variant="dark"
-          />
-
-          <Pressable
-            onPress={handleSubmit(onSubmit)}
-            disabled={isSubmitting}
-            style={({ pressed }) => [
-              styles.button,
-              pressed && {
-                backgroundColor: theme.colors.primaryLight,
-                opacity: 0.85,
-              },
-              isSubmitting && { opacity: 0.7 },
-            ]}
-          >
-            {isSubmitting ? (
-              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <ActivityIndicator
-                  size="small"
-                  color={theme.colors.textInverse}
-                />
-
-                <Text style={[styles.buttonText, { marginLeft: 8 }]}>
-                  Creating account...
-                </Text>
+                <View style={styles.half}>
+                  <Input
+                    name="last_name"
+                    label="Last Name"
+                    placeholder="Dela Cruz"
+                    control={control}
+                    rules={{ required: true }}
+                    variant="light"
+                  />
+                </View>
               </View>
-            ) : (
-              <Text style={styles.buttonText}>Register</Text>
-            )}
-          </Pressable>
 
-          <View style={styles.footer} />
-        </View>
+              <Input
+                name="email"
+                label="Email"
+                placeholder="juan@email.com"
+                control={control}
+                rules={{
+                  required: true,
+                  pattern: {
+                    value: EMAIL_REGEX,
+                    message: 'Invalid email',
+                  },
+                }}
+                variant="light"
+              />
+
+              <View style={styles.row}>
+                <View style={styles.half}>
+                  <Input
+                    name="phone_number"
+                    label="Phone Number"
+                    placeholder="09123456789"
+                    control={control}
+                    rules={{ required: true }}
+                    variant="light"
+                  />
+                </View>
+
+                <View style={styles.half}>
+                  <Input
+                    name="username"
+                    label="Username"
+                    placeholder="juandelacruz"
+                    control={control}
+                    rules={{ required: true }}
+                    variant="light"
+                  />
+                </View>
+              </View>
+
+              <Input
+                name="address"
+                label="Address"
+                placeholder="Quezon City"
+                control={control}
+                rules={{ required: true }}
+                variant="light"
+              />
+            </View>
+
+            {/* ACCOUNT INFO */}
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Account Security</Text>
+
+              <Input
+                name="password"
+                label="Password"
+                placeholder="••••••••"
+                secureTextEntry
+                control={control}
+                rules={{ required: true, minLength: 8 }}
+                variant="light"
+              />
+
+              <Input
+                name="confirm_password"
+                label="Confirm Password"
+                placeholder="••••••••"
+                secureTextEntry
+                control={control}
+                rules={{
+                  required: true,
+                  validate: (value) =>
+                    value === password || 'Passwords do not match',
+                }}
+                variant="light"
+              />
+            </View>
+
+            {/* SUBMIT */}
+            <Pressable
+              onPress={handleSubmit(onSubmit)}
+              disabled={isSubmitting}
+              style={({ pressed }) => [
+                styles.button,
+                pressed && { opacity: 0.85 },
+                isSubmitting && { opacity: 0.7 },
+              ]}
+            >
+              {isSubmitting ? (
+                <View style={styles.loadingRow}>
+                  <ActivityIndicator color={DS.color.textInverse} />
+                  <Text style={styles.buttonText}>Creating account...</Text>
+                </View>
+              ) : (
+                <Text style={styles.buttonText}>Create Account</Text>
+              )}
+            </Pressable>
+
+            {/* FOOTER */}
+            <View style={styles.footer}>
+              <Text style={styles.footerText}>Already have an account?</Text>
+
+              <TouchableOpacity onPress={() => navigation.replace('Login')}>
+                <Text style={styles.footerLink}>Sign In</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
@@ -295,69 +261,94 @@ export const RegisterScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.dark,
-  },
-  content: {
-    flex: 1,
-    justifyContent: 'center',
-    padding: 40,
-    paddingTop: 0,
-  },
-  brand: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 45,
-  },
-  logo: {
-    borderRadius: 8,
-    width: 40,
-    height: 40,
-    marginRight: 10,
-  },
-  title: {
-    fontSize: 48,
-    fontWeight: '500',
-    color: theme.colors.primarySoft,
-    marginBottom: 40,
-  },
-  helperText: {
-    fontSize: 12,
-    fontStyle: 'italic',
-    color: theme.colors.textSecondary,
-    alignSelf: 'flex-start',
-    marginBottom: 40,
+    backgroundColor: DS.color.bg,
   },
 
-  form: {
-    marginBottom: 30,
+  scroll: {
+    padding: DS.spacing.xxl,
+    paddingBottom: DS.spacing.xxxl,
   },
+
+  header: {
+    marginBottom: DS.spacing.xxl,
+  },
+
+  eyebrow: {
+    ...DS.typography.eyebrow,
+    marginBottom: DS.spacing.sm,
+  },
+
+  title: {
+    ...DS.typography.screenTitle,
+  },
+
+  subtitle: {
+    ...DS.typography.body,
+    color: DS.color.textSecondary,
+    marginTop: DS.spacing.sm,
+  },
+
+  card: {
+    backgroundColor: DS.color.card,
+    borderRadius: DS.radius.xl,
+    borderWidth: 1,
+    borderColor: DS.color.border,
+    padding: DS.spacing.xxl,
+    ...DS.shadow.sm,
+  },
+
+  section: {
+    marginBottom: DS.spacing.xxl,
+  },
+
+  sectionTitle: {
+    ...DS.typography.sectionTitle,
+    marginBottom: DS.spacing.lg,
+  },
+
   row: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    gap: 10,
-    marginBottom: 10,
+    gap: DS.spacing.md,
   },
 
   half: {
     flex: 1,
   },
+
   button: {
-    backgroundColor: theme.colors.primaryLight,
-    padding: 15,
-    borderRadius: 5,
+    height: 52,
+    borderRadius: DS.radius.md,
+    backgroundColor: DS.color.primary,
     alignItems: 'center',
-    marginTop: 20,
+    justifyContent: 'center',
+    marginTop: DS.spacing.sm,
   },
+
   buttonText: {
-    color: theme.colors.light,
-    fontWeight: 'bold',
-    fontSize: 16,
+    color: DS.color.textInverse,
+    fontWeight: '600',
+    fontSize: 15,
+    marginLeft: DS.spacing.sm,
   },
-  footer: {
+
+  loadingRow: {
+    flexDirection: 'row',
     alignItems: 'center',
   },
-  link: {
-    color: theme.colors.primarySoft,
-    marginTop: 10,
+
+  footer: {
+    marginTop: DS.spacing.xl,
+    alignItems: 'center',
+  },
+
+  footerText: {
+    color: DS.color.textSecondary,
+    fontSize: 14,
+  },
+
+  footerLink: {
+    marginTop: 6,
+    color: DS.color.primary,
+    fontWeight: '600',
   },
 });

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Image,
@@ -9,23 +9,16 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useForm } from 'react-hook-form';
+import { Feather } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { Input } from '@/components/Input';
 import { useUser } from '@/hooks/useUser';
-import { theme } from '@/theme/colors';
 import { LoginCredentials } from '@/types/auth';
 import { RootStackParamList } from '@/types/navigation';
-import { useNavigation } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { useForm } from 'react-hook-form';
-
-// 1. Define your stack param list
-// export type RootStackParamList = {
-//   Splash: undefined;
-//   Login: undefined;
-//   Register: undefined;
-//   Main: undefined;
-// };
+import { DS } from '@/theme/design';
 
 type SplashScreenNavProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -34,13 +27,12 @@ type SplashScreenNavProp = NativeStackNavigationProp<
 
 export const LoginScreen = () => {
   const { login, loadUser, user } = useUser();
-  const [err, setErr] = useState('');
   const navigation = useNavigation<SplashScreenNavProp>();
 
-  useEffect(() => {
-    // console.log(user);
+  const [err, setErr] = useState('');
 
-    if (user != null) {
+  useEffect(() => {
+    if (user) {
       navigation.replace('Main');
     }
   }, [user]);
@@ -49,18 +41,20 @@ export const LoginScreen = () => {
     control,
     handleSubmit,
     formState: { isSubmitting },
-  } = useForm<LoginCredentials>({});
+  } = useForm<LoginCredentials>();
 
   const onSubmit = async (data: LoginCredentials) => {
-    // console.log('Crasync edentials: ', data);
-
     try {
+      setErr('');
+
       await login({
         username: data.username,
         password: data.password,
       });
 
-      (await loadUser(), navigation.replace('Main'));
+      await loadUser();
+
+      navigation.replace('Main');
     } catch (err: any) {
       console.log(err.message);
       setErr(err.message);
@@ -72,85 +66,117 @@ export const LoginScreen = () => {
   };
 
   return (
-    <SafeAreaView edges={['bottom', 'right']} style={styles.container}>
-      {/* <BackButton /> */}
+    <SafeAreaView style={styles.container}>
       <View style={styles.content}>
-        {/* Branding */}
+        {/* Brand */}
         <View style={styles.brand}>
           <Image
             source={require('../assets/images/nexus_logo.png')}
             style={styles.logo}
           />
-          <Text style={styles.appName}>Locus</Text>
+
+          <Text style={styles.appName}>LOCUS</Text>
+
+          <Text style={styles.appDescription}>
+            Customer Relationship Management
+          </Text>
         </View>
 
-        {/* Title */}
-        <Text style={styles.title}>Login</Text>
-        <Text style={styles.helperText}>
-          Note: (<Text style={{ color: theme.colors.danger }}>*</Text>) Required
-          field — please fill this in
-        </Text>
+        {/* Login Card */}
+        <View style={styles.authCard}>
+          <Text style={styles.eyebrow}>WORKSPACE ACCESS</Text>
 
-        {/* Form */}
-        {/* { if value ? true : false } */}
-        {err ? <Text style={styles.errorMsg}>{err}</Text> : ''}
+          <Text style={styles.title}>Sign In</Text>
 
-        <View style={styles.form}>
-          <Input
-            name="username"
-            placeholder="user123"
-            label="Username"
-            control={control}
-            rules={{
-              required: true,
-            }}
-            variant="dark"
-          />
+          <Text style={styles.subtitle}>
+            Access your workspace to manage customers, orders, notes, and
+            activities.
+          </Text>
 
-          <Input
-            name="password"
-            placeholder="********"
-            label="Password"
-            secureTextEntry
-            control={control}
-            rules={{
-              required: true,
-            }}
-            variant="dark"
-          />
+          {err ? (
+            <View style={styles.errorContainer}>
+              <Feather
+                name="alert-circle"
+                size={16}
+                color={DS.color.danger}
+              />
+              <Text style={styles.errorMsg}>{err}</Text>
+            </View>
+          ) : null}
 
-          <Pressable
-            onPress={handleSubmit(onSubmit)}
-            disabled={isSubmitting}
-            style={({ pressed }) => [
-              styles.button,
-              pressed && { backgroundColor: theme.colors.primaryLight }, // subtle feedback
-              { opacity: pressed ? 0.7 : 1 }, // increase opacity when pressed,
-              isSubmitting && { opacity: 0.7 }, // dim when disabled
-            ]}
-          >
-            {isSubmitting ? (
-              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <ActivityIndicator
-                  size="small"
-                  color={theme.colors.textInverse}
-                />
-                <Text style={[styles.buttonText, { marginLeft: 8 }]}>
-                  Logging In...
-                </Text>
-              </View>
-            ) : (
-              <Text style={styles.buttonText}>Login</Text>
-            )}
-          </Pressable>
+          <View style={styles.form}>
+            <Input
+              name="username"
+              label="Username"
+              placeholder="Enter your username"
+              control={control}
+              rules={{
+                required: true,
+              }}
+              variant="light"
+            />
+
+            <Input
+              name="password"
+              label="Password"
+              placeholder="Enter your password"
+              secureTextEntry
+              control={control}
+              rules={{
+                required: true,
+              }}
+              variant="light"
+            />
+
+            <Pressable
+              onPress={handleSubmit(onSubmit)}
+              disabled={isSubmitting}
+              style={[
+                styles.signInButton,
+                isSubmitting && styles.signInButtonDisabled,
+              ]}
+            >
+              {isSubmitting ? (
+                <View style={styles.loadingContainer}>
+                  <ActivityIndicator
+                    size="small"
+                    color={DS.color.textInverse}
+                  />
+                  <Text style={styles.signInButtonText}>
+                    Signing In...
+                  </Text>
+                </View>
+              ) : (
+                <>
+                  <Feather
+                    name="log-in"
+                    size={18}
+                    color={DS.color.textInverse}
+                  />
+                  <Text style={styles.signInButtonText}>
+                    Sign In
+                  </Text>
+                </>
+              )}
+            </Pressable>
+
+            <TouchableOpacity style={styles.forgotPasswordButton}>
+              <Text style={styles.linkText}>Forgot Password?</Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
-        {/* Footer Links */}
+        {/* Footer */}
         <View style={styles.footer}>
+          <Text style={styles.footerText}>
+            Don't have an account?
+          </Text>
+
           <TouchableOpacity onPress={handleSignUp}>
-            <Text style={styles.link}>Don't have an account? Sign up</Text>
+            <Text style={styles.createAccountText}>
+              Create Account
+            </Text>
           </TouchableOpacity>
-          <Text style={styles.link}>Forgot Password</Text>
         </View>
       </View>
     </SafeAreaView>
@@ -160,76 +186,138 @@ export const LoginScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.dark,
+    backgroundColor: DS.color.bg,
   },
+
   content: {
     flex: 1,
     justifyContent: 'center',
-    padding: 50,
+    paddingHorizontal: DS.spacing.xxl,
   },
+
   brand: {
+    alignItems: 'center',
+    marginBottom: DS.spacing.xxxl,
+  },
+
+  logo: {
+    width: 72,
+    height: 72,
+    borderRadius: DS.radius.lg,
+  },
+
+  appName: {
+    marginTop: DS.spacing.lg,
+    fontSize: 28,
+    fontWeight: '700',
+    color: DS.color.textPrimary,
+    letterSpacing: 1,
+  },
+
+  appDescription: {
+    marginTop: DS.spacing.xs,
+    ...DS.typography.caption,
+  },
+
+  authCard: {
+    backgroundColor: DS.color.card,
+    borderRadius: DS.radius.xl,
+    borderWidth: 1,
+    borderColor: DS.color.border,
+    padding: DS.spacing.xxl,
+    ...DS.shadow.sm,
+  },
+
+  eyebrow: {
+    ...DS.typography.eyebrow,
+    marginBottom: DS.spacing.sm,
+  },
+
+  title: {
+    ...DS.typography.screenTitle,
+    marginBottom: DS.spacing.sm,
+  },
+
+  subtitle: {
+    ...DS.typography.body,
+    color: DS.color.textSecondary,
+    marginBottom: DS.spacing.xl,
+  },
+
+  form: {
+    gap: DS.spacing.lg,
+    marginTop: DS.spacing.lg,
+  },
+
+  errorContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 70,
-  },
-  logo: {
-    borderRadius: 8,
-    width: 40,
-    height: 40,
-    marginRight: 10,
-  },
-  appName: {
-    fontSize: 24,
-    color: theme.colors.textInverse,
-  },
-  title: {
-    fontSize: 48,
-    fontWeight: '500',
-    color: theme.colors.primarySoft,
-    marginBottom: 30,
-  },
-  helperText: {
-    fontSize: 12,
-    fontStyle: 'italic',
-    color: theme.colors.textSecondary,
-    alignSelf: 'flex-start',
-    marginBottom: 30,
-  },
-  errorMsg: {
-    color: theme.colors.danger,
-    backgroundColor: `${theme.colors.danger}45`, // append hex alpha (80 = 50%)
-    padding: 10,
-    marginBottom: 20,
-    borderRadius: 4,
-  },
-  form: {
-    marginBottom: 30,
-  },
-  input: {
+    padding: DS.spacing.md,
+    borderRadius: DS.radius.md,
+    backgroundColor: DS.color.dangerLight,
     borderWidth: 1,
-    borderColor: theme.colors.primaryLight,
-    backgroundColor: theme.colors.light,
-    padding: 12,
-    marginBottom: 15,
-    borderRadius: 5,
-    color: theme.colors.textPrimary,
+    borderColor: '#FECACA',
+    marginBottom: DS.spacing.lg,
   },
-  button: {
-    backgroundColor: theme.colors.primaryLight,
-    padding: 15,
-    borderRadius: 5,
+
+  errorMsg: {
+    flex: 1,
+    marginLeft: DS.spacing.sm,
+    color: DS.color.danger,
+    fontSize: 13,
+  },
+
+  signInButton: {
+    marginTop: DS.spacing.sm,
+    height: 52,
+    borderRadius: DS.radius.md,
+    backgroundColor: DS.color.primary,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  signInButtonDisabled: {
+    opacity: 0.7,
+  },
+
+  signInButtonText: {
+    marginLeft: DS.spacing.sm,
+    color: DS.color.textInverse,
+    fontWeight: '600',
+    fontSize: 15,
+  },
+
+  loadingContainer: {
+    flexDirection: 'row',
     alignItems: 'center',
   },
-  buttonText: {
-    color: theme.colors.light,
-    fontWeight: 'bold',
-    fontSize: 16,
+
+  forgotPasswordButton: {
+    alignSelf: 'center',
+    marginTop: DS.spacing.sm,
   },
+
+  linkText: {
+    color: DS.color.primary,
+    fontSize: 14,
+    fontWeight: '500',
+  },
+
   footer: {
+    marginTop: DS.spacing.xxl,
     alignItems: 'center',
   },
-  link: {
-    color: theme.colors.primarySoft,
-    marginTop: 10,
+
+  footerText: {
+    color: DS.color.textSecondary,
+    fontSize: 14,
+  },
+
+  createAccountText: {
+    marginTop: DS.spacing.xs,
+    color: DS.color.primary,
+    fontSize: 15,
+    fontWeight: '600',
   },
 });

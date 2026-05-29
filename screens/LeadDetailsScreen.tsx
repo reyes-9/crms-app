@@ -1,6 +1,7 @@
-import { theme } from '@/theme/colors';
+import { DS } from '@/theme/design';
 import { LeadProfile } from '@/types/lead';
-import { MaterialIcons } from '@expo/vector-icons';
+import { formatCurrency } from '@/utils/formatCurrency';
+import { Feather } from '@expo/vector-icons';
 import {
   ScrollView,
   StyleSheet,
@@ -8,587 +9,637 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { formatCurrency } from '../utils/formatCurrency';
+
+/* ─── Types ─────────────────────────────────────── */
+
+type LeadStatus =
+  | 'new'
+  | 'contacted'
+  | 'qualified'
+  | 'unqualified'
+  | 'converted'
+  | 'lost';
+type SortOption = 'all' | LeadStatus;
+
+type Lead = {
+  id: string;
+  name: string;
+  email: string;
+  number: string;
+  company: string;
+  status: LeadStatus;
+  source: string;
+};
+
+/* ─── Constants ──────────────────────────────────── */
+
+const STATUS_LABEL: Record<LeadStatus, string> = {
+  new: 'New',
+  contacted: 'Contacted',
+  qualified: 'Qualified',
+  unqualified: 'Unqualified',
+  converted: 'Converted',
+  lost: 'Lost',
+};
+
+const STATUS_COLOR: Record<LeadStatus, { bg: string; color: string }> = {
+  new: { bg: '#DBEAFE', color: '#1D4ED8' },
+  contacted: { bg: '#FEF3C7', color: '#B45309' },
+  qualified: { bg: '#DCFCE7', color: '#15803D' },
+  unqualified: { bg: '#FEE2E2', color: '#B91C1C' },
+  converted: { bg: '#ECFDF5', color: '#047857' },
+  lost: { bg: '#F1F5F9', color: '#475569' },
+};
+
+/* ═══════════════════════════════════════════════════
+   LEAD DETAILS SCREEN
+═══════════════════════════════════════════════════ */
+
+const STATUS_CHOICES: [string, string][] = [
+  ['new', 'New'],
+  ['contacted', 'Contacted'],
+  ['qualified', 'Qualified'],
+  ['converted', 'Converted'],
+];
+
+const LEAD_NOTES = [
+  {
+    id: '1',
+    content: 'Followed up with client regarding proposal.',
+    createdAt: '2025-04-10',
+  },
+  {
+    id: '2',
+    content: 'Client requested a demo next week.',
+    createdAt: '2025-04-12',
+  },
+  {
+    id: '3',
+    content: 'Sent updated contract for review.',
+    createdAt: '2025-04-15',
+  },
+  { id: '4', content: 'Scheduled demo for April 20.', createdAt: '2025-04-16' },
+];
+
+const SAMPLE_LEAD: LeadProfile = {
+  id: 'LEAD001',
+  name: 'Alice Johnson',
+  company: 'Tech Solutions Inc.',
+  email: 'alice.johnson@example.com',
+  number: '+1234567890',
+  status: 'new',
+  source: 'website',
+  notes: 'Interested in product demo.',
+  value: 50000,
+};
 
 export const LeadDetailsScreen = () => {
-  const STATUS_CHOICES = [
-    ['new', 'New'],
-    ['contacted', 'Contacted'],
-    ['qualified', 'Qualified'],
-    ['converted', 'Converted'],
-  ];
+  const currentStatus = SAMPLE_LEAD.status;
+  const currentIndex = STATUS_CHOICES.findIndex(([v]) => v === currentStatus);
 
-  const leads: LeadProfile[] = [
-    {
-      id: 'LEAD001',
-      name: 'Alice Johnson',
-      company: 'Tech Solutions Inc.',
-      email: 'alice.johnson@example.com',
-      number: '+1234567890',
-      status: 'new',
-      source: 'website',
-      notes: 'Interested in product demo.',
-      value: 50000, // 👈 added
-    },
-    {
-      id: 'LEAD002',
-      name: 'Bob Smith',
-      company: 'Creative Agency',
-      email: 'bob.smith@example.com',
-      number: '+1987654321',
-      status: 'unqualified',
-      source: 'referral',
-      notes: 'Follow-up scheduled for next week.',
-      value: 30000,
-    },
-    {
-      id: 'LEAD003',
-      name: 'Carla Reyes',
-      company: 'Global Enterprises',
-      email: 'carla.reyes@example.com',
-      number: '+1122334455',
-      status: 'lost',
-      source: 'social',
-      notes: 'Strong interest, budget approved.',
-      value: 75000,
-    },
-  ];
-
-  const handleEdit = () => {
-    // navigation.navigate('EditCustomer', { leads });
-  };
-  const handleNotes = () => {
-    // navigation.navigate('EditCustomer', { leads });
-  };
-
-  const currentStatus = leads[2].status;
-  const currentIndex = STATUS_CHOICES.findIndex(
-    ([value]) => value === currentStatus,
-  );
-
-  const leadNotes = [
-    {
-      id: '1',
-      content: 'Followed up with client regarding proposal.',
-      createdAt: '2025-04-10',
-      author: 'you',
-    },
-    {
-      id: '2',
-      content: 'Client requested a demo next week.',
-      createdAt: '2025-04-12',
-      author: 'you',
-    },
-    {
-      id: '3',
-      content: 'Sent updated contract for review.',
-      createdAt: '2025-04-15',
-      author: 'you',
-    },
-    {
-      id: '4',
-      content: 'Scheduled demo for April 20.',
-      createdAt: '2025-04-16',
-      author: 'you',
-    },
-    {
-      id: '5',
-      content: 'Demo completed successfully, client showed interest.',
-      createdAt: '2025-04-20',
-      author: 'you',
-    },
-    {
-      id: '6',
-      content: 'Shared pricing details and package options.',
-      createdAt: '2025-04-22',
-      author: 'you',
-    },
-    {
-      id: '7',
-      content: 'Client asked for additional references.',
-      createdAt: '2025-04-25',
-      author: 'you',
-    },
-    {
-      id: '8',
-      content: 'Provided references and case studies.',
-      createdAt: '2025-04-27',
-      author: 'you',
-    },
-  ];
-
-  let notesContent;
-  if (!leadNotes || leadNotes.length === 0) {
-    notesContent = <Text>No notes found.</Text>;
-  } else {
-    notesContent = leadNotes.slice(0, 4).map((leadNote) => (
-      <View key={leadNote.id}>
-        <View style={styles.noteCard}>
-          <Text style={styles.noteText}>{leadNote.content}</Text>
-
-          <Text style={styles.noteMeta}>Apr 10, 2025 · you</Text>
-        </View>
-        <View style={styles.divider} />
-      </View>
-    ));
-  }
+  const initials = SAMPLE_LEAD.name
+    .split(' ')
+    .slice(0, 2)
+    .map((w) => w[0])
+    .join('')
+    .toUpperCase();
 
   return (
-    <ScrollView>
-      <View>
-        {/* HEAD */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <View style={styles.avatar}>
-              <MaterialIcons name="person" size={32} color="#1D9E75" />
-            </View>
+    <ScrollView
+      style={styles2.screen}
+      contentContainerStyle={styles2.content}
+      showsVerticalScrollIndicator={false}
+    >
+      {/* ── PROFILE CARD ─────────────────────── */}
+      <View style={styles2.profileCard}>
+        <View style={styles2.avatar}>
+          <Text style={styles2.avatarText}>{initials}</Text>
+        </View>
 
-            <View style={styles.info}>
-              <Text style={styles.name}>{leads[0].name}</Text>
-              <Text style={styles.meta}>{leads[0].company}</Text>
-            </View>
-
-            <TouchableOpacity style={styles.editBtn} onPress={handleEdit}>
-              <MaterialIcons name="edit" size={16} color="#1D9E75" />
-              <Text style={styles.editText}>Edit Lead</Text>
-            </TouchableOpacity>
-          </View>
-
-          <View style={styles.metaRow}>
-            <Text style={styles.metaItemPill}>{leads[0].status}</Text>
-            <Text style={styles.metaDot}>•</Text>
-            <Text style={styles.metaItem}>
-              {formatCurrency(leads[0].value, 'en-PH', 'PHP')}
-            </Text>
-            <Text style={styles.metaDot}>•</Text>
-            <Text style={styles.metaItem}>Follow Up: Apr 15</Text>
-          </View>
-          {/* PIPELINE STAGE */}
-          <View style={styles.pipeline}>
-            <Text style={styles.label}>PIPELINE STAGE</Text>
-
-            <View style={styles.container}>
-              {STATUS_CHOICES.map(([value, label], index) => {
-                let effectiveIndex = currentIndex;
-
-                // Redirect special statuses
-                if (currentStatus === 'unqualified') {
-                  effectiveIndex = 2; // qualified
-                }
-                if (currentStatus === 'lost') {
-                  effectiveIndex = 3; // converted
-                }
-
-                const isPassed = index < effectiveIndex;
-
-                const isCurrent =
-                  index === effectiveIndex &&
-                  currentStatus !== 'unqualified' &&
-                  currentStatus !== 'lost';
-
-                const isFailedStage =
-                  (currentStatus === 'unqualified' && index === 2) ||
-                  (currentStatus === 'lost' && index === 3);
-
-                const isUpcoming = !isPassed && !isCurrent && !isFailedStage;
-
-                const isLast = index === STATUS_CHOICES.length - 1;
-
-                const statusText =
-                  currentStatus === 'unqualified' && index === 2
-                    ? 'Unqualified'
-                    : currentStatus === 'lost' && index === 3
-                      ? 'Lost'
-                      : label;
-
-                return (
-                  <View
-                    key={value}
-                    style={[
-                      styles.stageItem,
-                      // PASSED
-                      isPassed && styles.passedStage,
-
-                      // CURRENT
-                      isCurrent && styles.currentStage,
-
-                      // FAILED TARGET
-                      isFailedStage && styles.failedStage,
-
-                      // UPCOMING
-                      isUpcoming && styles.upcomingStage,
-
-                      {
-                        borderRightWidth: isLast ? 0 : 1, // remove border on last item
-                      },
-                    ]}
-                  >
-                    <Text
-                      style={[
-                        styles.stageText,
-
-                        isPassed && styles.passedText,
-
-                        isCurrent && styles.currentText,
-
-                        isFailedStage && styles.failedText,
-
-                        isUpcoming && styles.upcomingText,
-                        {
-                          // color: textColor,
-                        },
-                      ]}
-                    >
-                      {statusText}
-                    </Text>
-                  </View>
-                );
-              })}
-            </View>
-          </View>
-
-          {/* Actions */}
-          <View style={styles.actions}>
-            <TouchableOpacity style={styles.actionBtn} onPress={() => {}}>
-              <MaterialIcons name="phone" size={18} color="#1D9E75" />
-              <Text style={styles.actionBtnText}>Call</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={styles.actionBtn} onPress={() => {}}>
-              <MaterialIcons name="email" size={18} color="#1D9E75" />
-              <Text style={styles.actionBtnText}>Email</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.advanceBtn}
-              // onPress={handleAdvanceLead}
-              activeOpacity={0.8}
+        <View style={{ flex: 1 }}>
+          <Text style={styles2.profileName}>{SAMPLE_LEAD.name}</Text>
+          <Text style={styles2.profileCompany}>{SAMPLE_LEAD.company}</Text>
+          <View style={styles2.profileMeta}>
+            <View
+              style={[
+                styles2.statusPill,
+                {
+                  backgroundColor:
+                    STATUS_COLOR[currentStatus as LeadStatus]?.bg,
+                },
+              ]}
             >
-              <MaterialIcons name="trending-up" size={18} color="#FFFFFF" />
-
-              <Text style={styles.advanceBtnText}>
-                Advance Lead
-                {/* {buttonText} */}
+              <Text
+                style={[
+                  styles2.statusPillText,
+                  { color: STATUS_COLOR[currentStatus as LeadStatus]?.color },
+                ]}
+              >
+                {STATUS_LABEL[currentStatus as LeadStatus] ?? currentStatus}
               </Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-        <View style={styles.divider} />
-
-        {/* LEAD INFO */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>LEAD INFO</Text>
-
-          <View style={styles.sectionRow}>
-            <Text style={styles.sectionLabel}>Email:</Text>
-            <Text style={styles.sectionValue}>{leads[0].email}</Text>
-          </View>
-          <View style={styles.divider} />
-          <View style={styles.sectionRow}>
-            <Text style={styles.sectionLabel}>Phone:</Text>
-            <Text style={styles.sectionValue}>{leads[0].number}</Text>
-          </View>
-          <View style={styles.divider} />
-          <View style={styles.sectionRow}>
-            <Text style={styles.sectionLabel}>Company:</Text>
-            <Text style={styles.sectionValue}>{leads[0].company}</Text>
-          </View>
-          <View style={styles.divider} />
-          <View style={styles.sectionRow}>
-            <Text style={styles.sectionLabel}>Status:</Text>
-            <Text style={styles.sectionValue}>
-              {leads[0].status.charAt(0).toUpperCase() +
-                leads[0].status.slice(1).toLowerCase()}
-            </Text>
-          </View>
-          <View style={styles.divider} />
-          <View style={styles.sectionRow}>
-            <Text style={styles.sectionLabel}>Source:</Text>
-            <Text style={styles.sectionValue}>
-              {leads[0].source.charAt(0).toUpperCase() +
-                leads[0].source.slice(1).toLowerCase()}
-            </Text>
-          </View>
-          <View style={styles.divider} />
-          <View style={styles.sectionRow}>
-            <Text style={styles.sectionLabel}>Company:</Text>
-            <Text style={styles.sectionValue}>
-              {formatCurrency(leads[0].value, 'en-PH', 'PHP')}
+            </View>
+            <Text style={styles2.valuePill}>
+              {formatCurrency(SAMPLE_LEAD.value, 'en-PH', 'PHP')}
             </Text>
           </View>
         </View>
-        <View style={styles.divider} />
 
-        {/* NOTES */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>NOTES</Text>
-            <TouchableOpacity style={styles.editBtn} onPress={handleNotes}>
-              <MaterialIcons name="note" size={16} color="#1D9E75" />
-              <Text style={styles.editText}>Manage Notes</Text>
-            </TouchableOpacity>
-          </View>
-
-          <View style={styles.listContainer}>{notesContent}</View>
-        </View>
+        <TouchableOpacity style={styles2.editBtn}>
+          <Feather name="edit-2" size={14} color={DS.color.primary} />
+          <Text style={styles2.editBtnText}>Edit</Text>
+        </TouchableOpacity>
       </View>
+
+      {/* ── QUICK ACTIONS ─────────────────────── */}
+      <View style={styles2.actionsRow}>
+        <TouchableOpacity style={styles2.actionBtn}>
+          <Feather name="phone" size={16} color={DS.color.primary} />
+          <Text style={styles2.actionBtnText}>Call</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles2.actionBtn}>
+          <Feather name="mail" size={16} color={DS.color.primary} />
+          <Text style={styles2.actionBtnText}>Email</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={[styles2.actionBtn, styles2.actionBtnPrimary]}>
+          <Feather name="trending-up" size={16} color={DS.color.textInverse} />
+          <Text
+            style={[styles2.actionBtnText, { color: DS.color.textInverse }]}
+          >
+            Advance Lead
+          </Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* ── PIPELINE ─────────────────────────── */}
+      <SectionCard2 title="Pipeline Stage" icon="git-branch">
+        <View style={styles2.pipeline}>
+          {STATUS_CHOICES.map(([value, label], index) => {
+            const isPassed = index < currentIndex;
+            const isCurrent =
+              index === currentIndex &&
+              !['unqualified', 'lost'].includes(currentStatus);
+            const isFailed =
+              (currentStatus === 'unqualified' && index === 2) ||
+              (currentStatus === 'lost' && index === 3);
+            const isUpcoming = !isPassed && !isCurrent && !isFailed;
+            const isLast = index === STATUS_CHOICES.length - 1;
+
+            const text =
+              currentStatus === 'unqualified' && index === 2
+                ? 'Unqualified'
+                : currentStatus === 'lost' && index === 3
+                  ? 'Lost'
+                  : label;
+
+            return (
+              <View
+                key={value}
+                style={[
+                  styles2.pipelineStage,
+                  isPassed && styles2.stagePassed,
+                  isCurrent && styles2.stageCurrent,
+                  isFailed && styles2.stageFailed,
+                  isUpcoming && styles2.stageUpcoming,
+                  !isLast && styles2.stageNotLast,
+                ]}
+              >
+                <Text
+                  style={[
+                    styles2.stageText,
+                    isPassed && styles2.stagePassedText,
+                    isCurrent && styles2.stageCurrentText,
+                    isFailed && styles2.stageFailedText,
+                    isUpcoming && styles2.stageUpcomingText,
+                  ]}
+                >
+                  {text}
+                </Text>
+              </View>
+            );
+          })}
+        </View>
+      </SectionCard2>
+
+      {/* ── LEAD INFO ────────────────────────── */}
+      <SectionCard2 title="Lead Info" icon="user">
+        {[
+          { label: 'Email', value: SAMPLE_LEAD.email },
+          { label: 'Phone', value: SAMPLE_LEAD.number },
+          { label: 'Company', value: SAMPLE_LEAD.company },
+          {
+            label: 'Status',
+            value: STATUS_LABEL[currentStatus as LeadStatus] ?? currentStatus,
+          },
+          {
+            label: 'Source',
+            value:
+              SAMPLE_LEAD.source.charAt(0).toUpperCase() +
+              SAMPLE_LEAD.source.slice(1),
+          },
+          {
+            label: 'Value',
+            value: formatCurrency(SAMPLE_LEAD.value, 'en-PH', 'PHP'),
+          },
+        ].map(({ label, value }, i) => (
+          <View key={label}>
+            {i > 0 && <View style={styles2.rowDivider} />}
+            <View style={styles2.infoRow}>
+              <Text style={styles2.infoLabel}>{label}</Text>
+              <Text style={styles2.infoValue}>{value}</Text>
+            </View>
+          </View>
+        ))}
+      </SectionCard2>
+
+      {/* ── NOTES ────────────────────────────── */}
+      <SectionCard2
+        title="Notes"
+        icon="file-text"
+        actionLabel="Manage"
+        onAction={() => {}}
+      >
+        {LEAD_NOTES.map((note, i) => (
+          <View key={note.id}>
+            {i > 0 && <View style={styles2.rowDivider} />}
+            <View style={styles2.noteItem}>
+              <Text style={styles2.noteText}>{note.content}</Text>
+              <View style={styles2.noteMeta}>
+                <Feather name="clock" size={11} color={DS.color.textMuted} />
+                <Text style={styles2.noteMetaText}>{note.createdAt} · you</Text>
+              </View>
+            </View>
+          </View>
+        ))}
+      </SectionCard2>
     </ScrollView>
   );
 };
 
+/* ─── Shared sub-components ──────────────────────── */
+
+const SectionCard2 = ({
+  title,
+  icon,
+  actionLabel,
+  onAction,
+  children,
+}: {
+  title: string;
+  icon: React.ComponentProps<typeof Feather>['name'];
+  actionLabel?: string;
+  onAction?: () => void;
+  children: React.ReactNode;
+}) => (
+  <View style={styles2.sectionCard}>
+    <View style={styles2.sectionHeader}>
+      <View style={styles2.sectionTitleRow}>
+        <View style={styles2.sectionIconWrap}>
+          <Feather name={icon} size={13} color={DS.color.primary} />
+        </View>
+        <Text style={styles2.sectionTitle}>{title}</Text>
+      </View>
+      {actionLabel && onAction && (
+        <TouchableOpacity style={styles2.sectionAction} onPress={onAction}>
+          <Text style={styles2.sectionActionText}>{actionLabel}</Text>
+          <Feather name="chevron-right" size={13} color={DS.color.primary} />
+        </TouchableOpacity>
+      )}
+    </View>
+    <View style={styles2.sectionBody}>{children}</View>
+  </View>
+);
+
+const EmptyState = () => (
+  <View style={styles.emptyState}>
+    <View style={styles.emptyIconWrap}>
+      <Feather name="trending-up" size={28} color={DS.color.textMuted} />
+    </View>
+    <Text style={styles.emptyTitle}>No leads found</Text>
+    <Text style={styles.emptyDesc}>
+      Try a different filter or add a new lead.
+    </Text>
+  </View>
+);
+
+/* ─── LeadScreen Styles ──────────────────────────── */
+
 const styles = StyleSheet.create({
-  section: {
-    marginHorizontal: 12,
-    paddingVertical: 10,
-  },
-
-  divider: {
-    height: 1,
-    backgroundColor: '#E0E0E0', // light gray line
-    width: '100%',
-    marginVertical: 6, // spacing above and below
-  },
-
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#1d1d1d',
-    marginBottom: 10,
-    textAlign: 'left',
-  },
-
-  sectionRow: {
+  // HEADER
+  pageHeader: {
     flexDirection: 'row',
-    justifyContent: 'space-between', // pushes label left, value right
+    justifyContent: 'space-between',
     alignItems: 'center',
-    marginVertical: 4,
+    paddingHorizontal: DS.spacing.xl,
+    paddingTop: DS.spacing.xl,
+    paddingBottom: DS.spacing.md,
+  },
+  eyebrow: { ...DS.typography.eyebrow, marginBottom: 2 },
+  pageTitle: { ...DS.typography.screenTitle },
+  headerIconBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: DS.radius.md,
+    backgroundColor: DS.color.primaryMuted,
+    borderWidth: 1,
+    borderColor: DS.color.primaryLight,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 
-  sectionLabel: {
-    fontSize: 14,
-    color: '#555',
+  // ADD BUTTON
+  addButton: {
+    marginHorizontal: DS.spacing.xl,
+    height: 52,
+    borderRadius: DS.radius.md,
+    backgroundColor: DS.color.primary,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    ...DS.shadow.sm,
+    marginBottom: DS.spacing.md,
+  },
+  addButtonText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: DS.color.textInverse,
   },
 
-  sectionValue: {
-    fontSize: 14,
-    color: '#000', // darker for emphasis
-    textAlign: 'right',
+  // SORT
+  sortWrapper: {
+    marginHorizontal: DS.spacing.xl,
+    marginTop: DS.spacing.md,
+    zIndex: 50,
   },
+  sortLabel: { ...DS.typography.eyebrow, marginBottom: 8 },
+  sortTrigger: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: DS.color.card,
+    borderWidth: 1,
+    borderColor: DS.color.border,
+    borderRadius: DS.radius.md,
+    paddingHorizontal: DS.spacing.md,
+    height: 46,
+  },
+  sortDot: {
+    width: 8,
+    height: 8,
+    borderRadius: DS.radius.full,
+    backgroundColor: DS.color.textPrimary,
+  },
+  sortTriggerText: {
+    flex: 1,
+    fontSize: 13,
+    fontWeight: '600',
+    color: DS.color.textPrimary,
+  },
+  sortDropdown: {
+    marginTop: 6,
+    backgroundColor: DS.color.card,
+    borderWidth: 1,
+    borderColor: DS.color.border,
+    borderRadius: DS.radius.md,
+    overflow: 'hidden',
+    ...DS.shadow.md,
+  },
+  sortOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingVertical: 11,
+    paddingHorizontal: DS.spacing.md,
+  },
+  sortOptionActive: { backgroundColor: DS.color.primaryMuted },
+  sortOptionText: { fontSize: 13, color: DS.color.textSecondary },
+  sortOptionTextActive: { fontWeight: '700', color: DS.color.primary },
 
+  // LIST
+  listLabel: {
+    ...DS.typography.eyebrow,
+    paddingHorizontal: DS.spacing.xl,
+    marginTop: DS.spacing.lg,
+    marginBottom: DS.spacing.sm,
+  },
+  listContent: { paddingHorizontal: DS.spacing.xl, paddingBottom: 32 },
+
+  // LEAD CARD
+  leadCard: {
+    backgroundColor: DS.color.card,
+    borderRadius: DS.radius.lg,
+    borderWidth: 1,
+    borderColor: DS.color.border,
+    padding: DS.spacing.lg,
+    marginBottom: DS.spacing.sm,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: DS.spacing.md,
+    ...DS.shadow.sm,
+  },
+  leadAvatar: {
+    width: 44,
+    height: 44,
+    borderRadius: DS.radius.full,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  leadAvatarText: { fontSize: 16, fontWeight: '700' },
+  leadInfo: { flex: 1 },
+  leadName: { fontSize: 15, fontWeight: '700', color: DS.color.textPrimary },
+  leadCompany: { fontSize: 13, color: DS.color.textSecondary, marginTop: 1 },
+  leadMeta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginTop: 4,
+  },
+  leadMetaText: {
+    fontSize: 11,
+    color: DS.color.textMuted,
+    textTransform: 'capitalize',
+  },
+  leadStatusBadge: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: DS.radius.full,
+  },
+  leadStatusText: { fontSize: 11, fontWeight: '600' },
+
+  // EMPTY
+  emptyState: { alignItems: 'center', paddingVertical: 60, gap: DS.spacing.sm },
+  emptyIconWrap: {
+    width: 64,
+    height: 64,
+    borderRadius: DS.radius.xl,
+    backgroundColor: DS.color.card,
+    borderWidth: 1,
+    borderColor: DS.color.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: DS.spacing.xs,
+  },
+  emptyTitle: { fontSize: 16, fontWeight: '700', color: DS.color.textPrimary },
+  emptyDesc: { fontSize: 13, color: DS.color.textMuted, textAlign: 'center' },
+});
+
+/* ─── LeadDetailsScreen Styles ───────────────────── */
+
+const styles2 = StyleSheet.create({
+  screen: { flex: 1, backgroundColor: DS.color.bg },
+  content: { padding: DS.spacing.xl, gap: DS.spacing.md, paddingBottom: 40 },
+
+  profileCard: {
+    backgroundColor: DS.color.card,
+    borderRadius: DS.radius.lg,
+    borderWidth: 1,
+    borderColor: DS.color.border,
+    padding: DS.spacing.lg,
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: DS.spacing.md,
+    ...DS.shadow.sm,
+  },
   avatar: {
     width: 52,
     height: 52,
-    borderRadius: 26,
-    backgroundColor: '#E1F5EE',
+    borderRadius: DS.radius.full,
+    backgroundColor: DS.color.primaryLight,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 12,
   },
+  avatarText: { fontSize: 18, fontWeight: '700', color: DS.color.primary },
+  profileName: { fontSize: 17, fontWeight: '700', color: DS.color.textPrimary },
+  profileCompany: { fontSize: 13, color: DS.color.textSecondary, marginTop: 2 },
+  profileMeta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginTop: 8,
+  },
+  statusPill: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: DS.radius.full,
+  },
+  statusPillText: { fontSize: 11, fontWeight: '600' },
+  valuePill: { fontSize: 13, fontWeight: '600', color: DS.color.textPrimary },
+  editBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    backgroundColor: DS.color.primaryMuted,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: DS.radius.md,
+    borderWidth: 1,
+    borderColor: DS.color.primaryLight,
+  },
+  editBtnText: { fontSize: 13, fontWeight: '600', color: DS.color.primary },
 
-  info: {
+  actionsRow: { flexDirection: 'row', gap: DS.spacing.sm },
+  actionBtn: {
     flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    height: 46,
+    backgroundColor: DS.color.card,
+    borderRadius: DS.radius.md,
+    borderWidth: 1,
+    borderColor: DS.color.border,
   },
-
-  name: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#1A1A1A',
-    // textTransform: 'uppercase',
+  actionBtnPrimary: {
+    backgroundColor: DS.color.primary,
+    borderColor: DS.color.primary,
+    flex: 1.5,
   },
+  actionBtnText: { fontSize: 13, fontWeight: '600', color: DS.color.primary },
 
-  meta: {
-    fontSize: 12,
-    color: '#777',
-    marginTop: 2,
+  // PIPELINE
+  pipeline: {
+    flexDirection: 'row',
+    borderRadius: DS.radius.sm,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: DS.color.border,
+  },
+  pipelineStage: {
+    flex: 1,
+    paddingVertical: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  stageNotLast: { borderRightWidth: 1, borderRightColor: DS.color.border },
+  stageText: { fontSize: 10, fontWeight: '700' },
+  stagePassed: { backgroundColor: DS.color.successLight },
+  stagePassedText: { color: DS.color.success },
+  stageCurrent: { backgroundColor: DS.color.primary },
+  stageCurrentText: { color: DS.color.textInverse },
+  stageUpcoming: { backgroundColor: DS.color.bg },
+  stageUpcomingText: { color: DS.color.textMuted },
+  stageFailed: { backgroundColor: DS.color.dangerLight },
+  stageFailedText: { color: DS.color.danger },
+
+  // SECTION CARD
+  sectionCard: {
+    backgroundColor: DS.color.card,
+    borderRadius: DS.radius.lg,
+    borderWidth: 1,
+    borderColor: DS.color.border,
+    overflow: 'hidden',
+    ...DS.shadow.sm,
   },
   sectionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingBottom: 10,
+    paddingHorizontal: DS.spacing.lg,
+    paddingVertical: DS.spacing.md,
+    borderBottomWidth: 1,
+    borderBottomColor: DS.color.borderLight,
   },
-
-  editBtn: {
-    flexDirection: 'row',
+  sectionTitleRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  sectionIconWrap: {
+    width: 28,
+    height: 28,
+    borderRadius: DS.radius.xs,
+    backgroundColor: DS.color.primaryMuted,
     alignItems: 'center',
     justifyContent: 'center',
-    ...theme.components.button.base,
-    ...theme.components.button.sizes.sm.container,
-    ...theme.components.button.variants.secondary,
-    gap: theme.spacing.xs,
   },
-
-  editText: {
-    ...theme.components.button.text.base,
-    ...theme.components.button.text.variants.secondary,
-    fontSize: theme.components.button.sizes.sm.text.fontSize,
+  sectionTitle: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: DS.color.textPrimary,
   },
-
-  metaRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 10,
-  },
-
-  metaItem: {
-    fontSize: 12,
-    color: '#555',
-  },
-
-  metaItemPill: {
-    fontSize: 12,
-    color: '#555',
-    backgroundColor: '#E1F5EE',
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderWidth: 1,
-    borderColor: '#bfe4d7',
-    borderRadius: 999,
-    alignSelf: 'flex-start',
-    textTransform: 'capitalize',
-  },
-
-  metaDot: {
-    marginHorizontal: 6,
-    color: '#999',
-  },
-
-  actions: {
-    flexDirection: 'row',
-    marginTop: theme.spacing.sm,
-    gap: theme.spacing.sm,
-  },
-
-  // BUTTONS
-  actionBtn: {
-    flexDirection: 'row',
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: theme.spacing.xs,
-    ...theme.components.button.base,
-    ...theme.components.button.sizes.sm.container,
-    ...theme.components.button.variants.secondary,
-  },
-
-  actionBtnText: {
-    ...theme.components.button.text.base,
-    ...theme.components.button.text.variants.secondary,
-    fontSize: theme.components.button.sizes.sm.text.fontSize,
-  },
-
-  advanceBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    ...theme.components.button.base,
-    ...theme.components.button.sizes.sm.container,
-    ...theme.components.button.variants.primary,
-    gap: theme.spacing.xs,
-  },
-
-  advanceBtnText: {
-    ...theme.components.button.text.base,
-    ...theme.components.button.text.variants.primary,
-    fontSize: theme.components.button.sizes.sm.text.fontSize,
-  },
-
-  listContainer: {
-    flexDirection: 'column',
-  },
-
-  // Pipeline
-  pipeline: {
-    marginVertical: 16,
-  },
-
-  label: {
-    fontSize: 10,
-    fontWeight: '500',
-    letterSpacing: 1,
-    color: '#666',
-    marginBottom: 6,
-  },
-
-  container: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    width: '100%',
-    borderRadius: 10,
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: '#DADADA',
-    alignSelf: 'stretch',
-  },
-
-  stageItem: {
-    flex: 1,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRightWidth: 1,
-    alignItems: 'center',
-  },
-
-  stageText: {
-    fontSize: 10,
+  sectionAction: { flexDirection: 'row', alignItems: 'center', gap: 2 },
+  sectionActionText: {
+    fontSize: 13,
     fontWeight: '600',
+    color: DS.color.primary,
   },
+  sectionBody: { padding: DS.spacing.lg },
 
-  // PASSED
-  passedStage: {
-    backgroundColor: '#D1FAE5',
-    borderColor: '#6EE7B7',
+  rowDivider: { height: 1, backgroundColor: DS.color.borderLight },
+  infoRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: DS.spacing.sm,
   },
-
-  passedText: {
-    color: '#047857',
-  },
-
-  // CURRENT
-  currentStage: {
-    backgroundColor: '#1D9E75',
-    borderColor: '#1D9E75',
-  },
-
-  currentText: {
-    color: '#FFFFFF',
-  },
-
-  // UPCOMING
-  upcomingStage: {
-    backgroundColor: '#F3F4F6',
-    borderColor: '#E5E7EB',
-  },
-
-  upcomingText: {
-    color: '#6B7280',
-  },
-
-  // FAILED
-  failedStage: {
-    backgroundColor: '#FEE2E2',
-    borderColor: '#EF4444',
-  },
-
-  failedText: {
-    color: '#B91C1C',
-  },
-
-  // NOTES
-  noteCard: {
-    marginBottom: theme.spacing.sm,
-  },
-
-  noteText: {
-    fontSize: theme.typography.fontSize.sm,
+  infoLabel: { fontSize: 13, color: DS.color.textSecondary },
+  infoValue: {
+    fontSize: 13,
     fontWeight: '500',
-    lineHeight: 24,
-    color: theme.colors.textSecondary,
-    marginBottom: theme.spacing.sm,
+    color: DS.color.textPrimary,
+    textAlign: 'right',
+    maxWidth: '60%',
   },
 
-  noteMeta: {
-    fontSize: theme.typography.fontSize.xs,
-    color: theme.colors.textSecondary,
-  },
+  noteItem: { paddingVertical: DS.spacing.sm, gap: 6 },
+  noteText: { fontSize: 14, lineHeight: 22, color: DS.color.textSecondary },
+  noteMeta: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  noteMetaText: { fontSize: 11, color: DS.color.textMuted },
 });

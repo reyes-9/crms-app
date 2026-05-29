@@ -1,6 +1,6 @@
 import { Input } from '@/components/Input';
 import { useCustomer } from '@/hooks/useCustomer';
-import { theme } from '@/theme/colors';
+import { DS } from '@/theme/design';
 import { CustomerProfile } from '@/types/customer';
 import { RootStackParamList } from '@/types/navigation';
 import { Feather } from '@expo/vector-icons';
@@ -18,14 +18,12 @@ import {
 } from 'react-native';
 import Toast from 'react-native-toast-message';
 
+const EMAIL_REGEX = /^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/;
+
 export const EditCustomerScreen = () => {
   const route = useRoute<RouteProp<RootStackParamList, 'CustomerDetails'>>();
-
   const { customer } = route.params;
-
   const { editCustomer } = useCustomer();
-
-  const EMAIL_REGEX = /^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/;
 
   const {
     control,
@@ -45,24 +43,27 @@ export const EditCustomerScreen = () => {
   const watchedName = watch('name');
   const watchedCompany = watch('company');
 
+  const initials =
+    watchedName
+      ?.split(' ')
+      .slice(0, 2)
+      .map((w) => w[0])
+      .join('')
+      .toUpperCase() ?? '?';
+
   const onSubmit = async (data: CustomerProfile) => {
     try {
       await editCustomer(customer.id, data);
-
       Toast.show({
         type: 'success',
         text1: 'Customer Updated',
-        text2: 'Customer profile saved successfully',
+        text2: 'Profile saved successfully',
       });
-
-      console.log('Customer updated successfully');
-    } catch (err) {
-      console.error('Update failed:', err);
-
+    } catch {
       Toast.show({
         type: 'error',
         text1: 'Update Failed',
-        text2: 'Something went wrong while saving changes',
+        text2: 'Something went wrong while saving',
       });
     }
   };
@@ -71,70 +72,60 @@ export const EditCustomerScreen = () => {
     <KeyboardAvoidingView
       style={{ flex: 1 }}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      // keyboardVerticalOffset={10} // tweak if needed
     >
       <ScrollView
         style={styles.screen}
-        contentContainerStyle={styles.contentContainer}
+        contentContainerStyle={styles.content}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        {/* Header */}
+        {/* ── PAGE HEADER ──────────────────────── */}
         <View style={styles.header}>
-          <Text style={styles.title}>Edit Customer</Text>
-
-          <Text style={styles.subtitle}>
+          <Text style={styles.eyebrow}>EDITING</Text>
+          <Text style={styles.pageTitle}>Edit Customer</Text>
+          <Text style={styles.pageSubtitle}>
             Update customer details and contact information
           </Text>
         </View>
 
-        {/* Profile Summary */}
+        {/* ── PROFILE PREVIEW ──────────────────── */}
         <View style={styles.profileCard}>
-          <View style={styles.avatar}>
-            <Text style={styles.avatarText}>
-              {customer.name?.charAt(0).toUpperCase()}
-            </Text>
+          <View style={styles.avatarWrapper}>
+            <Text style={styles.avatarText}>{initials}</Text>
           </View>
 
           <View style={{ flex: 1 }}>
-            <Text style={styles.customerName}>{watchedName}</Text>
-
-            <Text style={styles.customerCompany}>
+            <Text style={styles.profileName}>
+              {watchedName || 'Customer Name'}
+            </Text>
+            <Text style={styles.profileCompany}>
               {watchedCompany || 'No company'}
             </Text>
           </View>
 
-          <View style={styles.badge}>
-            <Feather name="user" size={14} color={theme.colors.primary} />
-
-            <Text style={styles.badgeText}>Customer</Text>
+          <View style={styles.profileBadge}>
+            <Feather name="user" size={13} color={DS.color.primary} />
+            <Text style={styles.profileBadgeText}>Customer</Text>
           </View>
         </View>
 
-        {/* Form Card */}
-        {/* Form Card */}
-        <View style={styles.card}>
-          {/* Section Header */}
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Customer Information</Text>
-
-            <Text style={styles.sectionSubtitle}>
+        {/* ── FORM CARD ────────────────────────── */}
+        <View style={styles.formCard}>
+          <View style={styles.formHeader}>
+            <Text style={styles.formTitle}>Customer Information</Text>
+            <Text style={styles.formSubtitle}>
               Update the customer's profile and contact details
             </Text>
           </View>
 
-          {/* Name */}
           <Input
             name="name"
             label="Full Name"
             placeholder="Juan Dela Cruz"
             control={control}
-            rules={{
-              required: 'Name is required',
-            }}
+            rules={{ required: 'Name is required' }}
           />
 
-          {/* Email */}
           <Input
             name="email"
             label="Email Address"
@@ -142,57 +133,46 @@ export const EditCustomerScreen = () => {
             control={control}
             rules={{
               required: 'Email is required',
-              pattern: {
-                value: EMAIL_REGEX,
-                message: 'Invalid email address',
-              },
+              pattern: { value: EMAIL_REGEX, message: 'Invalid email address' },
             }}
           />
 
-          {/* Phone */}
           <Input
             name="number"
             label="Phone Number"
             placeholder="09123456789"
             control={control}
-            rules={{
-              required: 'Phone number is required',
-            }}
+            rules={{ required: 'Phone number is required' }}
           />
 
-          {/* Company */}
           <Input
             name="company"
             label="Company"
             placeholder="Locus CRM Inc."
             control={control}
-            rules={{
-              required: 'Company is required',
-            }}
+            rules={{ required: 'Company is required' }}
           />
 
-          {/* Submit Button */}
+          {/* SUBMIT */}
           <Pressable
             onPress={handleSubmit(onSubmit)}
             disabled={isSubmitting}
             style={({ pressed }) => [
-              styles.button,
-              pressed && styles.buttonPressed,
-              isSubmitting && styles.buttonDisabled,
+              styles.submitBtn,
+              pressed && { opacity: 0.88 },
+              isSubmitting && { opacity: 0.7 },
             ]}
           >
             {isSubmitting ? (
-              <View style={styles.loadingContainer}>
-                <ActivityIndicator size="small" color="#FFFFFF" />
-
-                <Text style={styles.buttonText}>Saving Changes...</Text>
+              <View style={styles.submitRow}>
+                <ActivityIndicator size="small" color={DS.color.textInverse} />
+                <Text style={styles.submitText}>Saving Changes…</Text>
               </View>
             ) : (
-              <>
-                <Feather name="save" size={18} color="#FFFFFF" />
-
-                <Text style={styles.buttonText}>Save Changes</Text>
-              </>
+              <View style={styles.submitRow}>
+                <Feather name="save" size={18} color={DS.color.textInverse} />
+                <Text style={styles.submitText}>Save Changes</Text>
+              </View>
             )}
           </Pressable>
         </View>
@@ -202,161 +182,76 @@ export const EditCustomerScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: '#F3F4F6',
-  },
+  screen: { flex: 1, backgroundColor: DS.color.bg },
+  content: { padding: DS.spacing.xl, paddingBottom: 48, gap: DS.spacing.md },
 
-  contentContainer: {
-    padding: 16,
-    paddingBottom: 40,
-  },
+  // HEADER
+  header: {},
+  eyebrow: { ...DS.typography.eyebrow, marginBottom: 2 },
+  pageTitle: { ...DS.typography.screenTitle },
+  pageSubtitle: { fontSize: 13, color: DS.color.textSecondary, marginTop: 4 },
 
-  header: {
-    marginBottom: 24,
-  },
-
-  title: {
-    fontSize: 28,
-    fontWeight: '700',
-    color: '#111827',
-  },
-
-  subtitle: {
-    marginTop: 6,
-    fontSize: 14,
-    lineHeight: 20,
-    color: '#6B7280',
-  },
-
+  // PROFILE
   profileCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 24,
-    padding: 18,
-
+    backgroundColor: DS.color.card,
+    borderRadius: DS.radius.lg,
+    borderWidth: 1,
+    borderColor: DS.color.border,
+    padding: DS.spacing.lg,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 14,
-
-    marginBottom: 20,
-
-    shadowColor: '#000',
-    shadowOpacity: 0.05,
-    shadowRadius: 12,
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-
-    elevation: 2,
+    gap: DS.spacing.md,
+    ...DS.shadow.sm,
   },
-
-  avatar: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-
-    backgroundColor: '#DCFCE7',
-
+  avatarWrapper: {
+    width: 52,
+    height: 52,
+    borderRadius: DS.radius.full,
+    backgroundColor: DS.color.primaryLight,
     alignItems: 'center',
     justifyContent: 'center',
   },
-
-  avatarText: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: '#15803D',
-  },
-
-  customerName: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#111827',
-  },
-
-  customerCompany: {
-    marginTop: 4,
-    fontSize: 13,
-    color: '#6B7280',
-  },
-
-  badge: {
+  avatarText: { fontSize: 18, fontWeight: '700', color: DS.color.primary },
+  profileName: { fontSize: 16, fontWeight: '700', color: DS.color.textPrimary },
+  profileCompany: { fontSize: 13, color: DS.color.textSecondary, marginTop: 2 },
+  profileBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-
+    gap: 5,
+    backgroundColor: DS.color.primaryMuted,
     paddingHorizontal: 10,
     paddingVertical: 6,
-
-    borderRadius: 999,
-
-    backgroundColor: '#EFF6FF',
+    borderRadius: DS.radius.full,
   },
-
-  badgeText: {
+  profileBadgeText: {
     fontSize: 12,
     fontWeight: '600',
-    color: theme.colors.primary,
+    color: DS.color.primary,
   },
 
   // FORM
-  card: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 20,
-    padding: 20,
-
+  formCard: {
+    backgroundColor: DS.color.card,
+    borderRadius: DS.radius.lg,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: DS.color.border,
+    padding: DS.spacing.lg,
+    gap: DS.spacing.md,
+    ...DS.shadow.sm,
   },
+  formHeader: { gap: 4, marginBottom: DS.spacing.xs },
+  formTitle: { ...DS.typography.sectionTitle },
+  formSubtitle: { fontSize: 13, color: DS.color.textSecondary },
 
-  sectionHeader: {
-    marginBottom: 20,
-  },
-
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#111827',
-  },
-
-  sectionSubtitle: {
-    marginTop: 4,
-    fontSize: 13,
-    lineHeight: 18,
-    color: '#6B7280',
-  },
-
-  button: {
-    marginTop: 8,
-
-    height: 54,
-    borderRadius: 14,
-
-    backgroundColor: theme.colors.primary,
-
-    flexDirection: 'row',
+  // SUBMIT
+  submitBtn: {
+    height: 52,
+    borderRadius: DS.radius.md,
+    backgroundColor: DS.color.primary,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 10,
+    marginTop: DS.spacing.sm,
   },
-
-  buttonPressed: {
-    opacity: 0.9,
-  },
-
-  buttonDisabled: {
-    opacity: 0.7,
-  },
-
-  buttonText: {
-    color: '#FFFFFF',
-    fontSize: 15,
-    fontWeight: '600',
-  },
-
-  loadingContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-  },
+  submitRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  submitText: { fontSize: 15, fontWeight: '600', color: DS.color.textInverse },
 });

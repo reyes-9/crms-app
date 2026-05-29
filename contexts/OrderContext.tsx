@@ -24,7 +24,7 @@ export function OrderProvider({ children }: OrderProviderProps) {
       throw new Error(err);
     }
   }
-  
+
   async function getOrdersByCustomerIdLimit(customer_id: number) {
     try {
       const order = await orderService.getOrdersByCustomerIdLimit(customer_id);

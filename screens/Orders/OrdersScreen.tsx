@@ -1,6 +1,7 @@
 import { ReusableModal } from '@/components/ReusableModal';
 import SearchInput from '@/components/SearchInput';
 import { useOrder } from '@/hooks/useOrder';
+import { DS } from '@/theme/design';
 import { RootStackParamList } from '@/types/navigation';
 import { OrderDetails, OrderStatusType } from '@/types/order';
 import { formatCurrency } from '@/utils/formatCurrency';
@@ -20,7 +21,7 @@ import {
 } from 'react-native';
 import Toast from 'react-native-toast-message';
 
-/* ==================== TYPES=====================*/
+/* ─── Types ──────────────────────────────────────── */
 
 type FilterLabel =
   | 'All Orders'
@@ -36,12 +37,82 @@ type TransitionResult = {
   status?: OrderStatusType;
   message?: string;
 };
-/* ==================== MAIN SCREEN ===================== */
+
+type Nav = NativeStackNavigationProp<RootStackParamList>;
+
+/* ─── Constants ──────────────────────────────────── */
+
+const STATUS_FLOW: Partial<Record<OrderStatusType, OrderStatusType>> = {
+  pending: 'confirmed',
+  confirmed: 'processing',
+  processing: 'shipped',
+  shipped: 'delivered',
+};
+
+const BUTTON_LABELS: Partial<Record<OrderStatusType, string>> = {
+  pending: 'Confirm Order',
+  confirmed: 'Start Processing',
+  processing: 'Mark as Shipped',
+  shipped: 'Mark as Delivered',
+};
+
+const FILTER_MAP: Record<FilterLabel, OrderStatusType | null> = {
+  'All Orders': null,
+  Pending: 'pending',
+  Confirmed: 'confirmed',
+  Processing: 'processing',
+  Shipped: 'shipped',
+  Delivered: 'delivered',
+  Cancelled: 'cancelled',
+};
+
+const FILTERS: FilterLabel[] = [
+  'All Orders',
+  'Pending',
+  'Confirmed',
+  'Processing',
+  'Shipped',
+  'Delivered',
+  'Cancelled',
+];
+
+const STATUS_UI = {
+  all: {
+    label: 'All Orders',
+    bg: '#F8FAFC',
+    color: '#0F172A',
+    dot: '#0F172A',
+    icon: 'shopping-bag',
+  },
+  pending: { ...DS.color.status.pending, label: 'Pending', icon: 'package' },
+  confirmed: {
+    ...DS.color.status.confirmed,
+    label: 'Confirmed',
+    icon: 'check-circle',
+  },
+  processing: {
+    ...DS.color.status.processing,
+    label: 'Processing',
+    icon: 'refresh-cw',
+  },
+  shipped: { ...DS.color.status.shipped, label: 'Shipped', icon: 'truck' },
+  delivered: {
+    ...DS.color.status.delivered,
+    label: 'Delivered',
+    icon: 'check-circle',
+  },
+  cancelled: {
+    ...DS.color.status.cancelled,
+    label: 'Cancelled',
+    icon: 'x-circle',
+  },
+} as const;
+
+/* ─── Screen ─────────────────────────────────────── */
 
 export const OrdersScreen = () => {
   const route = useRoute();
-  const navigation =
-    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const navigation = useNavigation<Nav>();
 
   const {
     orders,
@@ -51,126 +122,40 @@ export const OrdersScreen = () => {
     deleteOrder,
     advanceOrder,
   } = useOrder();
-
-  const STATUS_FLOW: Partial<Record<OrderStatusType, OrderStatusType>> = {
-    pending: 'confirmed',
-    confirmed: 'processing',
-    processing: 'shipped',
-    shipped: 'delivered',
-  };
-
-  const BUTTON_LABELS: Partial<Record<OrderStatusType, string>> = {
-    pending: 'Confirm Order',
-    confirmed: 'Start Processing',
-    processing: 'Mark as Shipped',
-    shipped: 'Mark as Delivered',
-    // delivered: undefined, // Explicitly no button
-    // cancelled: undefined, // Explicitly no button
-  };
-
   const { customer_id } = route.params as { customer_id: number };
 
-  const [error, setError] = useState<string | null>(null);
+  // ── All state at top (no hooks after early returns) ──
   const [loading, setLoading] = useState(true);
-
-  const [selectedFilter, setSelectedFilter] = useState<FilterLabel>('Pending');
-
-  const sortedOrders = React.useMemo(() => {
-    const status = getStatusFromFilter(selectedFilter);
-
-    if (!orders?.length) return [];
-
-    if (!status) return orders;
-
-    return orders.filter((o) => o.status === status);
-  }, [orders, selectedFilter]);
-
+  const [error, setError] = useState<string | null>(null);
   const [openMenu, setOpenMenu] = useState<number | null>(null);
+  const [selectedFilter, setSelectedFilter] = useState<FilterLabel>('Pending');
 
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [deleteOrderId, setDeleteOrderId] = useState<number | null>(null);
-
   const [cancelModalVisible, setCancelModalVisible] = useState(false);
   const [cancelOrderId, setCancelOrderId] = useState<number | null>(null);
-
   const [advanceModalVisible, setAdvanceModalVisible] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<OrderDetails | null>(null);
-
   const [detailsModalVisible, setDetailsModalVisible] = useState(false);
   const [orderDetailsToView, setOrderDetailsToView] =
     useState<OrderDetails | null>(null);
+  const [menuLayout, setMenuLayout] = useState<{
+    orderId: number | null;
+    openUpward: boolean;
+  }>({
+    orderId: null,
+    openUpward: false,
+  });
 
-  /* ================= FILTER DATA ================= */
+  const sortedOrders = React.useMemo(() => {
+    if (!orders?.length) return [];
+    const status = FILTER_MAP[selectedFilter];
+    return status ? orders.filter((o) => o.status === status) : orders;
+  }, [orders, selectedFilter]);
 
-  const filters = [
-    'All Orders',
-    'Pending',
-    'Confirmed',
-    'Processing',
-    'Shipped',
-    'Delivered',
-    'Cancelled',
-  ] as const;
-
-  const statusDotColors: Record<FilterLabel, string> = {
-    'All Orders': '#0F172A',
-    Pending: '#C2410C',
-    Confirmed: '#1D4ED8',
-    Processing: '#5B21B6',
-    Shipped: '#0E7490',
-    Delivered: '#047857',
-    Cancelled: '#991B1B',
-  };
-
-  const orderStatuses = {
-    all: {
-      label: 'All Orders',
-      bg: '#F8FAFC',
-      color: '#0F172A',
-      icon: 'shopping-bag',
-    },
-    pending: {
-      label: 'Pending',
-      bg: '#FFF7ED',
-      color: '#C2410C',
-      icon: 'package',
-    },
-    confirmed: {
-      label: 'Confirmed',
-      bg: '#EFF6FF',
-      color: '#1D4ED8',
-      icon: 'check-circle',
-    },
-    processing: {
-      label: 'Processing',
-      bg: '#F5F3FF',
-      color: '#5B21B6',
-      icon: 'refresh-cw',
-    },
-    shipped: {
-      label: 'Shipped',
-      bg: '#ECFEFF',
-      color: '#0E7490',
-      icon: 'truck',
-    },
-    delivered: {
-      label: 'Delivered',
-      bg: '#ECFDF5',
-      color: '#047857',
-      icon: 'check-circle',
-    },
-    cancelled: {
-      label: 'Cancelled',
-      bg: '#FEF2F2',
-      color: '#991B1B',
-      icon: 'x-circle',
-    },
-  };
-
-  /* ================= FETCH ================= */
-
+  /* ── Fetch ──────────────────────────────────────── */
   useEffect(() => {
-    const fetch = async () => {
+    (async () => {
       try {
         setLoading(true);
         await getOrdersByCustomerId(customer_id);
@@ -180,36 +165,20 @@ export const OrdersScreen = () => {
       } finally {
         setLoading(false);
       }
-    };
-    fetch();
+    })();
   }, []);
 
-  /* ================= LOGIC ================= */
+  /* ── Handlers ───────────────────────────────────── */
 
-  const [menuLayout, setMenuLayout] = useState<{
-    orderId: number | null;
-    openUpward: boolean;
-  }>({
-    orderId: null,
-    openUpward: false,
-  });
+  const getNextStatus = (cur: OrderStatusType) => STATUS_FLOW[cur] ?? null;
 
-  function getStatusFromFilter(filter: FilterLabel): OrderStatusType | null {
-    const map: Record<FilterLabel, OrderStatusType | null> = {
-      'All Orders': null,
-      Pending: 'pending',
-      Confirmed: 'confirmed',
-      Processing: 'processing',
-      Shipped: 'shipped',
-      Delivered: 'delivered',
-      Cancelled: 'cancelled',
-    };
-
-    return map[filter];
-  }
-
-  const filterOrders = (filter: FilterLabel) => {
-    setSelectedFilter(filter);
+  const validateAdvancement = (cur: OrderStatusType): TransitionResult => {
+    const next = getNextStatus(cur);
+    if (!next)
+      return { isValid: false, message: 'Order cannot be advanced further.' };
+    if (STATUS_FLOW[cur] !== next)
+      return { isValid: false, message: 'Invalid status transition.' };
+    return { isValid: true, status: next };
   };
 
   async function handleSearch(query: string) {
@@ -220,60 +189,28 @@ export const OrdersScreen = () => {
     await searchOrder(query);
   }
 
-  const validateOrderAdvancement = (
-    current: OrderStatusType,
-  ): TransitionResult => {
-    const nextStatus = getNextStatus(current);
-
-    if (!nextStatus) {
-      return {
-        isValid: false,
-        message: 'Order cannot be advanced further.',
-      };
-    }
-
-    if (!canAdvanceStatus(current, nextStatus)) {
-      return {
-        isValid: false,
-        message: 'Invalid status transition.',
-      };
-    }
-
-    return {
-      isValid: true,
-      status: nextStatus,
-    };
-  };
-  const getNextStatus = (current: OrderStatusType) => {
-    return STATUS_FLOW[current] ?? null;
-  };
-  const canAdvanceStatus = (
-    current: OrderStatusType,
-    next: OrderStatusType,
-  ): boolean => {
-    return STATUS_FLOW[current] === next;
-  };
-
-  const handleAdd = () => {
+  const handleAdd = () =>
     navigation.navigate('OrderForm', {
       mode: 'create',
       customerId: customer_id,
     });
-  };
-  const handleEdit = (id: number) => {
+  const handleEdit = (id: number) =>
     navigation.navigate('OrderForm', { mode: 'edit', orderId: id });
+  const handleDelete = (id: number) => {
+    setDeleteOrderId(id);
+    setDeleteModalVisible(true);
   };
   const handleCancel = (id: number) => {
     setCancelOrderId(id);
     setCancelModalVisible(true);
   };
-  const handleDelete = (id: number) => {
-    setDeleteOrderId(id);
-    setDeleteModalVisible(true);
+  const handleViewDetails = (order: OrderDetails) => {
+    setOrderDetailsToView(order);
+    setDetailsModalVisible(true);
   };
-  const handleAdvance = (order: OrderDetails) => {
-    const result = validateOrderAdvancement(order.status);
 
+  const handleAdvance = (order: OrderDetails) => {
+    const result = validateAdvancement(order.status);
     if (!result.isValid) {
       Toast.show({
         type: 'error',
@@ -282,125 +219,155 @@ export const OrdersScreen = () => {
       });
       return;
     }
-
     setSelectedOrder(order);
     setAdvanceModalVisible(true);
   };
 
-  const handleViewDetails = (order: OrderDetails) => {
-    setOrderDetailsToView(order);
-    setDetailsModalVisible(true);
-  };
-
   const confirmDelete = async () => {
-    if (deleteOrderId !== null) {
-      try {
-        await deleteOrder(deleteOrderId);
-        setDeleteModalVisible(false);
-        setDeleteOrderId(null);
-        Toast.show({
-          type: 'success',
-          text1: 'Success',
-          text2: 'Order deleted successfully',
-        });
-      } catch (error) {
-        setDeleteModalVisible(false);
-        console.error(error);
-        Toast.show({
-          type: 'error',
-          text1: 'Error',
-          text2: 'Failed to delete order',
-        });
-      }
-    }
-  };
-  const confirmCancel = async () => {
-    if (cancelOrderId !== null) {
-      try {
-        await cancelOrder(cancelOrderId);
-        setCancelModalVisible(false);
-        setCancelOrderId(null);
-        Toast.show({
-          type: 'success',
-          text1: 'Success',
-          text2: 'Order cancelled successfully',
-        });
-      } catch (error) {
-        setCancelModalVisible(false);
-        Toast.show({
-          type: 'error',
-          text1: 'Error',
-          text2: 'Failed to cancel order',
-        });
-      }
-    }
-  };
-  const confirmAdvance = async () => {
-    if (!selectedOrder) return;
-
+    if (deleteOrderId === null) return;
     try {
-      const result = validateOrderAdvancement(selectedOrder.status);
-      if (!result.isValid || !result.status) {
-        Toast.show({
-          type: 'error',
-          text1: 'Error',
-          text2: result.message ?? 'Invalid transition',
-        });
-        return;
-      }
-
-      await advanceOrder(selectedOrder.id, result.status);
-
-      setAdvanceModalVisible(false);
-      setSelectedOrder(null);
-
+      await deleteOrder(deleteOrderId);
+      setDeleteModalVisible(false);
+      setDeleteOrderId(null);
       Toast.show({
         type: 'success',
-        text1: 'Success',
-        text2: 'Order advanced successfully',
+        text1: 'Deleted',
+        text2: 'Order removed successfully',
       });
-    } catch (error) {
-      console.error(error);
-      setAdvanceModalVisible(false);
+    } catch {
+      setDeleteModalVisible(false);
+      Toast.show({ type: 'error', text1: 'Error', text2: 'Failed to delete' });
+    }
+  };
+
+  const confirmCancel = async () => {
+    if (cancelOrderId === null) return;
+    try {
+      await cancelOrder(cancelOrderId);
+      setCancelModalVisible(false);
+      setCancelOrderId(null);
+      Toast.show({
+        type: 'success',
+        text1: 'Cancelled',
+        text2: 'Order cancelled successfully',
+      });
+    } catch {
+      setCancelModalVisible(false);
+      Toast.show({ type: 'error', text1: 'Error', text2: 'Failed to cancel' });
+    }
+  };
+
+  const confirmAdvance = async () => {
+    if (!selectedOrder) return;
+    const result = validateAdvancement(selectedOrder.status);
+    if (!result.isValid || !result.status) {
       Toast.show({
         type: 'error',
         text1: 'Error',
-        text2: 'Failed to advance order',
+        text2: result.message ?? 'Invalid transition',
       });
+      return;
+    }
+    try {
+      await advanceOrder(selectedOrder.id, result.status);
+      setAdvanceModalVisible(false);
+      setSelectedOrder(null);
+      Toast.show({
+        type: 'success',
+        text1: 'Advanced',
+        text2: 'Order advanced successfully',
+      });
+    } catch {
+      setAdvanceModalVisible(false);
+      Toast.show({ type: 'error', text1: 'Error', text2: 'Failed to advance' });
     }
   };
 
-  /* ================= UI STATES ================= */
-
+  /* ── Early returns (after all hooks) ───────────── */
   if (loading) return <LoadingScreen />;
   if (error) return <ErrorScreen error={error} />;
 
-  /* ================= RENDER ================= */
-
+  /* ── Render ─────────────────────────────────────── */
   return (
     <>
-      <ScrollView style={{}} showsVerticalScrollIndicator={false}>
-        <Pressable style={{ flex: 1 }} onPress={() => setOpenMenu(null)}>
-          <View style={styles.container}>
-            <HeaderSection />
+      <ScrollView style={styles.screen} showsVerticalScrollIndicator={false}>
+        <Pressable onPress={() => setOpenMenu(null)}>
+          {/* PAGE HEADER */}
+          <View style={styles.header}>
+            <View>
+              <Text style={styles.eyebrow}>OPERATIONS</Text>
+              <Text style={styles.pageTitle}>Order Management</Text>
+              <Text style={styles.pageSubtitle}>
+                Search, filter, and manage all orders
+              </Text>
+            </View>
+            <View style={styles.headerIconBtn}>
+              <Feather name="layers" size={18} color={DS.color.primary} />
+            </View>
+          </View>
 
-            <AddButton onPress={handleAdd} />
+          {/* ADD BUTTON */}
+          <View style={styles.addContainer}>
+            <Pressable style={styles.addButton} onPress={handleAdd}>
+              <Feather name="plus" size={18} color={DS.color.textInverse} />
+              <Text style={styles.addButtonText}>Add Order</Text>
+            </Pressable>
+          </View>
 
+          {/* SEARCH */}
+          <View style={styles.searchWrapper}>
             <SearchInput onSearch={handleSearch} />
+          </View>
 
-            <OrderFilters
-              filters={filters}
-              selected={selectedFilter}
-              colors={statusDotColors}
-              onSelect={filterOrders}
-            />
+          {/* FILTER CHIPS */}
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            style={styles.filtersScroll}
+          >
+            <View style={styles.filtersRow}>
+              {FILTERS.map((f) => {
+                const isActive = selectedFilter === f;
+                const dotKey = (
+                  f === 'All Orders' ? 'all' : f.toLowerCase()
+                ) as keyof typeof STATUS_UI;
+                const dotColor = STATUS_UI[dotKey]?.dot ?? DS.color.textPrimary;
 
-            <View style={styles.ordersContainer}>
-              {sortedOrders.map((order) => (
-                <OrderItemCard
+                return (
+                  <Pressable
+                    key={f}
+                    onPress={() => setSelectedFilter(f)}
+                    style={[
+                      styles.filterChip,
+                      isActive && styles.filterChipActive,
+                    ]}
+                  >
+                    <View
+                      style={[styles.filterDot, { backgroundColor: dotColor }]}
+                    />
+                    <Text
+                      style={[
+                        styles.filterChipText,
+                        isActive && styles.filterChipTextActive,
+                      ]}
+                    >
+                      {f}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+          </ScrollView>
+
+          {/* ORDER LIST */}
+          <View style={styles.ordersList}>
+            {sortedOrders.length === 0 ? (
+              <EmptyState />
+            ) : (
+              sortedOrders.map((order) => (
+                <OrderCard
                   key={order.id}
                   order={order}
-                  statusMap={orderStatuses}
                   openMenu={openMenu}
                   setOpenMenu={setOpenMenu}
                   menuLayout={menuLayout}
@@ -410,21 +377,15 @@ export const OrdersScreen = () => {
                   onDelete={handleDelete}
                   onAdvance={handleAdvance}
                   onViewDetails={handleViewDetails}
-                  btnLabels={BUTTON_LABELS[order.status]}
+                  btnLabel={BUTTON_LABELS[order.status]}
                 />
-              ))}
-
-              {sortedOrders.length === 0 && (
-                <View style={styles.emptyState}>
-                  <Feather name="inbox" size={32} color="#9CA3AF" />
-                  <Text style={styles.emptyStateText}>No orders found</Text>
-                </View>
-              )}
-            </View>
+              ))
+            )}
           </View>
         </Pressable>
       </ScrollView>
 
+      {/* ── MODALS ───────────────────────────────── */}
       <ReusableModal
         state="danger"
         visible={deleteModalVisible}
@@ -432,15 +393,11 @@ export const OrdersScreen = () => {
         message="Once deleted, this record cannot be recovered."
         buttons={[
           {
-            label: 'Close',
+            label: 'Cancel',
             onPress: () => setDeleteModalVisible(false),
             variant: 'neutral',
           },
-          {
-            label: 'Delete',
-            onPress: confirmDelete,
-            variant: 'danger',
-          },
+          { label: 'Delete', onPress: confirmDelete, variant: 'danger' },
         ]}
         onClose={() => setDeleteModalVisible(false)}
       />
@@ -448,7 +405,7 @@ export const OrdersScreen = () => {
       <ReusableModal
         state="danger"
         visible={cancelModalVisible}
-        title="Order Cancellation"
+        title="Cancel Order"
         message="This order will be permanently cancelled and cannot be undone."
         buttons={[
           {
@@ -456,11 +413,7 @@ export const OrdersScreen = () => {
             onPress: () => setCancelModalVisible(false),
             variant: 'neutral',
           },
-          {
-            label: 'Cancel',
-            onPress: confirmCancel,
-            variant: 'danger',
-          },
+          { label: 'Cancel Order', onPress: confirmCancel, variant: 'danger' },
         ]}
         onClose={() => setCancelModalVisible(false)}
       />
@@ -468,19 +421,15 @@ export const OrdersScreen = () => {
       <ReusableModal
         state="success"
         visible={advanceModalVisible}
-        title="Order Advancement"
-        message="The status of this order will be advanced and cannot be undone."
+        title="Advance Order"
+        message="The status of this order will be advanced. This cannot be undone."
         buttons={[
           {
             label: 'Close',
             onPress: () => setAdvanceModalVisible(false),
             variant: 'neutral',
           },
-          {
-            label: 'Advance',
-            onPress: confirmAdvance,
-            variant: 'primary',
-          },
+          { label: 'Advance', onPress: confirmAdvance, variant: 'primary' },
         ]}
         onClose={() => setAdvanceModalVisible(false)}
       />
@@ -506,585 +455,474 @@ export const OrdersScreen = () => {
   );
 };
 
-const OrderDetailsContent = ({ order }: { order: OrderDetails }) => (
-  <View style={styles.detailsContent}>
-    <DetailRow label="Order ID" value={String(order.id).padStart(5, '0')} />
-    <DetailRow label="Description" value={order.description} />
-    <DetailRow
-      label="Status"
-      value={order.status.charAt(0).toUpperCase() + order.status.slice(1)}
-    />
-    <DetailRow label="Price" value={formatCurrency(order.price)} />
-    <DetailRow
-      label="Created Date"
-      value={new Date(order.created_at).toLocaleDateString()}
-    />
-    {order.updated_at && (
-      <DetailRow
-        label="Updated Date"
-        value={new Date(order.updated_at).toLocaleDateString()}
-      />
-    )}
-  </View>
-);
+/* ─── Order Card ─────────────────────────────────── */
 
-const DetailRow = ({ label, value }: { label: string; value: string }) => (
-  <View style={styles.detailRow}>
-    <Text style={styles.detailLabel}>{label}</Text>
-    <Text style={styles.detailValue}>{value}</Text>
-  </View>
-);
-
-/* =========================================================
-   SUB COMPONENTS 
-========================================================= */
-
-const HeaderSection = () => (
-  <View style={styles.pageHeader}>
-    <View>
-      {/* <Text style={styles.pageEyebrow}>Operations</Text> */}
-      <Text style={styles.pageTitle}>Order Management</Text>
-      <Text style={styles.pageSubtitle}>
-        Search, filter, and manage all customer orders
-      </Text>
-    </View>
-
-    <View style={styles.pageHeaderIcon}>
-      <Feather name="layers" size={20} color="#2563EB" />
-    </View>
-  </View>
-);
-
-const AddButton = ({ onPress }: any) => (
-  <View style={styles.actionContainer}>
-    <Pressable style={styles.addButton} onPress={onPress}>
-      <Feather name="plus" size={18} color="#FFFFFF" />
-      <Text style={styles.addButtonText}>Add Note</Text>
-    </Pressable>
-  </View>
-  // <View style={styles.addBtnContainer}>
-  //   <Pressable
-  //     onPress={onPress}
-  //     style={({ pressed }) => [
-  //       {
-  //         backgroundColor: '#2563EB',
-  //         width: '50%',
-  //         paddingVertical: 10,
-  //         borderRadius: 10,
-  //         alignItems: 'center',
-  //         opacity: pressed ? 0.85 : 1,
-  //       },
-  //     ]}
-  //   >
-  //     <Text style={theme.components.button.text.variants.primary}>
-  //       Add Orders
-  //     </Text>
-  //   </Pressable>
-  // </View>
-);
-
-const OrderFilters = ({ filters, selected, colors, onSelect }: any) => (
-  <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-    <View style={styles.filterRow}>
-      {filters.map((f: string) => {
-        const isActive = selected === f;
-
-        return (
-          <Pressable
-            key={f}
-            onPress={() => onSelect(f)}
-            style={[styles.filterChip, isActive && styles.filterChipActive]}
-          >
-            <View style={[styles.statusDot, { backgroundColor: colors[f] }]} />
-            <Text
-              style={[
-                styles.filterChipText,
-                isActive && styles.filterChipTextActive,
-              ]}
-            >
-              {f}
-            </Text>
-          </Pressable>
-        );
-      })}
-    </View>
-  </ScrollView>
-);
-
-const OrderItemCard = ({
+const OrderCard = ({
   order,
-  statusMap,
   openMenu,
   setOpenMenu,
+  menuLayout,
+  setMenuLayout,
   onEdit,
   onCancel,
   onDelete,
   onAdvance,
   onViewDetails,
-  btnLabels,
-  setMenuLayout,
-  menuLayout,
+  btnLabel,
 }: any) => {
-  const status = statusMap[order.status] ?? statusMap.all;
+  const statusKey = order.status as keyof typeof STATUS_UI;
+  const status = STATUS_UI[statusKey] ?? STATUS_UI.all;
+  const isOpen = openMenu === order.id;
+  const canEdit = ['pending', 'confirmed', 'processing'].includes(order.status);
+  const canCancel = !['cancelled', 'delivered', 'shipped'].includes(
+    order.status,
+  );
+  const canAdvance = !['cancelled', 'delivered'].includes(order.status);
 
   return (
     <View style={styles.orderCard}>
-      <View style={styles.orderLeft}>
-        <View style={[styles.orderIconWrapper, { backgroundColor: status.bg }]}>
-          <Feather name={status.icon as any} size={18} color={status.color} />
+      {/* Left: icon */}
+      <View style={[styles.orderIconWrap, { backgroundColor: status.bg }]}>
+        <Feather name={status.icon as any} size={18} color={status.color} />
+      </View>
+
+      {/* Center: content */}
+      <View style={styles.orderContent}>
+        <Text style={styles.orderTitle} numberOfLines={1}>
+          {order.description}
+        </Text>
+
+        <View style={styles.orderMeta}>
+          <Feather name="hash" size={11} color={DS.color.textMuted} />
+          <Text style={styles.orderMetaText}>
+            {String(order.id).padStart(5, '0')}
+          </Text>
+          <Feather name="calendar" size={11} color={DS.color.textMuted} />
+          <Text style={styles.orderMetaText}>
+            {new Date(order.created_at).toLocaleDateString()}
+          </Text>
         </View>
 
-        <View style={styles.orderContent}>
-          <Text style={styles.orderTitle}>{order.description}</Text>
-
-          <View style={styles.orderMetaRow}>
-            <Feather name="hash" size={12} color="#9CA3AF" />
-            <Text style={styles.orderMetaText}>
-              {String(order.id).padStart(5, '0')}
-              {/* {order.id} */}
-            </Text>
-
-            <Feather name="calendar" size={12} color="#9CA3AF" />
-            <Text style={styles.orderMetaText}>
-              {new Date(order.created_at).toLocaleDateString()}
-              {/* {order.created_at} */}
+        <View style={styles.orderBottom}>
+          <View style={[styles.statusBadge, { backgroundColor: status.bg }]}>
+            <Text style={[styles.statusBadgeText, { color: status.color }]}>
+              {status.label}
             </Text>
           </View>
-
-          <View style={styles.orderBottomRow}>
-            <View style={[styles.statusBadge, { backgroundColor: status.bg }]}>
-              <Text style={[styles.statusText, { color: status.color }]}>
-                {status.label}
-              </Text>
-            </View>
-
-            <Text style={styles.orderPrice}>
-              {/* ₱{Number(order.price.toLocaleString())} */}
-              {formatCurrency(order.price)}
-            </Text>
-          </View>
+          <Text style={styles.orderPrice}>{formatCurrency(order.price)}</Text>
         </View>
       </View>
-      {/* 
+
+      {/* Right: 3-dot menu trigger */}
       <TouchableOpacity
-        onPress={() => setOpenMenu(openMenu === order.id ? null : order.id)}
-      >
-        <Feather name="more-vertical" size={18} />
-      </TouchableOpacity> */}
-      <TouchableOpacity
-        onPress={(event) => {
-          const { pageY } = event.nativeEvent;
-
-          const SCREEN_HEIGHT = Dimensions.get('window').height;
-
-          // estimated menu height
-          const MENU_HEIGHT = 230;
-
-          const shouldOpenUpward = pageY > SCREEN_HEIGHT - MENU_HEIGHT;
-
-          setMenuLayout({
-            orderId: openMenu === order.id ? null : order.id,
-            openUpward: shouldOpenUpward,
-          });
-
-          setOpenMenu(openMenu === order.id ? null : order.id);
+        style={styles.menuTrigger}
+        onPress={(e) => {
+          const { pageY } = e.nativeEvent;
+          const openUpward = pageY > Dimensions.get('window').height - 240;
+          setMenuLayout({ orderId: order.id, openUpward });
+          setOpenMenu(isOpen ? null : order.id);
         }}
       >
-        <Feather name="more-vertical" size={18} />
+        <Feather
+          name="more-vertical"
+          size={18}
+          color={DS.color.textSecondary}
+        />
       </TouchableOpacity>
 
-      {openMenu === order.id && (
-        <OrderMenu
-          onEdit={() => onEdit(order.id)}
-          onCancel={() => onCancel(order.id)}
-          onDelete={() => onDelete(order.id)}
-          onAdvance={() => onAdvance(order)}
-          onViewDetails={() => onViewDetails(order)}
-          close={() => setOpenMenu(null)}
-          orderStatus={order.status}
-          btnLabels={btnLabels}
+      {/* Dropdown menu */}
+      {isOpen && (
+        <View
           style={[
             styles.menu,
             menuLayout.openUpward ? styles.menuTop : styles.menuBottom,
           ]}
-        />
+        >
+          <MenuItem
+            icon="eye"
+            label="View Details"
+            onPress={() => {
+              onViewDetails(order);
+              setOpenMenu(null);
+            }}
+          />
+
+          {canEdit && (
+            <>
+              <View style={styles.menuDivider} />
+              <MenuItem
+                icon="edit-2"
+                label="Edit Order"
+                onPress={() => {
+                  onEdit(order.id);
+                  setOpenMenu(null);
+                }}
+              />
+            </>
+          )}
+
+          <View style={styles.menuDivider} />
+          <MenuItem
+            icon="trash-2"
+            label="Delete"
+            danger
+            onPress={() => {
+              onDelete(order.id);
+              setOpenMenu(null);
+            }}
+          />
+
+          {canCancel && (
+            <>
+              <View style={styles.menuDivider} />
+              <MenuItem
+                icon="slash"
+                label="Cancel Order"
+                danger
+                onPress={() => {
+                  onCancel(order.id);
+                  setOpenMenu(null);
+                }}
+              />
+            </>
+          )}
+
+          {canAdvance && btnLabel && (
+            <>
+              <View style={styles.menuDivider} />
+              <MenuItem
+                icon="arrow-right-circle"
+                label={btnLabel}
+                primary
+                onPress={() => {
+                  onAdvance(order);
+                  setOpenMenu(null);
+                }}
+              />
+            </>
+          )}
+        </View>
       )}
     </View>
   );
 };
 
-const OrderMenu = ({
-  onEdit,
-  onCancel,
-  onDelete,
-  onAdvance,
-  onViewDetails,
-  close,
-  style,
-  orderStatus,
-  btnLabels,
-}: any) => (
-  <View style={style}>
-    <TouchableOpacity
-      style={styles.menuItem}
-      onPress={() => {
-        onViewDetails();
-        close();
-      }}
+const MenuItem = ({
+  icon,
+  label,
+  onPress,
+  danger,
+  primary,
+}: {
+  icon: React.ComponentProps<typeof Feather>['name'];
+  label: string;
+  onPress: () => void;
+  danger?: boolean;
+  primary?: boolean;
+}) => (
+  <TouchableOpacity style={styles.menuItem} onPress={onPress}>
+    <Feather
+      name={icon}
+      size={14}
+      color={
+        danger
+          ? DS.color.danger
+          : primary
+            ? DS.color.primary
+            : DS.color.textPrimary
+      }
+    />
+    <Text
+      style={[
+        styles.menuItemText,
+        danger && { color: DS.color.danger },
+        primary && { color: DS.color.primary },
+      ]}
     >
-      <Feather name="eye" size={14} />
-      <Text style={styles.menuText}>View Details</Text>
-    </TouchableOpacity>
+      {label}
+    </Text>
+  </TouchableOpacity>
+);
 
-    {orderStatus === 'pending' ||
-    orderStatus === 'confirmed' ||
-    orderStatus === 'processing' ? (
-      <>
-        <View style={styles.menuDivider} />
-        <TouchableOpacity style={styles.menuItem} onPress={onEdit}>
-          <Feather name="edit-2" size={14} />
-          <Text style={styles.menuText}>Edit Order</Text>
-        </TouchableOpacity>
-      </>
-    ) : (
-      <></>
-    )}
+/* ─── Order Details Content ──────────────────────── */
 
-    <View style={styles.menuDivider} />
-
-    <TouchableOpacity style={styles.menuItem} onPress={() => onDelete()}>
-      <Feather name="trash-2" size={14} color="#DC2626" />
-      <Text style={[styles.menuText, styles.menuDanger]}>Delete Order</Text>
-    </TouchableOpacity>
-
-    {orderStatus === 'cancelled' ||
-    orderStatus === 'delivered' ||
-    orderStatus === 'shipped' ? (
-      <></>
-    ) : (
-      <>
-        <View style={styles.menuDivider} />
-        <TouchableOpacity
-          style={styles.menuItem}
-          onPress={() => {
-            onCancel();
-          }}
-        >
-          <Feather name="slash" size={14} color="#DC2626" />
-          <Text style={[styles.menuText, styles.menuDanger]}>Cancel Order</Text>
-        </TouchableOpacity>
-      </>
-    )}
-
-    {orderStatus === 'cancelled' || orderStatus === 'delivered' ? (
-      <></>
-    ) : (
-      <>
-        <View style={styles.menuDivider} />
-        <TouchableOpacity style={styles.menuItem} onPress={onAdvance}>
-          <Feather name="arrow-right-circle" size={16} color="#2563EB" />
-          <Text style={[styles.menuText, styles.menuPrimary]}>{btnLabels}</Text>
-        </TouchableOpacity>
-      </>
-    )}
+const OrderDetailsContent = ({ order }: { order: OrderDetails }) => (
+  <View style={styles.detailsContent}>
+    {[
+      { label: 'Order ID', value: `#${String(order.id).padStart(5, '0')}` },
+      { label: 'Description', value: order.description },
+      {
+        label: 'Status',
+        value: order.status.charAt(0).toUpperCase() + order.status.slice(1),
+      },
+      { label: 'Price', value: formatCurrency(order.price) },
+      {
+        label: 'Created',
+        value: new Date(order.created_at).toLocaleDateString(),
+      },
+      ...(order.updated_at
+        ? [
+            {
+              label: 'Updated',
+              value: new Date(order.updated_at).toLocaleDateString(),
+            },
+          ]
+        : []),
+    ].map(({ label, value }) => (
+      <View key={label} style={styles.detailRow}>
+        <Text style={styles.detailLabel}>{label}</Text>
+        <Text style={styles.detailValue}>{value}</Text>
+      </View>
+    ))}
   </View>
 );
 
-/* =========================================================
-   STATES
-========================================================= */
+/* ─── State Screens ──────────────────────────────── */
 
 const LoadingScreen = () => (
-  // <ScrollView style={{ margin: 10 }}>
-  //   <SkeletonPlaceholder borderRadius={12}>
-  //     {/* Header */}
-  //     <View
-  //       style={{
-  //         flexDirection: 'row',
-  //         justifyContent: 'space-between',
-  //         marginBottom: 20,
-  //       }}
-  //     >
-  //       <View>
-  //         <View style={{ width: 120, height: 12, marginBottom: 6 }} />
-  //         <View style={{ width: 180, height: 20, marginBottom: 6 }} />
-  //         <View style={{ width: 220, height: 10 }} />
-  //       </View>
-  //       <View style={{ width: 44, height: 44, borderRadius: 12 }} />
-  //     </View>
-
-  //     {/* Button */}
-  //     <View
-  //       style={{ width: '50%', height: 40, borderRadius: 10, marginBottom: 15 }}
-  //     />
-
-  //     {/* Search */}
-  //     <View
-  //       style={{
-  //         width: '100%',
-  //         height: 44,
-  //         borderRadius: 10,
-  //         marginBottom: 15,
-  //       }}
-  //     />
-
-  //     {/* Filter chips */}
-  //     <View style={{ flexDirection: 'row', marginBottom: 20 }}>
-  //       <View
-  //         style={{ width: 90, height: 38, borderRadius: 12, marginRight: 10 }}
-  //       />
-  //       <View
-  //         style={{ width: 90, height: 38, borderRadius: 12, marginRight: 10 }}
-  //       />
-  //       <View style={{ width: 90, height: 38, borderRadius: 12 }} />
-  //     </View>
-
-  //     {/* Order cards */}
-  //     {[1, 2, 3].map((i) => (
-  //       <View
-  //         key={i}
-  //         style={{
-  //           flexDirection: 'row',
-  //           justifyContent: 'space-between',
-  //           padding: 16,
-  //           borderRadius: 20,
-  //           marginBottom: 12,
-  //         }}
-  //       >
-  //         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-  //           <View
-  //             style={{
-  //               width: 48,
-  //               height: 48,
-  //               borderRadius: 14,
-  //               marginRight: 12,
-  //             }}
-  //           />
-  //           <View>
-  //             <View style={{ width: 120, height: 12, marginBottom: 6 }} />
-  //             <View style={{ width: 180, height: 10, marginBottom: 6 }} />
-  //             <View style={{ width: 140, height: 10 }} />
-  //           </View>
-  //         </View>
-
-  //         <View style={{ width: 30, height: 30, borderRadius: 6 }} />
-  //       </View>
-  //     ))}
-  //   </SkeletonPlaceholder>
-  // </ScrollView>
-  <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-    <ActivityIndicator size="large" />
-    <Text>Loading...</Text>
+  <View style={styles.stateScreen}>
+    <ActivityIndicator size="large" color={DS.color.primary} />
+    <Text style={styles.stateText}>Loading orders…</Text>
   </View>
 );
 
-const ErrorScreen = ({ error }: any) => (
-  <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-    <Text style={{ color: 'red' }}>{error}</Text>
+const ErrorScreen = ({ error }: { error: string }) => (
+  <View style={styles.stateScreen}>
+    <Feather name="alert-circle" size={28} color={DS.color.danger} />
+    <Text style={[styles.stateText, { color: DS.color.danger }]}>{error}</Text>
   </View>
 );
 
-//  STYLES
+const EmptyState = () => (
+  <View style={styles.emptyState}>
+    <View style={styles.emptyIconWrap}>
+      <Feather name="inbox" size={28} color={DS.color.textMuted} />
+    </View>
+    <Text style={styles.emptyTitle}>No orders found</Text>
+    <Text style={styles.emptyDesc}>
+      Try a different filter or add a new order.
+    </Text>
+  </View>
+);
+
+/* ─── Styles ──────────────────────────────────────── */
+
 const styles = StyleSheet.create({
-  container: {},
+  screen: {
+    flex: 1,
+    backgroundColor: DS.color.bg,
+  },
 
-  pageHeader: {
-    paddingHorizontal: 20,
-    paddingTop: 20,
-    paddingBottom: 16,
+  // HEADER
+  header: {
+    paddingHorizontal: DS.spacing.xl,
+    paddingTop: DS.spacing.xl,
+    paddingBottom: DS.spacing.lg,
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     justifyContent: 'space-between',
   },
-
-  actionContainer: {
-    paddingHorizontal: 20,
-    marginBottom: 16,
-  },
-
-  addButton: {
-    height: 52,
-    borderRadius: 14,
-    backgroundColor: '#2563EB',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    elevation: 3,
-  },
-
-  addButtonText: {
-    marginLeft: 8,
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#FFFFFF',
-  },
-
-  pageTitle: {
-    fontSize: 24,
-    fontWeight: '700',
-  },
-
-  pageSubtitle: {
-    fontSize: 13,
-    color: '#6B7280',
-  },
-
-  pageHeaderIcon: {
+  eyebrow: { ...DS.typography.eyebrow, marginBottom: 2 },
+  pageTitle: { ...DS.typography.screenTitle },
+  pageSubtitle: { fontSize: 13, color: DS.color.textSecondary, marginTop: 4 },
+  headerIconBtn: {
     width: 44,
     height: 44,
-    backgroundColor: '#EFF6FF',
-    borderRadius: 12,
+    borderRadius: DS.radius.md,
+    backgroundColor: DS.color.primaryMuted,
+    borderWidth: 1,
+    borderColor: DS.color.primaryLight,
     alignItems: 'center',
     justifyContent: 'center',
+    marginTop: 4,
   },
 
-  addBtnContainer: { marginBottom: 15 },
-
-  filterRow: {
+  // ADD BUTTON
+  addContainer: {
+    paddingHorizontal: DS.spacing.xl,
+    marginBottom: DS.spacing.md,
+  },
+  addButton: {
+    height: 52,
+    borderRadius: DS.radius.md,
+    backgroundColor: DS.color.primary,
     flexDirection: 'row',
-    marginVertical: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    ...DS.shadow.sm,
+  },
+  addButtonText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: DS.color.textInverse,
   },
 
+  // SEARCH
+  searchWrapper: {
+    paddingHorizontal: DS.spacing.xl,
+    marginBottom: DS.spacing.sm,
+  },
+
+  // FILTERS
+  filtersScroll: { paddingLeft: DS.spacing.xl, marginBottom: DS.spacing.md },
+  filtersRow: { flexDirection: 'row', gap: 8, paddingRight: DS.spacing.xl },
   filterChip: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 10,
+    gap: 6,
+    paddingHorizontal: 14,
+    height: 36,
+    borderRadius: DS.radius.md,
+    backgroundColor: DS.color.card,
     borderWidth: 1,
-    borderColor: '#e9e9e9',
-    borderRadius: 12,
-    marginRight: 10,
+    borderColor: DS.color.border,
   },
-
   filterChipActive: {
-    backgroundColor: '#EFF6FF',
+    backgroundColor: DS.color.primaryMuted,
+    borderColor: DS.color.primaryLight,
+  },
+  filterDot: { width: 7, height: 7, borderRadius: DS.radius.full },
+  filterChipText: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: DS.color.textSecondary,
+  },
+  filterChipTextActive: { fontWeight: '700', color: DS.color.primary },
+
+  // ORDERS LIST
+  ordersList: {
+    paddingHorizontal: DS.spacing.xl,
+    gap: DS.spacing.sm,
+    paddingBottom: 32,
   },
 
-  filterChipText: { fontSize: 12 },
-
-  filterChipTextActive: {
-    color: '#2563EB',
-    fontWeight: '600',
-  },
-
-  statusDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    marginRight: 6,
-  },
-
-  ordersContainer: {
-    gap: 12,
-  },
-
+  // ORDER CARD
   orderCard: {
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderColor: '#e4e4e4',
-    borderRadius: 20,
-    padding: 16,
+    backgroundColor: DS.color.card,
+    borderRadius: DS.radius.lg,
+    borderWidth: 1,
+    borderColor: DS.color.border,
+    padding: DS.spacing.lg,
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: DS.spacing.md,
+    ...DS.shadow.sm,
   },
-
-  orderLeft: { flexDirection: 'row', flex: 1 },
-
-  orderIconWrapper: {
-    width: 48,
-    height: 48,
-    borderRadius: 14,
+  orderIconWrap: {
+    width: 46,
+    height: 46,
+    borderRadius: DS.radius.md,
     alignItems: 'center',
     justifyContent: 'center',
+    flexShrink: 0,
   },
-
-  orderContent: { marginLeft: 14 },
-
-  orderMetaRow: { flexDirection: 'row', alignItems: 'center' },
-
-  orderMetaText: { fontSize: 12, marginRight: 10 },
-
-  orderBottomRow: { flexDirection: 'row', marginTop: 6 },
-
+  orderContent: { flex: 1 },
+  orderTitle: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: DS.color.textPrimary,
+    marginBottom: 4,
+  },
+  orderMeta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginBottom: 6,
+  },
+  orderMetaText: { fontSize: 11, color: DS.color.textMuted, marginRight: 6 },
+  orderBottom: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: DS.spacing.sm,
+  },
   statusBadge: {
     paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 999,
+    paddingVertical: 4,
+    borderRadius: DS.radius.full,
   },
-
-  statusText: { fontSize: 11, fontWeight: '600' },
-
-  orderTitle: { fontSize: 15, fontWeight: '600' },
-
-  orderPrice: { marginLeft: 10, fontWeight: '600' },
+  statusBadgeText: { fontSize: 11, fontWeight: '600' },
+  orderPrice: { fontSize: 13, fontWeight: '700', color: DS.color.textPrimary },
+  menuTrigger: {
+    width: 32,
+    height: 32,
+    borderRadius: DS.radius.sm,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: DS.color.bg,
+    borderWidth: 1,
+    borderColor: DS.color.border,
+    flexShrink: 0,
+  },
 
   // MENU
   menu: {
     position: 'absolute',
-    right: 10,
-    backgroundColor: '#fff',
-    padding: 10,
-    borderRadius: 10,
-    elevation: 6,
-    zIndex: 99,
+    right: 0,
+    backgroundColor: DS.color.card,
+    borderRadius: DS.radius.md,
+    borderWidth: 1,
+    borderColor: DS.color.border,
+    width: 170,
+    zIndex: 999,
+    ...DS.shadow.md,
   },
-
-  menuBottom: {
-    top: 45,
-  },
-
-  menuTop: {
-    bottom: 45,
-  },
-
+  menuTop: { bottom: 40 },
+  menuBottom: { top: 40 },
   menuItem: {
     flexDirection: 'row',
-    paddingVertical: 8,
-  },
-
-  menuText: { marginLeft: 8 },
-
-  menuDanger: { color: '#DC2626' },
-  menuPrimary: { color: '#2563EB' },
-
-  menuDivider: {
-    height: 1,
-    backgroundColor: '#eee',
-    marginVertical: 5,
-  },
-
-  emptyState: {
     alignItems: 'center',
-    padding: 40,
-  },
-
-  emptyStateText: {
-    color: '#9CA3AF',
-  },
-
-  detailsContent: {
+    gap: 10,
     paddingVertical: 10,
-    paddingHorizontal: 15,
-    width: '100%',
-    // borderWidth: 1,
+    paddingHorizontal: DS.spacing.md,
   },
-
-  detailRow: {
-    paddingVertical: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
-    // borderWidth: 1,
-  },
-
-  detailLabel: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#6B7280',
-    marginBottom: 4,
-  },
-
-  detailValue: {
-    fontSize: 14,
+  menuItemText: {
+    fontSize: 13,
     fontWeight: '500',
-    color: '#1F2937',
+    color: DS.color.textPrimary,
   },
+  menuDivider: { height: 1, backgroundColor: DS.color.borderLight },
+
+  // ORDER DETAILS
+  detailsContent: { paddingVertical: DS.spacing.sm },
+  detailRow: {
+    paddingVertical: DS.spacing.sm,
+    borderBottomWidth: 1,
+    borderBottomColor: DS.color.borderLight,
+  },
+  detailLabel: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: DS.color.textMuted,
+    marginBottom: 3,
+    textTransform: 'uppercase',
+    letterSpacing: 0.6,
+  },
+  detailValue: { fontSize: 14, fontWeight: '500', color: DS.color.textPrimary },
+
+  // STATE SCREENS
+  stateScreen: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: DS.color.bg,
+    gap: DS.spacing.md,
+  },
+  stateText: { fontSize: 14, color: DS.color.textSecondary },
+
+  // EMPTY
+  emptyState: { alignItems: 'center', paddingVertical: 60, gap: DS.spacing.sm },
+  emptyIconWrap: {
+    width: 64,
+    height: 64,
+    borderRadius: DS.radius.xl,
+    backgroundColor: DS.color.card,
+    borderWidth: 1,
+    borderColor: DS.color.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: DS.spacing.xs,
+  },
+  emptyTitle: { fontSize: 16, fontWeight: '700', color: DS.color.textPrimary },
+  emptyDesc: { fontSize: 13, color: DS.color.textMuted, textAlign: 'center' },
 });

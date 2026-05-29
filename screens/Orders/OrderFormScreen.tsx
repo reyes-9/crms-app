@@ -1,6 +1,6 @@
 import { Input } from '@/components/Input';
 import { useOrder } from '@/hooks/useOrder';
-import { theme } from '@/theme/colors';
+import { DS } from '@/theme/design';
 import { RootStackParamList } from '@/types/navigation';
 import { CreateOrderPayload, OrderDetails } from '@/types/order';
 import { formatCurrency } from '@/utils/formatCurrency';
@@ -20,17 +20,17 @@ import {
 } from 'react-native';
 import Toast from 'react-native-toast-message';
 
+/* ─── Screen ─────────────────────────────────────── */
+
 export const OrderFormScreen = () => {
   const navigation = useNavigation();
-
-  const { getOrdersById, editOrder, addOrder } = useOrder();
   const route = useRoute<RouteProp<RootStackParamList, 'OrderFormScreen'>>();
+  const { getOrdersById, editOrder, addOrder } = useOrder();
 
   const { mode } = route.params;
-  const customerId = mode === 'create' ? route.params.customerId : undefined;
-
-  const orderId = mode === 'edit' ? route.params.orderId : undefined;
   const isEdit = mode === 'edit';
+  const customerId = mode === 'create' ? route.params.customerId : undefined;
+  const orderId = mode === 'edit' ? route.params.orderId : undefined;
 
   const [currentOrder, setCurrentOrder] = useState<OrderDetails | null>(null);
 
@@ -41,22 +41,14 @@ export const OrderFormScreen = () => {
     handleSubmit,
     formState: { isSubmitting },
   } = useForm<CreateOrderPayload>({
-    defaultValues: {
-      description: '',
-      price: 0,
-      status: 'pending',
-    },
+    defaultValues: { description: '', price: 0, status: 'pending' },
   });
 
   useEffect(() => {
     if (isEdit && orderId) {
-      const fetchOrder = async () => {
-        const orderData = await getOrdersById(orderId);
-        setCurrentOrder(orderData || null);
-      };
-      fetchOrder();
+      getOrdersById(orderId).then((data) => setCurrentOrder(data ?? null));
     }
-  }, [isEdit, orderId, getOrdersById]);
+  }, [isEdit, orderId]);
 
   useEffect(() => {
     if (isEdit && currentOrder) {
@@ -66,40 +58,31 @@ export const OrderFormScreen = () => {
         status: currentOrder.status ?? 'pending',
       });
     }
-  }, [currentOrder, isEdit, reset]);
+  }, [currentOrder, isEdit]);
 
   const watchedDescription = watch('description');
   const watchedPrice = watch('price');
   const watchedStatus = watch('status');
-  const properCaseStatus = watchedStatus
-    ? watchedStatus.charAt(0).toUpperCase() +
-      watchedStatus.slice(1).toLowerCase()
-    : '';
+  const prettyStatus = watchedStatus
+    ? watchedStatus.charAt(0).toUpperCase() + watchedStatus.slice(1)
+    : 'Pending';
 
   const onSubmit = async (data: CreateOrderPayload) => {
     try {
       if (isEdit) {
-        if (!currentOrder) {
-          throw new Error('No current order to update');
-        }
-
-        const updatedOrder: OrderDetails = {
+        if (!currentOrder) throw new Error('No current order to update');
+        await editOrder(currentOrder.id, {
           ...currentOrder,
-          description: data.description,
+          ...data,
           price: Number(data.price),
-          status: data.status,
-        };
-
-        await editOrder(currentOrder.id, updatedOrder);
+        });
         Toast.show({
           type: 'success',
           text1: 'Order Updated',
-          text2: 'Order details updated successfully',
+          text2: 'Changes saved successfully',
         });
       } else {
-        if (!customerId) {
-          throw new Error('Missing customerId');
-        }
+        if (!customerId) throw new Error('Missing customerId');
 
         const newOrder: CreateOrderPayload = {
           customer: customerId,
@@ -113,20 +96,16 @@ export const OrderFormScreen = () => {
         Toast.show({
           type: 'success',
           text1: 'Order Created',
-          text2: 'New order created successfully',
+          text2: 'New order added successfully',
         });
-
         navigation.goBack();
       }
     } catch (err: any) {
-      // console.error('Submit failed:', err);
-      // console.error('Error details:', err?.response?.data || err?.message);
       Toast.show({
         type: 'error',
         text1: 'Error',
-        text2: err?.response?.data?.message || 'Failed to save order',
+        text2: err?.response?.data?.message ?? 'Failed to save order',
       });
-      return;
     }
   };
 
@@ -134,130 +113,110 @@ export const OrderFormScreen = () => {
     <KeyboardAvoidingView
       style={{ flex: 1 }}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={20}
     >
       <ScrollView
         style={styles.screen}
-        contentContainerStyle={[styles.contentContainer, { flexGrow: 1 }]}
+        contentContainerStyle={styles.content}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        {/* Header */}
+        {/* ── PAGE HEADER ──────────────────────── */}
         <View style={styles.header}>
-          <Text style={styles.title}>
-            {isEdit ? 'Edit Order' : 'Create Order'}
+          <Text style={styles.eyebrow}>{isEdit ? 'EDITING' : 'CREATE'}</Text>
+          <Text style={styles.pageTitle}>
+            {isEdit ? 'Edit Order' : 'New Order'}
           </Text>
-
-          <Text style={styles.subtitle}>
+          <Text style={styles.pageSubtitle}>
             {isEdit
-              ? 'Update order information and status'
-              : 'Create a new order and assign details'}
+              ? 'Update order details and pricing'
+              : 'Fill in the order details below'}
           </Text>
         </View>
 
-        {/* Summary Card */}
+        {/* ── SUMMARY CARD ─────────────────────── */}
         <View style={styles.summaryCard}>
           <View style={styles.summaryIcon}>
-            <Feather name="shopping-bag" size={24} color="#2563EB" />
+            <Feather name="shopping-bag" size={22} color={DS.color.primary} />
           </View>
 
           <View style={{ flex: 1 }}>
-            <Text style={styles.summaryTitle}>
+            <Text style={styles.summaryTitle} numberOfLines={1}>
               {watchedDescription || 'Untitled Order'}
             </Text>
-
-            <Text style={styles.summarySubtitle}>
-              {/* ₱ {watchedPrice || '0.00'} */}
-              {formatCurrency(watchedPrice) || '0.00'}
+            <Text style={styles.summaryPrice}>
+              {watchedPrice ? formatCurrency(watchedPrice) : '₱0.00'}
             </Text>
           </View>
 
           <View style={styles.statusBadge}>
-            <Text style={styles.statusText}>
-              {properCaseStatus || 'pending'}
-            </Text>
+            <Text style={styles.statusBadgeText}>{prettyStatus}</Text>
           </View>
         </View>
 
-        {/* Form Card */}
-        <View style={styles.card}>
-          {/* Section Header */}
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>
-              {isEdit ? 'Edit Order' : 'Create Order'}
-            </Text>
-
-            <Text style={styles.sectionSubtitle}>
+        {/* ── FORM CARD ────────────────────────── */}
+        <View style={styles.formCard}>
+          <View style={styles.formHeader}>
+            <Text style={styles.formTitle}>Order Information</Text>
+            <Text style={styles.formSubtitle}>
               {isEdit
-                ? 'Update order details and pricing information'
-                : 'Fill in the order details below'}
+                ? 'Update the details for this order'
+                : 'Enter the details for the new order'}
             </Text>
           </View>
 
-          {/* Description */}
           <Input
             name="description"
             label="Order Description"
             placeholder="Website redesign package"
             control={control}
-            rules={{
-              required: 'Description is required',
-            }}
+            rules={{ required: 'Description is required' }}
           />
 
-          {/* Price */}
           <Input
             name="price"
-            label="Price"
-            placeholder="₱15,000"
+            label="Price (₱)"
+            placeholder="15000"
             control={control}
-            rules={{
-              required: 'Price is required',
-            }}
+            rules={{ required: 'Price is required' }}
           />
 
-          {/* Status */}
           <Input
             name="status"
-            label="Order Status"
+            label="Status"
             placeholder="Pending"
             control={control}
-            rules={{
-              required: 'Status is required',
-            }}
+            rules={{ required: 'Status is required' }}
             disabled
           />
 
-          {/* Submit Button */}
+          {/* SUBMIT */}
           <Pressable
             onPress={handleSubmit(onSubmit)}
             disabled={isSubmitting}
             style={({ pressed }) => [
-              styles.button,
-              pressed && styles.buttonPressed,
-              isSubmitting && styles.buttonDisabled,
+              styles.submitBtn,
+              pressed && { opacity: 0.88 },
+              isSubmitting && { opacity: 0.7 },
             ]}
           >
             {isSubmitting ? (
-              <View style={styles.loadingContainer}>
-                <ActivityIndicator size="small" color="#FFFFFF" />
-
-                <Text style={styles.buttonText}>
-                  {isEdit ? 'Saving Changes...' : 'Creating Order...'}
+              <View style={styles.submitRow}>
+                <ActivityIndicator size="small" color={DS.color.textInverse} />
+                <Text style={styles.submitText}>
+                  {isEdit ? 'Saving Changes…' : 'Creating Order…'}
                 </Text>
               </View>
             ) : (
-              <>
+              <View style={styles.submitRow}>
                 <Feather
                   name={isEdit ? 'save' : 'plus'}
                   size={18}
-                  color="#FFFFFF"
+                  color={DS.color.textInverse}
                 />
-
-                <Text style={styles.buttonText}>
+                <Text style={styles.submitText}>
                   {isEdit ? 'Save Changes' : 'Create Order'}
                 </Text>
-              </>
+              </View>
             )}
           </Pressable>
         </View>
@@ -266,149 +225,75 @@ export const OrderFormScreen = () => {
   );
 };
 
+/* ─── Styles ──────────────────────────────────────── */
+
 const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: '#F3F4F6',
-  },
+  screen: { flex: 1, backgroundColor: DS.color.bg },
+  content: { padding: DS.spacing.xl, paddingBottom: 48, gap: DS.spacing.md },
 
-  contentContainer: {
-    padding: 16,
-    paddingBottom: 40,
-  },
+  // HEADER
+  header: {},
+  eyebrow: { ...DS.typography.eyebrow, marginBottom: 2 },
+  pageTitle: { ...DS.typography.screenTitle },
+  pageSubtitle: { fontSize: 13, color: DS.color.textSecondary, marginTop: 4 },
 
-  header: {
-    marginBottom: 24,
-  },
-
-  title: {
-    fontSize: 28,
-    fontWeight: '700',
-    color: '#111827',
-  },
-
-  subtitle: {
-    marginTop: 6,
-    fontSize: 14,
-    lineHeight: 20,
-    color: '#6B7280',
-  },
-
+  // SUMMARY
   summaryCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 24,
-    padding: 18,
-
+    backgroundColor: DS.color.card,
+    borderRadius: DS.radius.lg,
+    borderWidth: 1,
+    borderColor: DS.color.border,
+    padding: DS.spacing.lg,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 14,
-
-    marginBottom: 20,
-
-    shadowColor: '#000',
-    shadowOpacity: 0.05,
-    shadowRadius: 12,
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-
-    elevation: 2,
+    gap: DS.spacing.md,
+    ...DS.shadow.sm,
   },
-
   summaryIcon: {
-    width: 56,
-    height: 56,
-    borderRadius: 18,
-
-    backgroundColor: '#DBEAFE',
-
+    width: 52,
+    height: 52,
+    borderRadius: DS.radius.md,
+    backgroundColor: DS.color.primaryMuted,
     alignItems: 'center',
     justifyContent: 'center',
   },
-
   summaryTitle: {
-    fontSize: 17,
+    fontSize: 16,
     fontWeight: '700',
-    color: '#111827',
+    color: DS.color.textPrimary,
   },
-
-  summarySubtitle: {
-    marginTop: 4,
-    fontSize: 13,
-    color: '#6B7280',
-  },
-
+  summaryPrice: { fontSize: 13, color: DS.color.textSecondary, marginTop: 3 },
   statusBadge: {
     paddingHorizontal: 12,
-    paddingVertical: 7,
-
-    borderRadius: 999,
+    paddingVertical: 6,
+    borderRadius: DS.radius.full,
     backgroundColor: '#FEF3C7',
   },
+  statusBadgeText: { fontSize: 12, fontWeight: '600', color: '#92400E' },
 
-  statusText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#92400E',
-  },
-  card: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 20,
-    padding: 20,
-
+  // FORM
+  formCard: {
+    backgroundColor: DS.color.card,
+    borderRadius: DS.radius.lg,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: DS.color.border,
+    padding: DS.spacing.lg,
+    gap: DS.spacing.md,
+    ...DS.shadow.sm,
   },
+  formHeader: { gap: 4, marginBottom: DS.spacing.xs },
+  formTitle: { ...DS.typography.sectionTitle },
+  formSubtitle: { fontSize: 13, color: DS.color.textSecondary },
 
-  sectionHeader: {
-    marginBottom: 20,
-  },
-
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#111827',
-  },
-
-  sectionSubtitle: {
-    marginTop: 4,
-    fontSize: 13,
-    lineHeight: 18,
-    color: '#6B7280',
-  },
-
-  button: {
-    marginTop: 8,
-
-    height: 54,
-    borderRadius: 14,
-
-    backgroundColor: theme.colors.primary,
-
-    flexDirection: 'row',
+  // SUBMIT
+  submitBtn: {
+    height: 52,
+    borderRadius: DS.radius.md,
+    backgroundColor: DS.color.primary,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 10,
+    marginTop: DS.spacing.sm,
   },
-
-  buttonPressed: {
-    opacity: 0.9,
-  },
-
-  buttonDisabled: {
-    opacity: 0.7,
-  },
-
-  buttonText: {
-    color: '#FFFFFF',
-    fontSize: 15,
-    fontWeight: '600',
-  },
-
-  loadingContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-  },
+  submitRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  submitText: { fontSize: 15, fontWeight: '600', color: DS.color.textInverse },
 });
