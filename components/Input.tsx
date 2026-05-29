@@ -1,4 +1,4 @@
-import { theme } from '@/theme/colors';
+import { DS } from '@/theme/design';
 import { InputProps } from '@/types/auth';
 import { Controller } from 'react-hook-form';
 import { StyleSheet, Text, TextInput, View } from 'react-native';
@@ -10,33 +10,9 @@ export const Input: React.FC<InputProps> = ({
   placeholder,
   secureTextEntry,
   rules,
-  variant,
   defaultValue = '',
   disabled = false,
 }) => {
-  const isDark = variant === 'dark';
-
-  const colors = {
-    text: isDark ? theme.colors.light : theme.colors.dark,
-
-    border: isDark ? '#374151' : '#D1D5DB',
-
-    borderFocused: isDark
-      ? theme.colors.primaryLight
-      : theme.colors.primary,
-
-    background: isDark ? '#111827' : '#FFFFFF',
-
-    label: isDark ? '#D1D5DB' : '#374151',
-
-    placeholder: isDark ? '#6B7280' : '#9CA3AF',
-
-    error: theme.colors.danger,
-
-    disabledBackground: '#F3F4F6',
-    disabledText: '#9CA3AF',
-  };
-
   return (
     <Controller
       control={control}
@@ -47,55 +23,40 @@ export const Input: React.FC<InputProps> = ({
         field: { onChange, onBlur, value },
         fieldState: { error },
       }) => {
+        const hasError = !!error;
+
         return (
           <View style={styles.container}>
+            {/* Label */}
             {label && (
-              <Text
-                style={[
-                  styles.label,
-                  {
-                    color: error ? colors.error : colors.label,
-                  },
-                ]}
-              >
+              <Text style={[styles.label, hasError && styles.labelError]}>
                 {label}
-                {rules?.required && (
-                  <Text style={styles.asterisk}> *</Text>
-                )}
+                {rules?.required && <Text style={styles.required}> *</Text>}
               </Text>
             )}
 
+            {/* Input */}
             <View
               style={[
                 styles.inputWrapper,
-                {
-                  borderColor: error ? colors.error : colors.border,
-                  backgroundColor: disabled
-                    ? colors.disabledBackground
-                    : colors.background,
-                },
+                hasError && styles.inputError,
+                disabled && styles.inputDisabled,
               ]}
             >
               <TextInput
                 value={value}
-                secureTextEntry={secureTextEntry}
-                editable={!disabled}
-                placeholder={placeholder}
-                placeholderTextColor={colors.placeholder}
                 onChangeText={onChange}
                 onBlur={onBlur}
-                style={[
-                  styles.input,
-                  {
-                    color: disabled ? colors.disabledText : colors.text,
-                  },
-                ]}
+                placeholder={placeholder}
+                placeholderTextColor={DS.color.textMuted}
+                secureTextEntry={secureTextEntry}
+                editable={!disabled}
+                style={[styles.input, disabled && styles.textDisabled]}
               />
             </View>
 
-            {!!error?.message && (
-              <Text style={styles.error}>{error.message}</Text>
-            )}
+            {/* Error */}
+            {hasError && <Text style={styles.errorText}>{error?.message}</Text>}
           </View>
         );
       }}
@@ -105,37 +66,58 @@ export const Input: React.FC<InputProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    marginBottom: 18,
+    marginBottom: DS.spacing.lg,
   },
 
   label: {
-    marginBottom: 8,
-    fontSize: theme.typography.fontSize.sm,
+    marginBottom: DS.spacing.sm,
+    fontSize: 12,
     fontWeight: '600',
+    color: DS.color.textSecondary,
+    letterSpacing: 0.5,
+  },
+
+  labelError: {
+    color: DS.color.danger,
+  },
+
+  required: {
+    color: DS.color.danger,
   },
 
   inputWrapper: {
-    borderWidth: 1,
-    borderRadius: 12,
-    paddingHorizontal: 14,
     height: 52,
+    borderRadius: DS.radius.md,
+    borderWidth: 1,
+    borderColor: DS.color.border,
+    backgroundColor: DS.color.card,
     justifyContent: 'center',
+    paddingHorizontal: DS.spacing.md,
+  },
+
+  inputError: {
+    borderColor: DS.color.danger,
+    backgroundColor: DS.color.dangerLight,
+  },
+
+  inputDisabled: {
+    backgroundColor: DS.color.borderLight,
+    borderColor: DS.color.borderLight,
   },
 
   input: {
-    fontSize: theme.typography.fontSize.md,
+    fontSize: 14,
+    color: DS.color.textPrimary,
     fontWeight: '500',
-    padding: 0,
   },
 
-  error: {
-    marginTop: 6,
-    marginLeft: 2,
-    color: theme.colors.danger,
-    fontSize: theme.typography.fontSize.xs,
+  textDisabled: {
+    color: DS.color.textMuted,
   },
 
-  asterisk: {
-    color: theme.colors.danger,
+  errorText: {
+    marginTop: DS.spacing.xs,
+    fontSize: 12,
+    color: DS.color.danger,
   },
 });

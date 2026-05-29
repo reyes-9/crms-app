@@ -1,7 +1,8 @@
-import { theme } from '@/theme/colors';
 import { Feather } from '@expo/vector-icons';
 import { StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+
+import { DS } from '@/theme/design';
 import { BackButton } from './BackButton';
 
 export const Header = ({
@@ -25,43 +26,81 @@ export const Header = ({
   };
 
   return (
-    <SafeAreaView style={{}} edges={['left', 'right', 'top']}>
+    <SafeAreaView edges={['top']} style={styles.safe}>
       <View style={styles.container}>
-        {/* Left (Brand) */}
-        {isReturn ? <BackButton /> : <Text style={styles.brand}>Locus</Text>}
-        {/* Center (Title) */}
-        <Text style={styles.title}>{title ? titles[title] : 'Locus'}</Text>
-        {/* Right (Icon) */}
-        <Feather name="bell" size={22} color="#444" />
+        {/* LEFT */}
+        <View style={styles.left}>
+          {isReturn ? (
+            <BackButton />
+          ) : (
+            <Text style={styles.brand}>LOCUS</Text>
+          )}
+        </View>
+
+        {/* CENTER */}
+        <View style={styles.center}>
+          <Text style={styles.title}>
+            {titles[title] ?? 'LOCUS'}
+          </Text>
+        </View>
+
+        {/* RIGHT */}
+        <View style={styles.right}>
+          <Feather
+            name="bell"
+            size={18}
+            color={DS.color.textSecondary}
+          />
+        </View>
       </View>
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  safe: {
+    backgroundColor: DS.color.card,
+  },
+
   container: {
     height: 56,
-    backgroundColor: '#fff',
+    backgroundColor: DS.color.card,
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    justifyContent: 'space-between',
+
+    paddingHorizontal: DS.spacing.lg,
+
+    borderBottomWidth: 1,
+    borderBottomColor: DS.color.borderLight,
+  },
+
+  left: {
+    width: 80,
+    justifyContent: 'center',
+  },
+
+  center: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  right: {
+    width: 80,
+    alignItems: 'flex-end',
+    justifyContent: 'center',
   },
 
   brand: {
-    fontSize: 14,
-    color: theme.colors.primary,
-    fontWeight: '500',
+    fontSize: 13,
+    fontWeight: '700',
+    letterSpacing: 1.2,
+    color: DS.color.primary,
   },
 
   title: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    textAlign: 'center',
-
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#2C2C2A',
+    fontSize: 16,
+    fontWeight: '700',
+    color: DS.color.textPrimary,
   },
 });

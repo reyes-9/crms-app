@@ -129,7 +129,6 @@ export const CustomerScreen = () => {
           },
           {
             label: 'Archive',
-            variant: 'dark',
             onPress: async () => {
               try {
                 if (selectedCustomerId !== null) {

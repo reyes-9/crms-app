@@ -1,3 +1,4 @@
+import { DS } from '@/theme/design';
 import { Feather } from '@expo/vector-icons';
 import { useEffect } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
@@ -6,8 +7,8 @@ import Animated, {
   runOnJS,
   useAnimatedStyle,
   useSharedValue,
-  withSequence,
   withSpring,
+  withTiming,
 } from 'react-native-reanimated';
 
 type Props = {
@@ -22,8 +23,10 @@ type Props = {
   resetSignal?: number;
 };
 
-// SESSION FLAG (key part)
 let hasShownSwipeHintThisSession = false;
+
+const MAX_LEFT = -180;
+const THRESHOLD = MAX_LEFT / 2;
 
 const SwipeableRow = ({
   children,
@@ -40,138 +43,118 @@ const SwipeableRow = ({
   const startX = useSharedValue(0);
 
   const hintOpacity = useSharedValue(0);
-  const hintTranslate = useSharedValue(0);
-
-  const MAX_SWIPE_LEFT = -180;
-  const MAX_SWIPE_RIGHT = 0;
+  const hintX = useSharedValue(0);
 
   useEffect(() => {
-    const target = isOpen ? MAX_SWIPE_LEFT : 0;
-
-    if (translateX.value !== target) {
-      translateX.value = withSpring(target, {
-        damping: 60,
-        stiffness: 400,
-      });
-    }
+    translateX.value = withSpring(isOpen ? MAX_LEFT : 0, {
+      damping: 80,
+      stiffness: 500,
+    });
   }, [isOpen]);
 
   useEffect(() => {
     translateX.value = withSpring(0, {
-      damping: 60,
-      stiffness: 400,
+      damping: 80,
+      stiffness: 500,
     });
   }, [resetSignal]);
 
-  // ONBOARDING HINT (ONLY ONCE PER SESSION)
   useEffect(() => {
-    if (!isHint) return;
-    if (hasShownSwipeHintThisSession) return;
+    if (!isHint || hasShownSwipeHintThisSession) return;
 
     hasShownSwipeHintThisSession = true;
 
-    hintOpacity.value = withSequence(
-      withSpring(0.15, { damping: 20, stiffness: 200 }),
-      withSpring(1, { damping: 20, stiffness: 200 }),
-      withSpring(0, { damping: 20, stiffness: 200 }),
-    );
+    hintOpacity.value = withTiming(1, { duration: 150 });
 
-    hintTranslate.value = withSequence(
-      withSpring(8, { damping: 20, stiffness: 200 }),
-      withSpring(0, { damping: 20, stiffness: 200 }),
-    );
+    hintX.value = withSpring(-6, {
+      damping: 20,
+      stiffness: 200,
+    });
+
+    setTimeout(() => {
+      hintOpacity.value = withTiming(0, { duration: 300 });
+    }, 1200);
   }, [isHint]);
 
-  const actionAnimatedStyle = useAnimatedStyle(() => {
-    const progress = Math.min(Math.abs(translateX.value) / 190, 1);
+  const panGesture = Gesture.Pan()
+    .activeOffsetX([-10, 10])
+    .failOffsetY([-10, 10])
+    .onStart(() => {
+      startX.value = translateX.value;
+    })
+    .onUpdate((e) => {
+      const next = startX.value + e.translationX;
+
+      translateX.value = Math.max(Math.min(next, 0), MAX_LEFT);
+    })
+    .onEnd(() => {
+      const shouldOpen = translateX.value < THRESHOLD;
+      const target = shouldOpen ? MAX_LEFT : 0;
+
+      translateX.value = withSpring(target, {
+        damping: 80,
+        stiffness: 500,
+      });
+
+      if (shouldOpen) runOnJS(onOpen)(rowId);
+      else runOnJS(onClose)();
+    });
+
+  const fgStyle = useAnimatedStyle(() => ({
+    transform: [{ translateX: translateX.value }],
+  }));
+
+  const archiveStyle = useAnimatedStyle(() => {
+    const p = Math.min(Math.abs(translateX.value) / Math.abs(MAX_LEFT), 1);
 
     return {
-      transform: [{ scale: 0.8 + progress * 0.2 }],
-      opacity: progress,
+      opacity: p,
+      transform: [{ scale: 0.85 + p * 0.15 }],
+    };
+  });
+
+  const deleteStyle = useAnimatedStyle(() => {
+    const p = Math.min(Math.abs(translateX.value) / Math.abs(MAX_LEFT), 1);
+
+    return {
+      opacity: p,
+      transform: [{ scale: 0.85 + p * 0.15 }],
     };
   });
 
   const hintStyle = useAnimatedStyle(() => ({
     opacity: hintOpacity.value,
-    transform: [{ translateX: hintTranslate.value }],
-  }));
-
-  const panGesture = Gesture.Pan()
-    .activeOffsetX([-20, 20])
-    .failOffsetY([-20, 20])
-
-    .onStart(() => {
-      startX.value = translateX.value;
-    })
-
-    .onUpdate((event) => {
-      const next = startX.value + event.translationX;
-
-      translateX.value = Math.min(
-        Math.max(next, MAX_SWIPE_LEFT),
-        MAX_SWIPE_RIGHT,
-      );
-    })
-
-    .onEnd(() => {
-      const shouldOpen = translateX.value <= MAX_SWIPE_LEFT / 2;
-      const target = shouldOpen ? MAX_SWIPE_LEFT : 0;
-
-      translateX.value = withSpring(target, {
-        damping: 60,
-        stiffness: 400,
-      });
-
-      if (shouldOpen) {
-        runOnJS(onOpen)(rowId);
-      } else {
-        runOnJS(onClose)();
-      }
-    });
-
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ translateX: translateX.value }],
+    transform: [{ translateX: hintX.value }],
   }));
 
   return (
     <View style={styles.container}>
-      {/* Background actions */}
-      <View style={styles.actionsContainer}>
-        <Animated.View
-          style={[styles.actionBlock, styles.archive, actionAnimatedStyle]}
-        >
-          <Pressable
-            style={[styles.actionBlock, styles.archive]}
-            onPress={onArchive}
-          >
-            <Feather name="archive" size={22} color="#6B7280" />
+      {/* ACTIONS BACKGROUND */}
+      <View style={styles.actions}>
+        <Animated.View style={[styles.action, styles.archive, archiveStyle]}>
+          <Pressable onPress={onArchive} style={styles.actionInner}>
+            <Feather name="archive" size={18} color={DS.color.textSecondary} />
             <Text style={styles.label}>Archive</Text>
           </Pressable>
         </Animated.View>
 
-        <View style={styles.divider} />
-
-        <Animated.View
-          style={[styles.actionBlock, styles.delete, actionAnimatedStyle]}
-        >
-          <Pressable
-            style={[styles.actionBlock, styles.delete]}
-            onPress={onDelete}
-          >
-            <Feather name="trash-2" size={22} color="#EF4444" />
-            <Text style={styles.label}>Delete</Text>
+        <Animated.View style={[styles.action, styles.delete, deleteStyle]}>
+          <Pressable onPress={onDelete} style={styles.actionInner}>
+            <Feather name="trash-2" size={18} color={DS.color.danger} />
+            <Text style={[styles.label, { color: DS.color.danger }]}>
+              Delete
+            </Text>
           </Pressable>
         </Animated.View>
       </View>
 
-      {/* Foreground */}
+      {/* FOREGROUND */}
       <GestureDetector gesture={panGesture}>
-        <Animated.View style={[styles.foreground, animatedStyle]}>
+        <Animated.View style={[styles.foreground, fgStyle]}>
           {children}
 
-          {/* Swipe hint */}
-          <Animated.View style={[styles.swipeHint, hintStyle]}>
-            <Text style={styles.swipeHintText}>← swipe</Text>
+          <Animated.View style={[styles.hint, hintStyle]}>
+            <Feather name="chevron-left" size={14} color={DS.color.textMuted} />
           </Animated.View>
         </Animated.View>
       </GestureDetector>
@@ -180,53 +163,61 @@ const SwipeableRow = ({
 };
 
 const styles = StyleSheet.create({
-  container: {},
-
-  divider: {
-    height: '70%',
-    width: 1,
-    backgroundColor: '#b3b3b3',
+  container: {
+    position: 'relative',
+    overflow: 'hidden',
   },
 
-  actionsContainer: {
+  actions: {
     ...StyleSheet.absoluteFillObject,
     flexDirection: 'row',
     justifyContent: 'flex-end',
     alignItems: 'center',
-    marginEnd: 5,
+    paddingRight: 10,
+    zIndex: 0,
   },
 
-  actionBlock: {
-    width: 90,
+  action: {
+    width: 85,
+    height: '80%',
     justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: 12,
-    borderRadius: 10,
+    borderRadius: DS.radius.md,
   },
 
-  archive: {},
-  delete: {},
+  actionInner: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+  },
+
+  archive: {
+    backgroundColor: DS.color.primaryMuted,
+  },
+
+  delete: {
+    backgroundColor: DS.color.dangerLight,
+  },
 
   label: {
-    marginTop: 6,
     fontSize: 11,
     fontWeight: '600',
-    color: '#374151',
+    color: DS.color.textSecondary,
   },
 
-  foreground: {},
+  foreground: {
+    backgroundColor: DS.color.card,
+    zIndex: 2,
+  },
 
-  swipeHint: {
+  hint: {
     position: 'absolute',
-    right: 14,
+    right: 10,
     top: '50%',
-    transform: [{ translateY: -10 }],
-  },
-
-  swipeHintText: {
-    fontSize: 12,
-    color: '#74777c',
-    fontWeight: '500',
+    marginTop: -8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
   },
 });
 

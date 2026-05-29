@@ -1,4 +1,4 @@
-import { theme } from '@/theme/colors';
+import { DS } from '@/theme/design';
 import { MaterialIcons } from '@expo/vector-icons';
 import type { ComponentProps, ReactNode } from 'react';
 import { useEffect } from 'react';
@@ -7,13 +7,14 @@ import Animated, {
   Easing,
   useAnimatedStyle,
   useSharedValue,
-  withSpring,
   withTiming,
 } from 'react-native-reanimated';
 
 // TYPES
-type ButtonVariant = 'success' | 'danger' | 'primary' | 'neutral' | 'dark';
+type ButtonVariant = 'primary' | 'success' | 'danger' | 'neutral';
+
 type ModalState = 'success' | 'danger' | 'neutral';
+
 type IconName = ComponentProps<typeof MaterialIcons>['name'];
 
 interface ModalButton {
@@ -32,19 +33,34 @@ interface ModalProps {
   children?: ReactNode;
 }
 
-const buttonVariantColors: Record<ButtonVariant, string> = {
-  primary: theme.colors.primary,
-  success: theme.colors.success,
-  danger: theme.colors.danger,
-  dark: theme.colors.dark,
-  neutral: theme.colors.neutral,
+// BUTTON COLORS (CRM aligned)
+const buttonColors: Record<ButtonVariant, string> = {
+  primary: DS.color.primary,
+  success: DS.color.success,
+  danger: DS.color.danger,
+  neutral: DS.color.textSecondary,
 };
 
-// STATE CONFIG
-const stateConfig: Record<ModalState, { icon: IconName; color: string }> = {
-  success: { icon: 'check-circle', color: theme.colors.success },
-  danger: { icon: 'error', color: theme.colors.danger },
-  neutral: { icon: 'info', color: theme.colors.dark },
+// STATE ICON CONFIG
+const stateConfig: Record<
+  ModalState,
+  { icon: IconName; color: string; bg: string }
+> = {
+  success: {
+    icon: 'check-circle',
+    color: DS.color.success,
+    bg: DS.color.successLight,
+  },
+  danger: {
+    icon: 'error',
+    color: DS.color.danger,
+    bg: DS.color.dangerLight,
+  },
+  neutral: {
+    icon: 'info',
+    color: DS.color.primary,
+    bg: DS.color.primaryMuted,
+  },
 };
 
 export const ReusableModal = ({
@@ -56,50 +72,60 @@ export const ReusableModal = ({
   buttons = [],
   children,
 }: ModalProps) => {
-  const translateY = useSharedValue(300);
+  const translateY = useSharedValue(40);
+  const opacity = useSharedValue(0);
 
   useEffect(() => {
     if (visible) {
+      opacity.value = withTiming(1, {
+        duration: 200,
+        easing: Easing.out(Easing.ease),
+      });
+
       translateY.value = withTiming(0, {
-        duration: 600,
-        easing: Easing.out(Easing.exp),
+        duration: 300,
+        easing: Easing.out(Easing.cubic),
       });
     } else {
-      translateY.value = withSpring(300, {
-        damping: 20,
-        stiffness: 150,
+      opacity.value = withTiming(0, {
+        duration: 150,
+      });
+
+      translateY.value = withTiming(40, {
+        duration: 180,
+        easing: Easing.in(Easing.cubic),
       });
     }
   }, [visible]);
 
   const animatedStyle = useAnimatedStyle(() => ({
+    opacity: opacity.value,
     transform: [{ translateY: translateY.value }],
   }));
 
+  const config = stateConfig[state];
+
   return (
     <Modal transparent visible={visible} animationType="none">
-      <View style={styles.dim} />
+      {/* BACKDROP */}
+      <Animated.View style={[styles.backdrop, animatedStyle]} />
 
-      <Animated.View style={[styles.centeredView, animatedStyle]}>
-        <View style={styles.modalView}>
-          {!children && (
-            <>
-              <MaterialIcons
-                name={stateConfig[state].icon}
-                size={65}
-                color={stateConfig[state].color}
-              />
+      {/* MODAL */}
+      <Animated.View style={[styles.wrapper, animatedStyle]}>
+        <View style={styles.card}>
+          {/* ICON */}
+          <View style={[styles.iconWrapper, { backgroundColor: config.bg }]}>
+            <MaterialIcons name={config.icon} size={26} color={config.color} />
+          </View>
 
-              <Text style={styles.modalTextHead}>{title}</Text>
-              <Text style={styles.modalTextBody}>{message}</Text>
-            </>
-          )}
+          {/* TITLE */}
+          <Text style={styles.title}>{title}</Text>
 
-          {children && (
-            <>
-              <Text style={styles.modalTextHead}>{title}</Text>
-              {children}
-            </>
+          {/* MESSAGE */}
+          {!children && message ? (
+            <Text style={styles.message}>{message}</Text>
+          ) : (
+            children
           )}
 
           {/* BUTTONS */}
@@ -112,8 +138,7 @@ export const ReusableModal = ({
                   style={[
                     styles.button,
                     {
-                      backgroundColor:
-                        buttonVariantColors[btn.variant || 'primary'],
+                      backgroundColor: buttonColors[btn.variant || 'primary'],
                     },
                   ]}
                 >
@@ -130,65 +155,70 @@ export const ReusableModal = ({
 
 // STYLES
 const styles = StyleSheet.create({
-  // overlay: {
-  //   flex: 1,
-  //   justifyContent: 'center',
-  //   alignItems: 'center',
-  // },
-
-  dim: {
+  backdrop: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    backgroundColor: 'rgba(15, 23, 42, 0.45)',
   },
 
-  centeredView: {
+  wrapper: {
     flex: 1,
-    width: 'auto',
     justifyContent: 'center',
     alignItems: 'center',
+    paddingHorizontal: DS.spacing.xxl,
   },
-  modalView: {
-    margin: 15,
-    width: '85%',
-    // backgroundColor: theme.colors.offWhite,
-    // backgroundColor: '#EEF3F1',
-    backgroundColor: '#F3F7F5',
+
+  card: {
+    width: '100%',
+    maxWidth: 340,
+    backgroundColor: DS.color.card,
+    borderRadius: DS.radius.xl,
     borderWidth: 1,
-    borderColor: '#DDEEE7',
-    borderRadius: 14,
-    padding: 15,
-    paddingVertical: 30,
+    borderColor: DS.color.border,
+    padding: DS.spacing.xxl,
     alignItems: 'center',
-    ...theme.elevation.xl,
+    ...DS.shadow.md,
   },
-  modalTextHead: {
-    fontFamily: theme.typography.fontFamily.bold,
-    fontSize: theme.typography.fontSize.xl,
-    // color: theme.colors.primary,
-    // textAlign: 'center',
-    marginTop: 20,
+
+  iconWrapper: {
+    width: 56,
+    height: 56,
+    borderRadius: 999,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: DS.spacing.lg,
   },
-  modalTextBody: {
-    padding: 20,
+
+  title: {
+    ...DS.typography.cardTitle,
     textAlign: 'center',
-    color: theme.colors.textSecondary,
   },
+
+  message: {
+    marginTop: DS.spacing.sm,
+    textAlign: 'center',
+    color: DS.color.textSecondary,
+    fontSize: 14,
+    lineHeight: 20,
+  },
+
   buttonContainer: {
     flexDirection: 'row',
+    gap: DS.spacing.sm,
+    marginTop: DS.spacing.xl,
+    width: '100%',
+  },
+
+  button: {
+    flex: 1,
+    height: 42,
+    borderRadius: DS.radius.md,
     justifyContent: 'center',
     alignItems: 'center',
-    // width: '100%',
-    gap: 30,
-    marginTop: 10,
   },
-  button: {
-    paddingVertical: 10,
-    borderRadius: 8,
-    padding: 10,
-    alignItems: 'center',
-  },
+
   buttonText: {
-    color: '#fff',
+    color: DS.color.textInverse,
     fontWeight: '600',
+    fontSize: 13,
   },
 });

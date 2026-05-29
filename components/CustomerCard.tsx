@@ -2,6 +2,8 @@ import { CustomerProfile } from '@/types/customer';
 import { Feather } from '@expo/vector-icons';
 import { StyleSheet, Text, View } from 'react-native';
 
+import { DS } from '@/theme/design';
+
 export const CustomerCard = ({
   name,
   company,
@@ -9,31 +11,32 @@ export const CustomerCard = ({
   number,
 }: CustomerProfile) => {
   return (
-    <View style={styles.container}>
-      <View style={styles.card}>
-        {/* Avatar */}
-        {/* <View style={styles.avatar}>
-          <Feather name="user" size={28} color="#fff" />
-        </View> */}
+    <View style={styles.card}>
+      {/* Header */}
+      <View style={styles.header}>
+        <View style={styles.avatar}>
+          <Feather name="user" size={18} color={DS.color.primary} />
+        </View>
 
-        {/* Content */}
-        <View style={styles.content}>
+        <View style={styles.headerText}>
           <Text style={styles.name}>{name}</Text>
+          <Text style={styles.company}>{company}</Text>
+        </View>
+      </View>
 
-          <View style={styles.row}>
-            <Feather name="briefcase" size={16} color="#6B7280" />
-            <Text style={styles.text}>{company}</Text>
-          </View>
+      {/* Divider */}
+      <View style={styles.divider} />
 
-          <View style={styles.row}>
-            <Feather name="phone" size={16} color="#6B7280" />
-            <Text style={styles.text}>{number}</Text>
-          </View>
+      {/* Details */}
+      <View style={styles.section}>
+        <View style={styles.row}>
+          <Feather name="phone" size={14} color={DS.color.textMuted} />
+          <Text style={styles.text}>{number}</Text>
+        </View>
 
-          <View style={styles.row}>
-            <Feather name="mail" size={16} color="#6B7280" />
-            <Text style={styles.text}>{email}</Text>
-          </View>
+        <View style={styles.row}>
+          <Feather name="mail" size={14} color={DS.color.textMuted} />
+          <Text style={styles.text}>{email}</Text>
         </View>
       </View>
     </View>
@@ -41,63 +44,56 @@ export const CustomerCard = ({
 };
 
 const styles = StyleSheet.create({
-  container: {
-    backgroundColor: '#FFFFFF',
-    margin: 0,
+  card: {
+    backgroundColor: DS.color.card,
+    borderRadius: DS.radius.lg,
+    borderWidth: 1,
+    borderColor: DS.color.border,
+    padding: DS.spacing.lg,
+    marginBottom: DS.spacing.md,
+    ...DS.shadow.sm,
   },
 
-  card: {
+  header: {
     flexDirection: 'row',
     alignItems: 'center',
-
-    width: '100%',
-
-    backgroundColor: '#F9FAFB',
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-
-    // padding: 14,
-    // backgroundColor: '#fff',
-
-    // borderBottomWidth: 1,
-    // borderBottomColor: '#E5E7EB',
-    // borderColor: 'navy',
-
-    // margin: 20,
-    // backgroundColor: '#FFFFFF',
-    // borderRadius: 16,
-
-    // Modern subtle shadow
-    // shadowColor: '#000',
-    // shadowOffset: { width: 0, height: 4 },
-    // shadowOpacity: 0.08,
-    // shadowRadius: 10,
-    // elevation: 3,
+    marginBottom: DS.spacing.md,
   },
 
   avatar: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: '#0E9F6E', // modern green
+    width: 38,
+    height: 38,
+    borderRadius: DS.radius.full,
+    backgroundColor: DS.color.primaryMuted,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 14,
+    marginRight: DS.spacing.md,
   },
 
-  content: {
+  headerText: {
     flex: 1,
-    justifyContent: 'center',
   },
 
   name: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#111827',
-    marginBottom: 6,
+    fontSize: 15,
+    fontWeight: '700',
+    color: DS.color.textPrimary,
+  },
+
+  company: {
+    marginTop: 2,
+    fontSize: 12,
+    color: DS.color.textSecondary,
+  },
+
+  divider: {
+    height: 1,
+    backgroundColor: DS.color.borderLight,
+    marginVertical: DS.spacing.sm,
+  },
+
+  section: {
+    gap: DS.spacing.sm,
   },
 
   row: {
@@ -106,8 +102,8 @@ const styles = StyleSheet.create({
   },
 
   text: {
-    marginLeft: 8,
+    marginLeft: DS.spacing.sm,
     fontSize: 13,
-    color: '#6B7280',
+    color: DS.color.textSecondary,
   },
 });
