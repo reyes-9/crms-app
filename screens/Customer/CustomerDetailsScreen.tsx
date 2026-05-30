@@ -20,6 +20,7 @@ import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useEffect, useMemo } from 'react';
 import {
+  Linking,
   ScrollView,
   StyleSheet,
   Text,
@@ -101,8 +102,16 @@ export const CustomerDetailsScreen = () => {
 
       {/* ── QUICK ACTIONS ───────────────────────── */}
       <View style={styles.row}>
-        <ActionButton icon="phone" label="Call" onPress={() => {}} />
-        <ActionButton icon="mail" label="Email" onPress={() => {}} />
+        <ActionButton
+          icon="phone"
+          label="Call"
+          onPress={() => Linking.openURL(`tel:${customer.number}`)}
+        />
+        <ActionButton
+          icon="mail"
+          label="Email"
+          onPress={() => Linking.openURL(`mailto:${customer.email}`)}
+        />
         <ActionButton
           icon="shopping-bag"
           label="Orders"
