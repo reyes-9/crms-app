@@ -5,6 +5,7 @@ import SwipeableRow from '@/components/SwipeableRow';
 import { useCustomer } from '@/hooks/useCustomer';
 import { DS } from '@/theme/design';
 import { Feather } from '@expo/vector-icons';
+import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import { useNavigation } from '@react-navigation/native';
 import React, { useEffect, useState } from 'react';
 import {
@@ -18,10 +19,10 @@ import {
   View,
 } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-
 /* ─── Screen ──────────────────────────────────────── */
 
 export const CustomerScreen = () => {
+  const tabBarHeight = useBottomTabBarHeight();
   const navigation = useNavigation<any>();
 
   const {
@@ -78,7 +79,9 @@ export const CustomerScreen = () => {
   if (error) return <ErrorScreen error={error} />;
 
   return (
-    <GestureHandlerRootView style={styles.screen}>
+    <GestureHandlerRootView
+      style={[styles.screen, { paddingBottom: tabBarHeight }]}
+    >
       {/* ── DELETE MODAL ──────────────────────── */}
       <ReusableModal
         state="danger"
