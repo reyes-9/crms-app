@@ -172,7 +172,12 @@ export const CustomerScreen = () => {
             </View>
 
             {/* ── ADD BUTTON ───────────────────── */}
-            <Pressable style={styles.addButton}>
+            <Pressable
+              style={styles.addButton}
+              onPress={() => {
+                navigation.navigate('CustomerForm');
+              }}
+            >
               <Feather name="plus" size={18} color={DS.color.textInverse} />
               <Text style={styles.addButtonText}>Add Customer</Text>
             </Pressable>

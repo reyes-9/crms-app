@@ -28,10 +28,6 @@ export const CustomerNotes = () => {
   const route = useRoute();
   const { customer_id } = route.params as { customer_id: number };
 
-  console.log('CustomerNotesScreen: ', customer_id);
-  // const route = useRoute();
-  // const customer_id = route.params.customer_id;
-
   const [search, setSearch] = useState('');
   const [openMenu, setOpenMenu] = useState<number | null>(null);
 

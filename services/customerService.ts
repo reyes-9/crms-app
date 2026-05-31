@@ -1,10 +1,15 @@
-import { CustomerProfile } from '@/types/customer';
+import { CustomerProfile, CustomerProfileForm } from '@/types/customer';
 import { api } from './api';
 
 export const customerService = {
   async getCustomers() {
     const res = await api.get('/customers/');
     return res;
+  },
+
+  async addCustomer(payload: CustomerProfileForm) {
+    const res = await api.post<CustomerProfile>(`/customers/`, payload);
+    return res.data;
   },
 
   async editCustomer(id: number, data: CustomerProfile) {
@@ -21,7 +26,7 @@ export const customerService = {
   },
 
   async deleteCustomer(id: number) {
-    const res = await api.patch(`/customers/${id}/soft_delete/`);
+    const res = await api.delete(`/customers/${id}/delete/`);
     return res;
   },
 

@@ -2,6 +2,7 @@ import { customerService } from '@/services/customerService';
 import {
   CustomerContextType,
   CustomerProfile,
+  CustomerProfileForm,
   CustomerProviderProps,
 } from '@/types/customer';
 import { createContext, useState } from 'react';
@@ -24,14 +25,25 @@ export function CustomerProvider({ children }: CustomerProviderProps) {
       // console.error(err); // optional error handling
     }
   }
+  async function addCustomer(payload: CustomerProfileForm) {
+    try {
+      const res = await customerService.addCustomer(payload);
+      // console.log('Payload:', payload);
+      console.log('RES:', res);
 
+      // Append new customer to state — avoid re-fetching
+      setCustomers((prev) => [res, ...prev]);
+    } catch (err: any) {
+      console.error(err);
+      throw new Error(err);
+    }
+  }
   async function editCustomer(
     id: number,
     data: CustomerProfile,
   ): Promise<CustomerProfile> {
     try {
       const res = await customerService.editCustomer(id, data);
-      console.log('RES: ', res);
       const updatedCustomer = res;
 
       // Update the customers array with the updated customer
@@ -77,6 +89,7 @@ export function CustomerProvider({ children }: CustomerProviderProps) {
         customers,
         setCustomers,
         getCustomers,
+        addCustomer,
         editCustomer,
         archiveCustomer,
         deleteCustomer,

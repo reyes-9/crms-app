@@ -1,18 +1,60 @@
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+
 import { Header } from '@/components/Header';
+
+import { LoginScreen } from '@/screens/LoginScreen';
+import { RegisterScreen } from '@/screens/RegisterScreen';
+import { SplashScreen } from '@/screens/SplashScreen';
+
 import { CustomerDetailsScreen } from '@/screens/Customer/CustomerDetailsScreen';
+import { CustomerFormScreen } from '@/screens/Customer/CustomerFormScreen';
 import { EditCustomerScreen } from '@/screens/EditCustomerScreen';
 import { LeadDetailsScreen } from '@/screens/LeadDetailsScreen';
-import { LoginScreen } from '@/screens/LoginScreen';
 import { CustomerNotes } from '@/screens/Notes/CustomerNotes';
 import { OrderFormScreen } from '@/screens/Orders/OrderFormScreen';
 import { OrdersScreen } from '@/screens/Orders/OrdersScreen';
-import { RegisterScreen } from '@/screens/RegisterScreen';
-import { SplashScreen } from '@/screens/SplashScreen';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import { TabNavigator } from './TabNavigator';
 
 const Stack = createNativeStackNavigator();
+
+const DETAIL_SCREENS = [
+  {
+    name: 'CustomerDetails',
+    component: CustomerDetailsScreen,
+    title: 'Customer Details',
+  },
+  {
+    name: 'EditCustomer',
+    component: EditCustomerScreen,
+    title: 'Edit Customer',
+  },
+  {
+    name: 'LeadDetails',
+    component: LeadDetailsScreen,
+    title: 'Lead Details',
+  },
+  {
+    name: 'Orders',
+    component: OrdersScreen,
+    title: 'Orders',
+  },
+  {
+    name: 'OrderForm',
+    component: OrderFormScreen,
+    title: 'Order Form',
+  },
+  {
+    name: 'CustomerNotes',
+    component: CustomerNotes,
+    title: 'Customer Notes',
+  },
+  {
+    name: 'CustomerForm',
+    component: CustomerFormScreen,
+    title: 'Customer Form',
+  },
+] as const;
 
 export const RootNavigator = () => {
   return (
@@ -29,65 +71,20 @@ export const RootNavigator = () => {
       <Stack.Screen name="Splash" component={SplashScreen} />
       <Stack.Screen name="Login" component={LoginScreen} />
       <Stack.Screen name="Register" component={RegisterScreen} />
-      <Stack.Screen
-        name="CustomerDetails"
-        component={CustomerDetailsScreen}
-        options={{
-          headerShown: true,
-          header: () => <Header title="CustomerDetails" isReturn={true} />,
-        }}
-      />
-      <Stack.Screen
-        name="EditCustomer"
-        component={EditCustomerScreen}
-        options={{
-          headerShown: true,
-          header: () => <Header title="EditCustomer" isReturn={true} />,
-        }}
-      />
-      <Stack.Screen
-        name="LeadDetails"
-        component={LeadDetailsScreen}
-        options={{
-          headerShown: true,
-          header: () => <Header title="LeadDetails" isReturn={true} />,
-        }}
-      />
-      <Stack.Screen
-        name="Orders"
-        component={OrdersScreen}
-        options={{
-          headerShown: true,
-          header: () => <Header title="Orders" isReturn={true} />,
-        }}
-      />
-      <Stack.Screen
-        name="OrderForm"
-        component={OrderFormScreen}
-        options={{
-          headerShown: true,
-          header: () => <Header title="OrderForm" isReturn={true} />,
-        }}
-      />
-      <Stack.Screen
-        name="CustomerNotes"
-        component={CustomerNotes}
-        options={{
-          headerShown: true,
-          header: () => <Header title="CustomerNotes" isReturn={true} />,
-        }}
-      />
 
-      {/* <Stack.Screen
-        name="CustomerDetails"
-        component={CustomerDetails}
-        options={{
-          headerShown: true,
-          title: 'TEST HEADER',
-        }}
-      /> */}
+      {DETAIL_SCREENS.map((screen) => (
+        <Stack.Screen
+          key={screen.name}
+          name={screen.name}
+          component={screen.component}
+          options={{
+            headerShown: true,
+            header: () => <Header title={screen.title} isReturn={true} />,
+          }}
+        />
+      ))}
+
       <Stack.Screen name="Main" component={TabNavigator} />
-      {/* <Stack.Screen name="Customer" component={CustomerScreen} /> */}
     </Stack.Navigator>
   );
 };

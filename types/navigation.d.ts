@@ -7,6 +7,7 @@ export type RootStackParamList = ParamListBase & {
   Register: undefined;
   Main: undefined;
   Customer: {};
+  CustomerForm: {}
   CustomerDetails: {
     customer: CustomerProfile;
   };

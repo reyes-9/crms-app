@@ -12,21 +12,15 @@ export interface CustomerProfile {
   number: string;
 }
 
+export type CustomerProfileForm = Omit<CustomerProfile, 'id'>;
+
 export interface CustomerContextType {
   customers: CustomerProfile[];
   setCustomers: Dispatch<SetStateAction<CustomerProfile[]>>;
   getCustomers: () => Promise<void>;
+  addCustomer: (payload: CustomerProfileForm) => Promise<void>;
   editCustomer: (id: number, data: CustomerProfile) => Promise<CustomerProfile>;
   archiveCustomer: (id: number) => Promise<void>;
   deleteCustomer: (id: number) => Promise<void>;
   searchCustomer: (search: string) => Promise<void>;
 }
-
-// export interface UserContextType {
-//   user: UserDetails | null;
-//   isLoading: boolean;
-//   register: (credentials: RegisterCredentials) => Promise<void>;
-//   login: (credentials: LoginCredentials) => Promise<void>;
-//   loadUser: () => Promise<void>;
-//   logout: () => Promise<void>;
-// }
