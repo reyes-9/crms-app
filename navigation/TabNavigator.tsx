@@ -6,7 +6,7 @@ import { Platform, StyleSheet, Text, View } from 'react-native';
 import { Header } from '@/components/Header';
 import { CustomerScreen } from '@/screens/Customer/CustomerScreen';
 import { DashboardScreen } from '@/screens/DashboardScreen';
-import { LeadScreen } from '@/screens/LeadScreen';
+import { LeadScreen } from '@/screens/Lead/LeadScreen';
 import { ProfileScreen } from '@/screens/ProfileScreen';
 import { DS } from '@/theme/design';
 

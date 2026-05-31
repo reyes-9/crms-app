@@ -2,14 +2,14 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import { Header } from '@/components/Header';
 
-import { LoginScreen } from '@/screens/LoginScreen';
-import { RegisterScreen } from '@/screens/RegisterScreen';
+import { LoginScreen } from '@/screens/Auth/LoginScreen';
+import { RegisterScreen } from '@/screens/Auth/RegisterScreen';
 import { SplashScreen } from '@/screens/SplashScreen';
 
 import { CustomerDetailsScreen } from '@/screens/Customer/CustomerDetailsScreen';
 import { CustomerFormScreen } from '@/screens/Customer/CustomerFormScreen';
-import { EditCustomerScreen } from '@/screens/EditCustomerScreen';
-import { LeadDetailsScreen } from '@/screens/LeadDetailsScreen';
+import { EditCustomerScreen } from '@/screens/Customer/EditCustomerScreen';
+import { LeadDetailsScreen } from '@/screens/Lead/LeadDetailsScreen';
 import { CustomerNotes } from '@/screens/Notes/CustomerNotes';
 import { OrderFormScreen } from '@/screens/Orders/OrderFormScreen';
 import { OrdersScreen } from '@/screens/Orders/OrdersScreen';
