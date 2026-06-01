@@ -3,13 +3,6 @@ import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { Button, Text, View } from 'react-native';
 
-// function showAlert(message: string) {
-//   if (Platform.OS === 'web') {
-//     window.alert(message);
-//   } else {
-//     Alert.alert(message);
-//   }
-// }
 type RootStackParamList = {
   Splash: undefined;
   Login: undefined;

@@ -71,7 +71,7 @@ export const LoginScreen = () => {
         {/* Brand */}
         <View style={styles.brand}>
           <Image
-            source={require('../assets/images/nexus_logo.png')}
+            source={require('@/assets/images/nexus_logo.png')}
             style={styles.logo}
           />
 

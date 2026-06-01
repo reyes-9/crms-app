@@ -9,6 +9,7 @@ import { DashboardScreen } from '@/screens/DashboardScreen';
 import { LeadScreen } from '@/screens/Lead/LeadScreen';
 import { ProfileScreen } from '@/screens/ProfileScreen';
 import { DS } from '@/theme/design';
+import { Pressable } from 'react-native';
 
 const Tab = createBottomTabNavigator();
 
@@ -61,7 +62,7 @@ const CustomTabBar = ({
               {isFocused && <View style={styles.activePill} />}
 
               {/* Pressable sits on top */}
-              <View style={styles.tabInner} onTouchEnd={onPress}>
+              <Pressable style={styles.tabInner} onPress={onPress}>
                 <Feather
                   name={tab.icon as any}
                   size={20}
@@ -76,7 +77,7 @@ const CustomTabBar = ({
                 >
                   {tab.label}
                 </Text>
-              </View>
+              </Pressable>
             </View>
           );
         })}

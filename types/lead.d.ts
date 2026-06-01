@@ -12,6 +12,11 @@ export interface LeadProfile {
     | 'converted'
     | 'lost';
   source: 'website' | 'referral' | 'social' | 'email' | 'other';
-  notes?: string | null;
   value: number;
+}
+
+export type LeadProfileForm = Omit<LeadProfile, 'id'>;
+
+export interface LeadContextType {
+  
 }
