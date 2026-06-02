@@ -1,8 +1,7 @@
+import { DS } from '@/theme/design';
 import { CustomerProfile } from '@/types/customer';
 import { Feather } from '@expo/vector-icons';
 import { StyleSheet, Text, View } from 'react-native';
-
-import { DS } from '@/theme/design';
 
 export const CustomerCard = ({
   name,
@@ -12,66 +11,79 @@ export const CustomerCard = ({
 }: CustomerProfile) => {
   return (
     <View style={styles.card}>
-      {/* Header */}
-      <View style={styles.header}>
+      <View style={styles.topRow}>
         <View style={styles.avatar}>
-          <Feather name="user" size={18} color={DS.color.primary} />
+          <Text style={styles.avatarText}>{name?.charAt(0).toUpperCase()}</Text>
         </View>
 
-        <View style={styles.headerText}>
-          <Text style={styles.name}>{name}</Text>
-          <Text style={styles.company}>{company}</Text>
+        <View style={styles.info}>
+          <Text numberOfLines={1} style={styles.name}>
+            {name}
+          </Text>
+
+          {!!company && (
+            <Text numberOfLines={1} style={styles.company}>
+              {company}
+            </Text>
+          )}
         </View>
+
+        <Feather name="chevron-right" size={16} color={DS.color.textMuted} />
       </View>
 
-      {/* Divider */}
-      <View style={styles.divider} />
-
-      {/* Details */}
-      <View style={styles.section}>
-        <View style={styles.row}>
-          <Feather name="phone" size={14} color={DS.color.textMuted} />
-          <Text style={styles.text}>{number}</Text>
+      <View style={styles.metaRow}>
+        <View style={styles.metaItem}>
+          <Feather name="phone" size={12} color={DS.color.textMuted} />
+          <Text numberOfLines={1} style={styles.metaText}>
+            {number}
+          </Text>
         </View>
 
-        <View style={styles.row}>
-          <Feather name="mail" size={14} color={DS.color.textMuted} />
-          <Text style={styles.text}>{email}</Text>
+        <View style={styles.dot} />
+
+        <View style={styles.metaItem}>
+          <Feather name="mail" size={12} color={DS.color.textMuted} />
+          <Text numberOfLines={1} style={styles.metaText}>
+            {email}
+          </Text>
         </View>
       </View>
     </View>
   );
 };
-
 const styles = StyleSheet.create({
   card: {
     backgroundColor: DS.color.card,
-    borderRadius: DS.radius.lg,
     borderWidth: 1,
     borderColor: DS.color.border,
-    padding: DS.spacing.lg,
-    marginBottom: DS.spacing.md,
-    ...DS.shadow.sm,
+    borderRadius: DS.radius.lg,
+    padding: DS.spacing.md,
+    marginBottom: DS.spacing.sm,
   },
 
-  header: {
+  topRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: DS.spacing.md,
   },
 
   avatar: {
-    width: 38,
-    height: 38,
-    borderRadius: DS.radius.full,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     backgroundColor: DS.color.primaryMuted,
-    justifyContent: 'center',
     alignItems: 'center',
-    marginRight: DS.spacing.md,
+    justifyContent: 'center',
   },
 
-  headerText: {
+  avatarText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: DS.color.primary,
+  },
+
+  info: {
     flex: 1,
+    marginLeft: DS.spacing.md,
   },
 
   name: {
@@ -85,25 +97,28 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: DS.color.textSecondary,
   },
-
-  divider: {
-    height: 1,
-    backgroundColor: DS.color.borderLight,
-    marginVertical: DS.spacing.sm,
-  },
-
-  section: {
-    gap: DS.spacing.sm,
-  },
-
-  row: {
+  metaRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    marginTop: DS.spacing.sm,
   },
 
-  text: {
-    marginLeft: DS.spacing.sm,
-    fontSize: 13,
-    color: DS.color.textSecondary,
+  metaItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+
+  metaText: {
+    fontSize: 12,
+    color: DS.color.textMuted,
+  },
+
+  dot: {
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: DS.color.border,
+    marginHorizontal: 8,
   },
 });

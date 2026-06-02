@@ -9,7 +9,10 @@ import { SplashScreen } from '@/screens/SplashScreen';
 import { CustomerDetailsScreen } from '@/screens/Customer/CustomerDetailsScreen';
 import { CustomerFormScreen } from '@/screens/Customer/CustomerFormScreen';
 import { EditCustomerScreen } from '@/screens/Customer/EditCustomerScreen';
+
 import { LeadDetailsScreen } from '@/screens/Lead/LeadDetailsScreen';
+import { LeadFormScreen } from '@/screens/Lead/LeadFormScreen';
+
 import { CustomerNotes } from '@/screens/Notes/CustomerNotes';
 import { OrderFormScreen } from '@/screens/Orders/OrderFormScreen';
 import { OrdersScreen } from '@/screens/Orders/OrdersScreen';
@@ -29,26 +32,11 @@ const DETAIL_SCREENS = [
     component: EditCustomerScreen,
     title: 'Edit Customer',
   },
-  {
-    name: 'LeadDetails',
-    component: LeadDetailsScreen,
-    title: 'Lead Details',
-  },
-  {
-    name: 'Orders',
-    component: OrdersScreen,
-    title: 'Orders',
-  },
-  {
-    name: 'OrderForm',
-    component: OrderFormScreen,
-    title: 'Order Form',
-  },
-  {
-    name: 'CustomerNotes',
-    component: CustomerNotes,
-    title: 'Customer Notes',
-  },
+  { name: 'LeadDetails', component: LeadDetailsScreen, title: 'Lead Details' },
+  { name: 'LeadForm', component: LeadFormScreen, title: 'Lead Form' },
+  { name: 'Orders', component: OrdersScreen, title: 'Orders' },
+  { name: 'OrderForm', component: OrderFormScreen, title: 'Order Form' },
+  { name: 'CustomerNotes', component: CustomerNotes, title: 'Customer Notes' },
   {
     name: 'CustomerForm',
     component: CustomerFormScreen,
@@ -68,23 +56,32 @@ export const RootNavigator = () => {
         },
       }}
     >
+      {/* AUTH */}
       <Stack.Screen name="Splash" component={SplashScreen} />
       <Stack.Screen name="Login" component={LoginScreen} />
       <Stack.Screen name="Register" component={RegisterScreen} />
 
+      {/* DETAIL SCREENS */}
       {DETAIL_SCREENS.map((screen) => (
         <Stack.Screen
           key={screen.name}
           name={screen.name}
           component={screen.component}
-          options={{
+          options={({ navigation, route }) => ({
             headerShown: true,
-            header: () => <Header title={screen.title} isReturn={true} />,
-          }}
+            header: () => (
+              <Header title={screen.title} isReturn={navigation.canGoBack()} />
+            ),
+          })}
         />
       ))}
 
-      <Stack.Screen name="Main" component={TabNavigator} />
+      {/* MAIN APP */}
+      <Stack.Screen
+        name="Main"
+        component={TabNavigator}
+        options={{ headerShown: false }}
+      />
     </Stack.Navigator>
   );
 };

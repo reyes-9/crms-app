@@ -1,15 +1,3 @@
-// // CREATE THE MANAGE NOTES SCREEN
-// // CREATE THE MANAGE NOTES SCREEN
-// // CREATE THE MANAGE NOTES SCREEN
-
-// // COMPLETE IT ALL TOMMOROW
-// // COMPLETE IT ALL TOMMOROW
-// // COMPLETE IT ALL TOMMOROW
-
-// // UI - PROCESSES
-// // UI - PROCESSES
-// // UI - PROCESSES
-
 import { useCustomer } from '@/hooks/useCustomer';
 import { useCustomerNote } from '@/hooks/useCustomerNote';
 import { useOrder } from '@/hooks/useOrder';

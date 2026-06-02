@@ -1,40 +1,39 @@
-import { LeadProfileForm, LeadProfile } from '@/types/lead';
+import { LeadProfileForm, LeadStatus } from '@/types/lead';
 import { api } from './api';
 
-export const orderService = {
-  async getLead(customer_id: number) {
-
+export const leadService = {
+  async getLeads() {
+    const res = await api.get('/leads/');
+    return res;
   },
 
-  async getOrdersByCustomerIdLimit(customer_id: number) {
-
-  },
-  async advanceLead(id: number, data: { status: string }) {
-   
+  async addLead(data: LeadProfileForm) {
+    const res = await api.post('/leads/', data);
+    return res;
   },
 
-  async getOrdersById(id: number) {
-
+  async editLead(id: number, data: LeadProfileForm) {
+    const res = await api.patch(`/leads/${id}/edit/`, data);
+    return res;
   },
 
-  async searchOrder(search: string) {
-
+  async advanceLead(id: number, status: LeadStatus) {
+    const res = await api.patch(`/leads/${id}/advance/`, { status });
+    return res;
   },
 
-  async editOrder(id: number, data: LeadProfileForm) {
- 
+  async deleteLead(id: number) {
+    const res = await api.delete(`/leads/${id}/delete/`);
+    return res;
   },
 
-  async addOrder(data: LeadProfileForm) {
-   
+  async archiveLead(id: number) {
+    const res = await api.patch(`/leads/${id}/archive/`);
+    return res;
   },
 
-  async deleteOrder(id: number) {
-   
+  async searchLead(query: string) {
+    const res = await api.get(`/leads/?search=${encodeURIComponent(query)}`);
+    return res;
   },
-
-  async cancelOrder(id: number) {
- 
-  },
-
 };

@@ -21,8 +21,6 @@ export function CustomerProvider({ children }: CustomerProviderProps) {
       setCustomers(activeCustomers); // update state only
     } catch (err: any) {
       throw new Error(err);
-      // throw new Error(err?.response?.data?.message || err.message);
-      // console.error(err); // optional error handling
     }
   }
   async function addCustomer(payload: CustomerProfileForm) {
@@ -56,7 +54,6 @@ export function CustomerProvider({ children }: CustomerProviderProps) {
       throw new Error(err);
     }
   }
-
   async function archiveCustomer(id: number) {
     try {
       await customerService.archiveCustomer(id);
@@ -64,7 +61,6 @@ export function CustomerProvider({ children }: CustomerProviderProps) {
       throw new Error(err);
     }
   }
-
   async function deleteCustomer(id: number) {
     try {
       await customerService.deleteCustomer(id);
@@ -72,7 +68,6 @@ export function CustomerProvider({ children }: CustomerProviderProps) {
       throw new Error(err);
     }
   }
-
   async function searchCustomer(search: string) {
     try {
       const res = await customerService.searchCustomer(search);
@@ -82,7 +77,6 @@ export function CustomerProvider({ children }: CustomerProviderProps) {
       throw new Error(err);
     }
   }
-
   return (
     <CustomerContext.Provider
       value={{

@@ -13,7 +13,6 @@ export const SearchInput = ({ onSearch, delay = 400 }: SearchInputProps) => {
   useEffect(() => {
     const timer = setTimeout(() => {
       onSearch(value);
-      console.log(value);
     }, delay); // use prop
 
     return () => clearTimeout(timer); // correct cleanup

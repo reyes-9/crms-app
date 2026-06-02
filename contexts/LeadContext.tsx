@@ -1,96 +1,109 @@
-import {} from '@/types/customer';
+import { leadService } from '@/services/leadService';
+import {
+  LeadContextType,
+  LeadProfile,
+  LeadProfileForm,
+  LeadProviderProps,
+  LeadStatus,
+} from '@/types/lead';
 import { createContext, useState } from 'react';
 
-export const CustomerContext = createContext<CustomerContextType | undefined>(
+export const LeadContext = createContext<LeadContextType | undefined>(
   undefined,
 );
 
-export function CustomerProvider({ children }: CustomerProviderProps) {
-  const [customers, setCustomers] = useState<CustomerProfile[]>([]);
+export function LeadProvider({ children }: LeadProviderProps) {
+  const [leads, setLeads] = useState<LeadProfile[]>([]);
 
-  async function getCustomers() {
+  async function getLeads() {
     try {
-      const res = await customerService.getCustomers();
-      const activeCustomers = res.data.filter((c: any) => !c.is_archived);
-      setCustomers(activeCustomers); // update state only
+      const res = await leadService.getLeads();
+      const active = res.data.filter((l: LeadProfile) => !l.is_archived);
+      setLeads(active);
     } catch (err: any) {
-      throw new Error(err);
-      // throw new Error(err?.response?.data?.message || err.message);
-      // console.error(err); // optional error handling
-    }
-  }
-  async function addCustomer(payload: CustomerProfileForm) {
-    try {
-      const res = await customerService.addCustomer(payload);
-      // console.log('Payload:', payload);
-      console.log('RES:', res);
-
-      // Append new customer to state — avoid re-fetching
-      setCustomers((prev) => [res, ...prev]);
-    } catch (err: any) {
-      console.error(err);
       throw new Error(err);
     }
   }
-  async function editCustomer(
+
+  async function addLead(data: LeadProfileForm) {
+    try {
+      const res = await leadService.addLead(data);
+      setLeads((prev) => [res.data, ...prev]);
+    } catch (err: any) {
+      throw new Error(err);
+    }
+  }
+
+  async function editLead(
     id: number,
-    data: CustomerProfile,
-  ): Promise<CustomerProfile> {
+    data: LeadProfileForm,
+  ): Promise<LeadProfile> {
     try {
-      const res = await customerService.editCustomer(id, data);
-      const updatedCustomer = res;
-
-      // Update the customers array with the updated customer
-      setCustomers((prev) =>
-        prev.map((c) => (c.id === id ? updatedCustomer : c)),
-      );
-
-      return updatedCustomer;
+      const res = await leadService.editLead(id, data);
+      const updated: LeadProfile = res.data;
+      setLeads((prev) => prev.map((l) => (l.id === id ? updated : l)));
+      return updated;
     } catch (err: any) {
       throw new Error(err);
     }
   }
 
-  async function archiveCustomer(id: number) {
+  async function advanceLead(
+    id: number,
+    status: LeadStatus,
+  ): Promise<LeadProfile> {
     try {
-      await customerService.archiveCustomer(id);
+      const res = await leadService.advanceLead(id, status);
+      const updated: LeadProfile = res.data;
+      setLeads((prev) => prev.map((l) => (l.id === id ? updated : l)));
+      return updated;
     } catch (err: any) {
       throw new Error(err);
     }
   }
 
-  async function deleteCustomer(id: number) {
+  async function deleteLead(id: number) {
     try {
-      await customerService.deleteCustomer(id);
+      await leadService.deleteLead(id);
+      setLeads((prev) => prev.filter((l) => l.id !== id));
     } catch (err: any) {
       throw new Error(err);
     }
   }
 
-  async function searchCustomer(search: string) {
+  async function archiveLead(id: number) {
     try {
-      const res = await customerService.searchCustomer(search);
-      const activeCustomers = res.data.filter((c: any) => !c.is_archived);
-      setCustomers(activeCustomers); // update state only
+      await leadService.archiveLead(id);
+      setLeads((prev) => prev.filter((l) => l.id !== id));
+    } catch (err: any) {
+      throw new Error(err);
+    }
+  }
+
+  async function searchLead(query: string) {
+    try {
+      const res = await leadService.searchLead(query);
+      const active = res.data.filter((l: LeadProfile) => !l.is_archived);
+      setLeads(active);
     } catch (err: any) {
       throw new Error(err);
     }
   }
 
   return (
-    <CustomerContext.Provider
+    <LeadContext.Provider
       value={{
-        customers,
-        setCustomers,
-        getCustomers,
-        addCustomer,
-        editCustomer,
-        archiveCustomer,
-        deleteCustomer,
-        searchCustomer,
+        leads,
+        getLeads,
+        addLead,
+        editLead,
+        advanceLead,
+        deleteLead,
+        archiveLead,
+        searchLead,
       }}
     >
       {children}
-    </CustomerContext.Provider>
+    </LeadContext.Provider>
   );
 }

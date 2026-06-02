@@ -31,7 +31,9 @@ export const customerService = {
   },
 
   async searchCustomer(search: string) {
-    const res = await api.get(`/customers/?search=${search}`);
+    const res = await api.get(
+      `/customers/?search=${encodeURIComponent(search)}`,
+    );
     return res;
   },
 };

@@ -1,3 +1,8 @@
+// MAKE THE HEADER LIKE IN THE LEADSCREEN
+// MAKE THE HEADER LIKE IN THE LEADSCREEN
+// MAKE THE HEADER LIKE IN THE LEADSCREEN
+// MAKE THE HEADER LIKE IN THE LEADSCREEN
+
 import { CustomerCard } from '@/components/CustomerCard';
 import { ReusableModal } from '@/components/ReusableModal';
 import SearchInput from '@/components/SearchInput';
@@ -80,7 +85,7 @@ export const CustomerScreen = () => {
 
   return (
     <GestureHandlerRootView
-      style={[styles.screen, { paddingBottom: tabBarHeight }]}
+      style={[styles.screen, { paddingBottom: tabBarHeight - 8 }]}
     >
       {/* ── DELETE MODAL ──────────────────────── */}
       <ReusableModal
@@ -165,11 +170,14 @@ export const CustomerScreen = () => {
           <View style={styles.listHeader}>
             {/* ── PAGE HEADER ──────────────────── */}
             <View style={styles.pageHeader}>
-              <View>
+              <View style={styles.titleBlock}>
                 <Text style={styles.eyebrow}>CRM</Text>
                 <Text style={styles.pageTitle}>Customers</Text>
+                <Text style={styles.pageSubtitle}>
+                  Manage and track customers and accounts
+                </Text>
               </View>
-              <View style={styles.headerIconBtn}>
+              <View style={styles.headerIcon}>
                 <Feather name="users" size={18} color={DS.color.primary} />
               </View>
             </View>
@@ -240,8 +248,8 @@ export const CustomerScreen = () => {
 
 const StatChip = ({ label, value }: { label: string; value: number }) => (
   <View style={styles.statChip}>
-    <Text style={styles.statValue}>{value}</Text>
     <Text style={styles.statLabel}>{label}</Text>
+    <Text style={styles.statValue}>{value}</Text>
   </View>
 );
 
@@ -279,13 +287,13 @@ const styles = StyleSheet.create({
     backgroundColor: DS.color.bg,
   },
   listContent: {
-    paddingHorizontal: DS.spacing.xl,
+    padding: DS.spacing.lg,
     paddingBottom: 32,
   },
   listHeader: {
-    paddingTop: DS.spacing.xl,
+    paddingTop: DS.spacing.xs,
     gap: DS.spacing.md,
-    marginBottom: DS.spacing.sm,
+    marginBottom: DS.spacing.md,
   },
 
   // HEADER
@@ -301,7 +309,13 @@ const styles = StyleSheet.create({
   pageTitle: {
     ...DS.typography.screenTitle,
   },
-  headerIconBtn: {
+  pageSubtitle: {
+    marginTop: 4,
+    fontSize: 13,
+    color: DS.color.textSecondary,
+    lineHeight: 18,
+  },
+  headerIcon: {
     width: 44,
     height: 44,
     borderRadius: DS.radius.md,
@@ -310,6 +324,10 @@ const styles = StyleSheet.create({
     borderColor: DS.color.primaryLight,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  titleBlock: {
+    flex: 1,
+    paddingRight: DS.spacing.md,
   },
 
   // ADD BUTTON
@@ -334,24 +352,30 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: DS.spacing.sm,
   },
+
   statChip: {
+    // flex: 1,
+    width: 120,
     backgroundColor: DS.color.card,
-    borderRadius: DS.radius.md,
     borderWidth: 1,
     borderColor: DS.color.border,
-    paddingHorizontal: DS.spacing.lg,
-    paddingVertical: DS.spacing.sm,
-    alignItems: 'center',
+    borderRadius: DS.radius.md,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
   },
-  statValue: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: DS.color.primary,
-  },
+
   statLabel: {
     fontSize: 11,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
     color: DS.color.textMuted,
-    marginTop: 2,
+  },
+
+  statValue: {
+    marginTop: 4,
+    fontSize: 18,
+    fontWeight: '700',
+    color: DS.color.textPrimary,
   },
 
   // LIST LABEL
@@ -363,7 +387,7 @@ const styles = StyleSheet.create({
   // EMPTY
   empty: {
     alignItems: 'center',
-    paddingVertical: 60,
+    paddingVertical: DS.spacing.xxxl,
     gap: DS.spacing.sm,
   },
   emptyIcon: {

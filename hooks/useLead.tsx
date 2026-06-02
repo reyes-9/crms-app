@@ -1,7 +1,7 @@
 import { LeadContext } from '@/contexts/LeadContext';
 import { useContext } from 'react';
 
-export function useOrder() {
+export function useLead() {
   const context = useContext(LeadContext);
 
   if (!context) {

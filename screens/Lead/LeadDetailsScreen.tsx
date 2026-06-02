@@ -1,8 +1,22 @@
+// THE ADVANCEMENT IS NOT YET COMPLETE
+// THE ADVANCEMENT IS NOT YET COMPLETE
+// THE ADVANCEMENT IS NOT YET COMPLETE
+
+// COMPLETE THE EDIT LEAD
+// COMPLETE THE EDIT LEAD
+// COMPLETE THE EDIT LEAD
+
+import { useLead } from '@/hooks/useLead';
 import { DS } from '@/theme/design';
-import { LeadProfile } from '@/types/lead';
-import { formatCurrency } from '@/utils/formatCurrency';
+import { LeadProfile, LeadStatus } from '@/types/lead';
 import { Feather } from '@expo/vector-icons';
+import { useNavigation, useRoute } from '@react-navigation/native';
+import { useState } from 'react';
 import {
+  ActivityIndicator,
+  Alert,
+  Linking,
+  Modal,
   ScrollView,
   StyleSheet,
   Text,
@@ -10,39 +24,8 @@ import {
   View,
 } from 'react-native';
 
-/* ─── Types ─────────────────────────────────────── */
-
-type LeadStatus =
-  | 'new'
-  | 'contacted'
-  | 'qualified'
-  | 'unqualified'
-  | 'converted'
-  | 'lost';
-type SortOption = 'all' | LeadStatus;
-
-type Lead = {
-  id: string;
-  name: string;
-  email: string;
-  number: string;
-  company: string;
-  status: LeadStatus;
-  source: string;
-};
-
 /* ─── Constants ──────────────────────────────────── */
-
-const STATUS_LABEL: Record<LeadStatus, string> = {
-  new: 'New',
-  contacted: 'Contacted',
-  qualified: 'Qualified',
-  unqualified: 'Unqualified',
-  converted: 'Converted',
-  lost: 'Lost',
-};
-
-const STATUS_COLOR: Record<LeadStatus, { bg: string; color: string }> = {
+export const STATUS_COLOR: Record<LeadStatus, { bg: string; color: string }> = {
   new: { bg: '#DBEAFE', color: '#1D4ED8' },
   contacted: { bg: '#FEF3C7', color: '#B45309' },
   qualified: { bg: '#DCFCE7', color: '#15803D' },
@@ -51,233 +34,385 @@ const STATUS_COLOR: Record<LeadStatus, { bg: string; color: string }> = {
   lost: { bg: '#F1F5F9', color: '#475569' },
 };
 
-/* ═══════════════════════════════════════════════════
-   LEAD DETAILS SCREEN
-═══════════════════════════════════════════════════ */
+export const STATUS_LABEL: Record<LeadStatus, string> = {
+  new: 'New',
+  contacted: 'Contacted',
+  qualified: 'Qualified',
+  unqualified: 'Unqualified',
+  converted: 'Converted',
+  lost: 'Lost',
+};
 
-const STATUS_CHOICES: [string, string][] = [
+const STATUS_CHOICES: [LeadStatus, string][] = [
   ['new', 'New'],
   ['contacted', 'Contacted'],
   ['qualified', 'Qualified'],
   ['converted', 'Converted'],
 ];
 
-const LEAD_NOTES = [
-  {
-    id: '1',
-    content: 'Followed up with client regarding proposal.',
-    createdAt: '2025-04-10',
-  },
-  {
-    id: '2',
-    content: 'Client requested a demo next week.',
-    createdAt: '2025-04-12',
-  },
-  {
-    id: '3',
-    content: 'Sent updated contract for review.',
-    createdAt: '2025-04-15',
-  },
-  { id: '4', content: 'Scheduled demo for April 20.', createdAt: '2025-04-16' },
-];
-
-const SAMPLE_LEAD: LeadProfile = {
-  id: 'LEAD001',
-  name: 'Alice Johnson',
-  company: 'Tech Solutions Inc.',
-  email: 'alice.johnson@example.com',
-  number: '+1234567890',
-  status: 'new',
-  source: 'website',
-  notes: 'Interested in product demo.',
-  value: 50000,
+const ADVANCE_MAP: Record<LeadStatus, LeadStatus | null> = {
+  new: 'contacted',
+  contacted: 'qualified',
+  qualified: 'converted',
+  converted: null,
+  unqualified: null,
+  lost: null,
 };
 
-export const LeadDetailsScreen = () => {
-  const currentStatus = SAMPLE_LEAD.status;
-  const currentIndex = STATUS_CHOICES.findIndex(([v]) => v === currentStatus);
+/* ═══════════════════════════════════════════════════
+   LEAD DETAILS SCREEN
+═══════════════════════════════════════════════════ */
 
-  const initials = SAMPLE_LEAD.name
+export const LeadDetailsScreen = () => {
+  const route = useRoute<any>();
+  const navigation = useNavigation<any>();
+  const { advanceLead, deleteLead, archiveLead } = useLead();
+
+  // Lead comes from navigation params; fall back to a safe shape
+  const [lead, setLead] = useState<LeadProfile>(route.params?.lead);
+
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [advanceLoading, setAdvanceLoading] = useState(false);
+
+  // Delete / archive confirm modals
+  const [deleteVisible, setDeleteVisible] = useState(false);
+  const [archiveVisible, setArchiveVisible] = useState(false);
+  const [actionLoading, setActionLoading] = useState(false);
+
+  const currentStatus = lead.status;
+  const currentIndex = STATUS_CHOICES.findIndex(([v]) => v === currentStatus);
+  const nextStatus = ADVANCE_MAP[currentStatus];
+  const canAdvance = nextStatus != null;
+
+  const initials = lead.name
     .split(' ')
     .slice(0, 2)
     .map((w) => w[0])
     .join('')
     .toUpperCase();
 
+  /* ── Actions ────────────────────────────────────── */
+
+  const handleAdvance = async () => {
+    if (!nextStatus) return;
+    try {
+      setAdvanceLoading(true);
+      const updated = await advanceLead(lead.id, nextStatus);
+      setLead(updated);
+    } catch {
+      Alert.alert('Error', 'Failed to advance lead. Please try again.');
+    } finally {
+      setAdvanceLoading(false);
+    }
+  };
+
+  const handleConfirmDelete = async () => {
+    try {
+      setActionLoading(true);
+      await deleteLead(lead.id);
+      setDeleteVisible(false);
+      navigation.goBack();
+    } catch {
+      Alert.alert('Error', 'Failed to delete lead. Please try again.');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleConfirmArchive = async () => {
+    try {
+      setActionLoading(true);
+      await archiveLead(lead.id);
+      setArchiveVisible(false);
+      navigation.goBack();
+    } catch {
+      Alert.alert('Error', 'Failed to archive lead. Please try again.');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  /* ── Render ─────────────────────────────────────── */
+
   return (
-    <ScrollView
-      style={styles2.screen}
-      contentContainerStyle={styles2.content}
-      showsVerticalScrollIndicator={false}
-    >
-      {/* ── PROFILE CARD ─────────────────────── */}
-      <View style={styles2.profileCard}>
-        <View style={styles2.avatar}>
-          <Text style={styles2.avatarText}>{initials}</Text>
-        </View>
-
-        <View style={{ flex: 1 }}>
-          <Text style={styles2.profileName}>{SAMPLE_LEAD.name}</Text>
-          <Text style={styles2.profileCompany}>{SAMPLE_LEAD.company}</Text>
-          <View style={styles2.profileMeta}>
-            <View
-              style={[
-                styles2.statusPill,
-                {
-                  backgroundColor:
-                    STATUS_COLOR[currentStatus as LeadStatus]?.bg,
-                },
-              ]}
-            >
-              <Text
-                style={[
-                  styles2.statusPillText,
-                  { color: STATUS_COLOR[currentStatus as LeadStatus]?.color },
-                ]}
-              >
-                {STATUS_LABEL[currentStatus as LeadStatus] ?? currentStatus}
-              </Text>
-            </View>
-            <Text style={styles2.valuePill}>
-              {formatCurrency(SAMPLE_LEAD.value, 'en-PH', 'PHP')}
-            </Text>
+    <>
+      <ScrollView
+        style={styles.screen}
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* ── PROFILE CARD ─────────────────────── */}
+        <View style={styles.profileCard}>
+          <View style={styles.avatar}>
+            <Text style={styles.avatarText}>{initials}</Text>
           </View>
-        </View>
 
-        <TouchableOpacity style={styles2.editBtn}>
-          <Feather name="edit-2" size={14} color={DS.color.primary} />
-          <Text style={styles2.editBtnText}>Edit</Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* ── QUICK ACTIONS ─────────────────────── */}
-      <View style={styles2.actionsRow}>
-        <TouchableOpacity style={styles2.actionBtn}>
-          <Feather name="phone" size={16} color={DS.color.primary} />
-          <Text style={styles2.actionBtnText}>Call</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles2.actionBtn}>
-          <Feather name="mail" size={16} color={DS.color.primary} />
-          <Text style={styles2.actionBtnText}>Email</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={[styles2.actionBtn, styles2.actionBtnPrimary]}>
-          <Feather name="trending-up" size={16} color={DS.color.textInverse} />
-          <Text
-            style={[styles2.actionBtnText, { color: DS.color.textInverse }]}
-          >
-            Advance Lead
-          </Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* ── PIPELINE ─────────────────────────── */}
-      <SectionCard2 title="Pipeline Stage" icon="git-branch">
-        <View style={styles2.pipeline}>
-          {STATUS_CHOICES.map(([value, label], index) => {
-            const isPassed = index < currentIndex;
-            const isCurrent =
-              index === currentIndex &&
-              !['unqualified', 'lost'].includes(currentStatus);
-            const isFailed =
-              (currentStatus === 'unqualified' && index === 2) ||
-              (currentStatus === 'lost' && index === 3);
-            const isUpcoming = !isPassed && !isCurrent && !isFailed;
-            const isLast = index === STATUS_CHOICES.length - 1;
-
-            const text =
-              currentStatus === 'unqualified' && index === 2
-                ? 'Unqualified'
-                : currentStatus === 'lost' && index === 3
-                  ? 'Lost'
-                  : label;
-
-            return (
+          <View style={{ flex: 1 }}>
+            <Text style={styles.profileName}>{lead.name}</Text>
+            {lead.company ? (
+              <Text style={styles.profileCompany}>{lead.company}</Text>
+            ) : null}
+            <View style={styles.profileMeta}>
               <View
-                key={value}
                 style={[
-                  styles2.pipelineStage,
-                  isPassed && styles2.stagePassed,
-                  isCurrent && styles2.stageCurrent,
-                  isFailed && styles2.stageFailed,
-                  isUpcoming && styles2.stageUpcoming,
-                  !isLast && styles2.stageNotLast,
+                  styles.statusPill,
+                  { backgroundColor: STATUS_COLOR[currentStatus]?.bg },
                 ]}
               >
                 <Text
                   style={[
-                    styles2.stageText,
-                    isPassed && styles2.stagePassedText,
-                    isCurrent && styles2.stageCurrentText,
-                    isFailed && styles2.stageFailedText,
-                    isUpcoming && styles2.stageUpcomingText,
+                    styles.statusPillText,
+                    { color: STATUS_COLOR[currentStatus]?.color },
                   ]}
                 >
-                  {text}
+                  {STATUS_LABEL[currentStatus] ?? currentStatus}
                 </Text>
               </View>
-            );
-          })}
-        </View>
-      </SectionCard2>
-
-      {/* ── LEAD INFO ────────────────────────── */}
-      <SectionCard2 title="Lead Info" icon="user">
-        {[
-          { label: 'Email', value: SAMPLE_LEAD.email },
-          { label: 'Phone', value: SAMPLE_LEAD.number },
-          { label: 'Company', value: SAMPLE_LEAD.company },
-          {
-            label: 'Status',
-            value: STATUS_LABEL[currentStatus as LeadStatus] ?? currentStatus,
-          },
-          {
-            label: 'Source',
-            value:
-              SAMPLE_LEAD.source.charAt(0).toUpperCase() +
-              SAMPLE_LEAD.source.slice(1),
-          },
-          {
-            label: 'Value',
-            value: formatCurrency(SAMPLE_LEAD.value, 'en-PH', 'PHP'),
-          },
-        ].map(({ label, value }, i) => (
-          <View key={label}>
-            {i > 0 && <View style={styles2.rowDivider} />}
-            <View style={styles2.infoRow}>
-              <Text style={styles2.infoLabel}>{label}</Text>
-              <Text style={styles2.infoValue}>{value}</Text>
+              {/* <Text style={styles.valuePill}>
+                {formatCurrency(lead.value, 'en-PH', 'PHP')}
+              </Text> */}
             </View>
           </View>
-        ))}
-      </SectionCard2>
 
-      {/* ── NOTES ────────────────────────────── */}
-      <SectionCard2
-        title="Notes"
-        icon="file-text"
-        actionLabel="Manage"
-        onAction={() => {}}
-      >
-        {LEAD_NOTES.map((note, i) => (
-          <View key={note.id}>
-            {i > 0 && <View style={styles2.rowDivider} />}
-            <View style={styles2.noteItem}>
-              <Text style={styles2.noteText}>{note.content}</Text>
-              <View style={styles2.noteMeta}>
-                <Feather name="clock" size={11} color={DS.color.textMuted} />
-                <Text style={styles2.noteMetaText}>{note.createdAt} · you</Text>
+          <TouchableOpacity
+            style={styles.editBtn}
+            onPress={() => setEditModalVisible(true)}
+          >
+            <Feather name="edit-2" size={14} color={DS.color.primary} />
+            <Text style={styles.editBtnText}>Edit</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* ── QUICK ACTIONS ─────────────────────── */}
+        <View style={styles.actionsRow}>
+          <TouchableOpacity style={styles.actionBtn}>
+            <Feather
+              name="phone"
+              size={16}
+              color={DS.color.primary}
+              onPress={() => Linking.openURL(`tel:${lead.number}`)}
+            />
+            <Text style={styles.actionBtnText}>Call</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.actionBtn}>
+            <Feather
+              name="mail"
+              size={16}
+              color={DS.color.primary}
+              onPress={() => Linking.openURL(`mailto:${lead.email}`)}
+            />
+            <Text style={styles.actionBtnText}>Email</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[
+              styles.actionBtn,
+              styles.actionBtnPrimary,
+              !canAdvance && styles.actionBtnDisabled,
+            ]}
+            onPress={handleAdvance}
+            disabled={!canAdvance || advanceLoading}
+          >
+            {advanceLoading ? (
+              <ActivityIndicator size="small" color={DS.color.textInverse} />
+            ) : (
+              <>
+                <Feather
+                  name="arrow-right-circle"
+                  size={16}
+                  color={DS.color.textInverse}
+                />
+                <Text
+                  style={[
+                    styles.actionBtnText,
+                    { color: DS.color.textInverse },
+                  ]}
+                >
+                  {canAdvance ? `${STATUS_LABEL[nextStatus!]}` : 'Advance Lead'}
+                </Text>
+              </>
+            )}
+          </TouchableOpacity>
+        </View>
+
+        {/* ── PIPELINE ─────────────────────────── */}
+        <SectionCard title="Pipeline Stage" icon="git-branch">
+          <View style={styles.pipeline}>
+            {STATUS_CHOICES.map(([value, label], index) => {
+              const isPassed = index < currentIndex;
+              const isCurrent =
+                index === currentIndex &&
+                !['unqualified', 'lost'].includes(currentStatus);
+              const isFailed =
+                (currentStatus === 'unqualified' && index === 2) ||
+                (currentStatus === 'lost' && index === 3);
+              const isUpcoming = !isPassed && !isCurrent && !isFailed;
+              const isLast = index === STATUS_CHOICES.length - 1;
+
+              const text =
+                currentStatus === 'unqualified' && index === 2
+                  ? 'Unqualified'
+                  : currentStatus === 'lost' && index === 3
+                    ? 'Lost'
+                    : label;
+
+              return (
+                <View
+                  key={value}
+                  style={[
+                    styles.pipelineStage,
+                    isPassed && styles.stagePassed,
+                    isCurrent && styles.stageCurrent,
+                    isFailed && styles.stageFailed,
+                    isUpcoming && styles.stageUpcoming,
+                    !isLast && styles.stageNotLast,
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.stageText,
+                      isPassed && styles.stagePassedText,
+                      isCurrent && styles.stageCurrentText,
+                      isFailed && styles.stageFailedText,
+                      isUpcoming && styles.stageUpcomingText,
+                    ]}
+                  >
+                    {text}
+                  </Text>
+                </View>
+              );
+            })}
+          </View>
+        </SectionCard>
+
+        {/* ── LEAD INFO ────────────────────────── */}
+        <SectionCard title="Lead Info" icon="user">
+          {[
+            { label: 'Email', value: lead.email },
+            { label: 'Phone', value: lead.number },
+            { label: 'Company', value: lead.company ?? '—' },
+            {
+              label: 'Status',
+              value: STATUS_LABEL[currentStatus] ?? currentStatus,
+            },
+            {
+              label: 'Source',
+              value: lead.source.charAt(0).toUpperCase() + lead.source.slice(1),
+            },
+            // {
+            //   label: 'Value',
+            //   value: formatCurrency(lead.value, 'en-PH', 'PHP'),
+            // },
+          ].map(({ label, value }, i) => (
+            <View key={label}>
+              {i > 0 && <View style={styles.rowDivider} />}
+              <View style={styles.infoRow}>
+                <Text style={styles.infoLabel}>{label}</Text>
+                <Text style={styles.infoValue}>{value}</Text>
               </View>
             </View>
+          ))}
+        </SectionCard>
+
+        {/* ── NOTES ────────────────────────────── */}
+        {lead.notes ? (
+          <SectionCard title="Notes" icon="file-text">
+            <Text style={styles.notesText}>{lead.notes}</Text>
+          </SectionCard>
+        ) : null}
+
+        {/* ── DANGER ZONE ──────────────────────── */}
+        <SectionCard title="Danger Zone" icon="alert-triangle">
+          <View style={styles.dangerRow}>
+            {/* Archive */}
+            <TouchableOpacity
+              style={styles.dangerBtn}
+              onPress={() => setArchiveVisible(true)}
+            >
+              <Feather name="archive" size={15} color={DS.color.warning} />
+              <View style={styles.dangerBtnText}>
+                <Text style={styles.dangerBtnTitle}>Archive Lead</Text>
+                <Text style={styles.dangerBtnSub}>
+                  Hide from active leads list
+                </Text>
+              </View>
+              <Feather
+                name="chevron-right"
+                size={16}
+                color={DS.color.textMuted}
+              />
+            </TouchableOpacity>
+
+            <View style={styles.rowDivider} />
+
+            {/* Delete */}
+            <TouchableOpacity
+              style={styles.dangerBtn}
+              onPress={() => setDeleteVisible(true)}
+            >
+              <Feather name="trash-2" size={15} color={DS.color.danger} />
+              <View style={styles.dangerBtnText}>
+                <Text
+                  style={[styles.dangerBtnTitle, { color: DS.color.danger }]}
+                >
+                  Delete Lead
+                </Text>
+                <Text style={styles.dangerBtnSub}>
+                  Permanently remove this lead
+                </Text>
+              </View>
+              <Feather
+                name="chevron-right"
+                size={16}
+                color={DS.color.textMuted}
+              />
+            </TouchableOpacity>
           </View>
-        ))}
-      </SectionCard2>
-    </ScrollView>
+        </SectionCard>
+      </ScrollView>
+
+      {/* ── EDIT MODAL ───────────────────────────── */}
+      {/* <LeadFormModal
+        visible={editModalVisible}
+        onClose={() => setEditModalVisible(false)}
+        editingLead={lead}
+      /> */}
+
+      {/* ── ARCHIVE CONFIRM ──────────────────────── */}
+      <ConfirmModal
+        visible={archiveVisible}
+        isLoading={actionLoading}
+        icon="archive"
+        iconColor={DS.color.warning}
+        iconBg={DS.color.warningLight}
+        title="Archive Lead?"
+        message="This lead will be hidden from your active leads list. You can restore it later."
+        confirmLabel="Archive"
+        confirmColor={DS.color.warning}
+        onConfirm={handleConfirmArchive}
+        onCancel={() => setArchiveVisible(false)}
+      />
+
+      {/* ── DELETE CONFIRM ───────────────────────── */}
+      <ConfirmModal
+        visible={deleteVisible}
+        isLoading={actionLoading}
+        icon="trash-2"
+        iconColor={DS.color.danger}
+        iconBg={DS.color.dangerLight}
+        title="Delete Lead?"
+        message="This lead will be permanently removed and cannot be undone."
+        confirmLabel="Delete"
+        confirmColor={DS.color.danger}
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setDeleteVisible(false)}
+      />
+    </>
   );
 };
 
-/* ─── Shared sub-components ──────────────────────── */
+/* ─── Section Card ────────────────────────────────── */
 
-const SectionCard2 = ({
+const SectionCard = ({
   title,
   icon,
   actionLabel,
@@ -290,205 +425,98 @@ const SectionCard2 = ({
   onAction?: () => void;
   children: React.ReactNode;
 }) => (
-  <View style={styles2.sectionCard}>
-    <View style={styles2.sectionHeader}>
-      <View style={styles2.sectionTitleRow}>
-        <View style={styles2.sectionIconWrap}>
+  <View style={styles.sectionCard}>
+    <View style={styles.sectionHeader}>
+      <View style={styles.sectionTitleRow}>
+        <View style={styles.sectionIconWrap}>
           <Feather name={icon} size={13} color={DS.color.primary} />
         </View>
-        <Text style={styles2.sectionTitle}>{title}</Text>
+        <Text style={styles.sectionTitle}>{title}</Text>
       </View>
       {actionLabel && onAction && (
-        <TouchableOpacity style={styles2.sectionAction} onPress={onAction}>
-          <Text style={styles2.sectionActionText}>{actionLabel}</Text>
+        <TouchableOpacity style={styles.sectionAction} onPress={onAction}>
+          <Text style={styles.sectionActionText}>{actionLabel}</Text>
           <Feather name="chevron-right" size={13} color={DS.color.primary} />
         </TouchableOpacity>
       )}
     </View>
-    <View style={styles2.sectionBody}>{children}</View>
+    <View style={styles.sectionBody}>{children}</View>
   </View>
 );
 
-const EmptyState = () => (
-  <View style={styles.emptyState}>
-    <View style={styles.emptyIconWrap}>
-      <Feather name="trending-up" size={28} color={DS.color.textMuted} />
+/* ─── Confirm Modal ───────────────────────────────── */
+
+interface ConfirmModalProps {
+  visible: boolean;
+  isLoading: boolean;
+  icon: React.ComponentProps<typeof Feather>['name'];
+  iconColor: string;
+  iconBg: string;
+  title: string;
+  message: string;
+  confirmLabel: string;
+  confirmColor: string;
+  onConfirm: () => void;
+  onCancel: () => void;
+}
+
+const ConfirmModal = ({
+  visible,
+  isLoading,
+  icon,
+  iconColor,
+  iconBg,
+  title,
+  message,
+  confirmLabel,
+  confirmColor,
+  onConfirm,
+  onCancel,
+}: ConfirmModalProps) => (
+  <Modal visible={visible} animationType="fade" transparent>
+    <View style={styles.confirmOverlay}>
+      <View style={styles.confirmCard}>
+        <View style={[styles.confirmIconWrap, { backgroundColor: iconBg }]}>
+          <Feather name={icon} size={24} color={iconColor} />
+        </View>
+        <Text style={styles.confirmTitle}>{title}</Text>
+        <Text style={styles.confirmMessage}>{message}</Text>
+        <View style={styles.confirmActions}>
+          <TouchableOpacity
+            style={styles.confirmCancel}
+            onPress={onCancel}
+            disabled={isLoading}
+          >
+            <Text style={styles.confirmCancelText}>Cancel</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[
+              styles.confirmAction,
+              { backgroundColor: confirmColor },
+              isLoading && styles.confirmActionDisabled,
+            ]}
+            onPress={onConfirm}
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <ActivityIndicator size="small" color={DS.color.textInverse} />
+            ) : (
+              <Text style={styles.confirmActionText}>{confirmLabel}</Text>
+            )}
+          </TouchableOpacity>
+        </View>
+      </View>
     </View>
-    <Text style={styles.emptyTitle}>No leads found</Text>
-    <Text style={styles.emptyDesc}>
-      Try a different filter or add a new lead.
-    </Text>
-  </View>
+  </Modal>
 );
 
-/* ─── LeadScreen Styles ──────────────────────────── */
+/* ─── Styles ─────────────────────────────────────── */
 
 const styles = StyleSheet.create({
-  // HEADER
-  pageHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: DS.spacing.xl,
-    paddingTop: DS.spacing.xl,
-    paddingBottom: DS.spacing.md,
-  },
-  eyebrow: { ...DS.typography.eyebrow, marginBottom: 2 },
-  pageTitle: { ...DS.typography.screenTitle },
-  headerIconBtn: {
-    width: 44,
-    height: 44,
-    borderRadius: DS.radius.md,
-    backgroundColor: DS.color.primaryMuted,
-    borderWidth: 1,
-    borderColor: DS.color.primaryLight,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-
-  // ADD BUTTON
-  addButton: {
-    marginHorizontal: DS.spacing.xl,
-    height: 52,
-    borderRadius: DS.radius.md,
-    backgroundColor: DS.color.primary,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    ...DS.shadow.sm,
-    marginBottom: DS.spacing.md,
-  },
-  addButtonText: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: DS.color.textInverse,
-  },
-
-  // SORT
-  sortWrapper: {
-    marginHorizontal: DS.spacing.xl,
-    marginTop: DS.spacing.md,
-    zIndex: 50,
-  },
-  sortLabel: { ...DS.typography.eyebrow, marginBottom: 8 },
-  sortTrigger: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    backgroundColor: DS.color.card,
-    borderWidth: 1,
-    borderColor: DS.color.border,
-    borderRadius: DS.radius.md,
-    paddingHorizontal: DS.spacing.md,
-    height: 46,
-  },
-  sortDot: {
-    width: 8,
-    height: 8,
-    borderRadius: DS.radius.full,
-    backgroundColor: DS.color.textPrimary,
-  },
-  sortTriggerText: {
-    flex: 1,
-    fontSize: 13,
-    fontWeight: '600',
-    color: DS.color.textPrimary,
-  },
-  sortDropdown: {
-    marginTop: 6,
-    backgroundColor: DS.color.card,
-    borderWidth: 1,
-    borderColor: DS.color.border,
-    borderRadius: DS.radius.md,
-    overflow: 'hidden',
-    ...DS.shadow.md,
-  },
-  sortOption: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    paddingVertical: 11,
-    paddingHorizontal: DS.spacing.md,
-  },
-  sortOptionActive: { backgroundColor: DS.color.primaryMuted },
-  sortOptionText: { fontSize: 13, color: DS.color.textSecondary },
-  sortOptionTextActive: { fontWeight: '700', color: DS.color.primary },
-
-  // LIST
-  listLabel: {
-    ...DS.typography.eyebrow,
-    paddingHorizontal: DS.spacing.xl,
-    marginTop: DS.spacing.lg,
-    marginBottom: DS.spacing.sm,
-  },
-  listContent: { paddingHorizontal: DS.spacing.xl, paddingBottom: 32 },
-
-  // LEAD CARD
-  leadCard: {
-    backgroundColor: DS.color.card,
-    borderRadius: DS.radius.lg,
-    borderWidth: 1,
-    borderColor: DS.color.border,
-    padding: DS.spacing.lg,
-    marginBottom: DS.spacing.sm,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: DS.spacing.md,
-    ...DS.shadow.sm,
-  },
-  leadAvatar: {
-    width: 44,
-    height: 44,
-    borderRadius: DS.radius.full,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  leadAvatarText: { fontSize: 16, fontWeight: '700' },
-  leadInfo: { flex: 1 },
-  leadName: { fontSize: 15, fontWeight: '700', color: DS.color.textPrimary },
-  leadCompany: { fontSize: 13, color: DS.color.textSecondary, marginTop: 1 },
-  leadMeta: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    marginTop: 4,
-  },
-  leadMetaText: {
-    fontSize: 11,
-    color: DS.color.textMuted,
-    textTransform: 'capitalize',
-  },
-  leadStatusBadge: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: DS.radius.full,
-  },
-  leadStatusText: { fontSize: 11, fontWeight: '600' },
-
-  // EMPTY
-  emptyState: { alignItems: 'center', paddingVertical: 60, gap: DS.spacing.sm },
-  emptyIconWrap: {
-    width: 64,
-    height: 64,
-    borderRadius: DS.radius.xl,
-    backgroundColor: DS.color.card,
-    borderWidth: 1,
-    borderColor: DS.color.border,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: DS.spacing.xs,
-  },
-  emptyTitle: { fontSize: 16, fontWeight: '700', color: DS.color.textPrimary },
-  emptyDesc: { fontSize: 13, color: DS.color.textMuted, textAlign: 'center' },
-});
-
-/* ─── LeadDetailsScreen Styles ───────────────────── */
-
-const styles2 = StyleSheet.create({
   screen: { flex: 1, backgroundColor: DS.color.bg },
   content: { padding: DS.spacing.xl, gap: DS.spacing.md, paddingBottom: 40 },
 
+  // PROFILE CARD
   profileCard: {
     backgroundColor: DS.color.card,
     borderRadius: DS.radius.lg,
@@ -537,6 +565,7 @@ const styles2 = StyleSheet.create({
   },
   editBtnText: { fontSize: 13, fontWeight: '600', color: DS.color.primary },
 
+  // ACTIONS ROW
   actionsRow: { flexDirection: 'row', gap: DS.spacing.sm },
   actionBtn: {
     flex: 1,
@@ -553,7 +582,11 @@ const styles2 = StyleSheet.create({
   actionBtnPrimary: {
     backgroundColor: DS.color.primary,
     borderColor: DS.color.primary,
-    flex: 1.5,
+    flex: 1.6,
+  },
+  actionBtnDisabled: {
+    backgroundColor: DS.color.border,
+    borderColor: DS.color.border,
   },
   actionBtnText: { fontSize: 13, fontWeight: '600', color: DS.color.primary },
 
@@ -622,6 +655,7 @@ const styles2 = StyleSheet.create({
   },
   sectionBody: { padding: DS.spacing.lg },
 
+  // INFO ROWS
   rowDivider: { height: 1, backgroundColor: DS.color.borderLight },
   infoRow: {
     flexDirection: 'row',
@@ -638,8 +672,104 @@ const styles2 = StyleSheet.create({
     maxWidth: '60%',
   },
 
-  noteItem: { paddingVertical: DS.spacing.sm, gap: 6 },
-  noteText: { fontSize: 14, lineHeight: 22, color: DS.color.textSecondary },
-  noteMeta: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  noteMetaText: { fontSize: 11, color: DS.color.textMuted },
+  // NOTES
+  notesText: {
+    fontSize: 14,
+    lineHeight: 22,
+    color: DS.color.textSecondary,
+  },
+
+  // DANGER ZONE
+  dangerRow: { gap: 0 },
+  dangerBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: DS.spacing.md,
+    paddingVertical: DS.spacing.md,
+  },
+  dangerBtnText: { flex: 1 },
+  dangerBtnTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: DS.color.textPrimary,
+  },
+  dangerBtnSub: {
+    fontSize: 12,
+    color: DS.color.textMuted,
+    marginTop: 2,
+  },
+
+  // CONFIRM MODAL
+  confirmOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(15, 23, 42, 0.45)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: DS.spacing.xxl,
+  },
+  confirmCard: {
+    width: '100%',
+    maxWidth: 340,
+    backgroundColor: DS.color.card,
+    borderRadius: DS.radius.xl,
+    borderWidth: 1,
+    borderColor: DS.color.border,
+    padding: DS.spacing.xxl,
+    alignItems: 'center',
+    ...DS.shadow.md,
+  },
+  confirmIconWrap: {
+    width: 56,
+    height: 56,
+    borderRadius: DS.radius.full,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: DS.spacing.lg,
+  },
+  confirmTitle: {
+    fontSize: 17,
+    fontWeight: '700',
+    color: DS.color.textPrimary,
+    marginBottom: DS.spacing.sm,
+    textAlign: 'center',
+  },
+  confirmMessage: {
+    fontSize: 13,
+    color: DS.color.textSecondary,
+    textAlign: 'center',
+    lineHeight: 20,
+  },
+  confirmActions: {
+    flexDirection: 'row',
+    gap: DS.spacing.sm,
+    marginTop: DS.spacing.xl,
+    width: '100%',
+  },
+  confirmCancel: {
+    flex: 1,
+    height: 44,
+    borderRadius: DS.radius.md,
+    borderWidth: 1,
+    borderColor: DS.color.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  confirmCancelText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: DS.color.textSecondary,
+  },
+  confirmAction: {
+    flex: 1,
+    height: 44,
+    borderRadius: DS.radius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  confirmActionDisabled: { opacity: 0.6 },
+  confirmActionText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: DS.color.textInverse,
+  },
 });
