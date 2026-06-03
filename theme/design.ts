@@ -26,6 +26,8 @@ export const DS = {
     warningLight: '#FFF7ED',
     danger: '#DC2626',
     dangerLight: '#FEE2E2',
+    neutral: '#94A3B8',
+    neutralLight: '#F1F5F9',
 
     // Order statuses
     status: {

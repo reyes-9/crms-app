@@ -125,7 +125,7 @@ export const CustomerScreen = () => {
 
       {/* ── ARCHIVE MODAL ─────────────────────── */}
       <ReusableModal
-        state="neutral"
+        state="warning"
         visible={archiveModalVisible}
         title="Archive this record?"
         message="This record will be moved to archive. You can restore it later."
@@ -137,6 +137,7 @@ export const CustomerScreen = () => {
           },
           {
             label: 'Archive',
+            variant: 'warning',
             onPress: async () => {
               try {
                 if (selectedCustomerId !== null) {

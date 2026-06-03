@@ -1,3 +1,7 @@
+// FIX THE API RESPOJNSES
+// FIX THE API RESPOJNSES
+// FIX THE API RESPOJNSES
+
 // THE ADVANCEMENT IS NOT YET COMPLETE
 // THE ADVANCEMENT IS NOT YET COMPLETE
 // THE ADVANCEMENT IS NOT YET COMPLETE
@@ -6,6 +10,7 @@
 // COMPLETE THE EDIT LEAD
 // COMPLETE THE EDIT LEAD
 
+import { ReusableModal } from '@/components/ReusableModal';
 import { useLead } from '@/hooks/useLead';
 import { DS } from '@/theme/design';
 import { LeadProfile, LeadStatus } from '@/types/lead';
@@ -74,9 +79,10 @@ export const LeadDetailsScreen = () => {
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [advanceLoading, setAdvanceLoading] = useState(false);
 
-  // Delete / archive confirm modals
+  // Delete / Archive / Advance confirm modals
   const [deleteVisible, setDeleteVisible] = useState(false);
   const [archiveVisible, setArchiveVisible] = useState(false);
+  const [advanceModalVisible, setAdvanceModalVisible] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
 
   const currentStatus = lead.status;
@@ -95,6 +101,11 @@ export const LeadDetailsScreen = () => {
 
   const handleAdvance = async () => {
     if (!nextStatus) return;
+    setAdvanceModalVisible(true);
+  };
+
+  const confirmAdvance = async () => {
+    if (!nextStatus) return;
     try {
       setAdvanceLoading(true);
       const updated = await advanceLead(lead.id, nextStatus);
@@ -103,6 +114,7 @@ export const LeadDetailsScreen = () => {
       Alert.alert('Error', 'Failed to advance lead. Please try again.');
     } finally {
       setAdvanceLoading(false);
+      setAdvanceModalVisible(false);
     }
   };
 
@@ -377,34 +389,62 @@ export const LeadDetailsScreen = () => {
         editingLead={lead}
       /> */}
 
+      {/* ── ADVANCE CONFIRM ──────────────────────── */}
+      <ReusableModal
+        state="success"
+        visible={advanceModalVisible}
+        title="Advance Order"
+        message="The status of this order will be advanced. This cannot be undone."
+        buttons={[
+          {
+            label: 'Close',
+            onPress: () => setAdvanceModalVisible(false),
+            variant: 'neutral',
+          },
+          { label: 'Advance', onPress: confirmAdvance, variant: 'success' },
+        ]}
+        onClose={() => setAdvanceModalVisible(false)}
+      />
       {/* ── ARCHIVE CONFIRM ──────────────────────── */}
-      <ConfirmModal
+      <ReusableModal
         visible={archiveVisible}
-        isLoading={actionLoading}
-        icon="archive"
-        iconColor={DS.color.warning}
-        iconBg={DS.color.warningLight}
+        onClose={() => setArchiveVisible(false)}
         title="Archive Lead?"
+        state="warning"
         message="This lead will be hidden from your active leads list. You can restore it later."
-        confirmLabel="Archive"
-        confirmColor={DS.color.warning}
-        onConfirm={handleConfirmArchive}
-        onCancel={() => setArchiveVisible(false)}
+        buttons={[
+          {
+            label: 'Cancel',
+            variant: 'neutral',
+            onPress: () => setArchiveVisible(false),
+          },
+          {
+            label: actionLoading ? 'Archiving...' : 'Archive',
+            variant: 'warning',
+            onPress: handleConfirmArchive,
+          },
+        ]}
       />
 
       {/* ── DELETE CONFIRM ───────────────────────── */}
-      <ConfirmModal
+      <ReusableModal
         visible={deleteVisible}
-        isLoading={actionLoading}
-        icon="trash-2"
-        iconColor={DS.color.danger}
-        iconBg={DS.color.dangerLight}
+        onClose={() => setDeleteVisible(false)}
         title="Delete Lead?"
+        state="danger"
         message="This lead will be permanently removed and cannot be undone."
-        confirmLabel="Delete"
-        confirmColor={DS.color.danger}
-        onConfirm={handleConfirmDelete}
-        onCancel={() => setDeleteVisible(false)}
+        buttons={[
+          {
+            label: 'Cancel',
+            variant: 'neutral',
+            onPress: () => setDeleteVisible(false),
+          },
+          {
+            label: actionLoading ? 'Deleting...' : 'Delete',
+            variant: 'danger',
+            onPress: handleConfirmDelete,
+          },
+        ]}
       />
     </>
   );

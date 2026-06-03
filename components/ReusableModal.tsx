@@ -11,9 +11,9 @@ import Animated, {
 } from 'react-native-reanimated';
 
 // TYPES
-type ButtonVariant = 'primary' | 'success' | 'danger' | 'neutral';
+type ButtonVariant = 'primary' | 'success' | 'warning' | 'danger' | 'neutral';
 
-type ModalState = 'success' | 'danger' | 'neutral';
+type ModalState = 'success' | 'danger' | 'warning' | 'info' | 'neutral';
 
 type IconName = ComponentProps<typeof MaterialIcons>['name'];
 
@@ -37,8 +37,9 @@ interface ModalProps {
 const buttonColors: Record<ButtonVariant, string> = {
   primary: DS.color.primary,
   success: DS.color.success,
+  warning: DS.color.warning,
   danger: DS.color.danger,
-  neutral: DS.color.textSecondary,
+  neutral: DS.color.neutral,
 };
 
 // STATE ICON CONFIG
@@ -51,15 +52,29 @@ const stateConfig: Record<
     color: DS.color.success,
     bg: DS.color.successLight,
   },
+
   danger: {
     icon: 'error',
     color: DS.color.danger,
     bg: DS.color.dangerLight,
   },
-  neutral: {
+
+  warning: {
+    icon: 'warning',
+    color: DS.color.warning,
+    bg: DS.color.warningLight,
+  },
+
+  info: {
     icon: 'info',
     color: DS.color.primary,
     bg: DS.color.primaryMuted,
+  },
+
+  neutral: {
+    icon: 'help-outline',
+    color: DS.color.neutral,
+    bg: DS.color.neutralLight,
   },
 };
 

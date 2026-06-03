@@ -457,20 +457,20 @@ export const OrdersScreen = () => {
             onPress: () => setAdvanceModalVisible(false),
             variant: 'neutral',
           },
-          { label: 'Advance', onPress: confirmAdvance, variant: 'primary' },
+          { label: 'Advance', onPress: confirmAdvance, variant: 'success' },
         ]}
         onClose={() => setAdvanceModalVisible(false)}
       />
 
       <ReusableModal
-        state="neutral"
+        state="info"
         visible={detailsModalVisible}
         title="Order Details"
         buttons={[
           {
             label: 'Close',
             onPress: () => setDetailsModalVisible(false),
-            variant: 'primary',
+            variant: 'neutral',
           },
         ]}
         onClose={() => setDetailsModalVisible(false)}
