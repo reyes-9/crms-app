@@ -1,21 +1,17 @@
-// MAKE THE HEADER LIKE IN THE LEADSCREEN
-// MAKE THE HEADER LIKE IN THE LEADSCREEN
-// MAKE THE HEADER LIKE IN THE LEADSCREEN
-// MAKE THE HEADER LIKE IN THE LEADSCREEN
+// ADD THE STATUS COUNT FOR TOTAL DO NOT INCLUDE THE DELETED
+// ADD SORTING FOR ARCHIVED AND ACTIVE (MAYBE RECENTLY DELETED)
 
 import { CustomerCard } from '@/components/CustomerCard';
-import { ReusableModal } from '@/components/ReusableModal';
 import SearchInput from '@/components/SearchInput';
-import SwipeableRow from '@/components/SwipeableRow';
 import { useCustomer } from '@/hooks/useCustomer';
 import { DS } from '@/theme/design';
+import { CustomerStatus } from '@/types/customer';
 import { Feather } from '@expo/vector-icons';
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import { useNavigation } from '@react-navigation/native';
 import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   FlatList,
   Pressable,
   RefreshControl,
@@ -24,9 +20,30 @@ import {
   View,
 } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import Toast from 'react-native-toast-message';
 /* ─── Screen ──────────────────────────────────────── */
 
 export const CustomerScreen = () => {
+  type FilterOption = 'all' | CustomerStatus;
+
+  const FILTER_OPTIONS: FilterOption[] = [
+    'all',
+    'active',
+    'archived',
+    // 'deleted',
+  ];
+  const STATUS_LABEL: Record<CustomerStatus, string> = {
+    active: 'Active',
+    archived: 'Archived',
+    deleted: 'Deleted',
+  };
+
+  const STATUS_COLOR: Record<CustomerStatus, { bg: string; color: string }> = {
+    active: { bg: '#DCFCE7', color: '#15803D' },
+    archived: { bg: '#FEF3C7', color: '#B45309' },
+    deleted: { bg: '#FEE2E2', color: '#B91C1C' },
+  };
+
   const tabBarHeight = useBottomTabBarHeight();
   const navigation = useNavigation<any>();
 
@@ -42,11 +59,17 @@ export const CustomerScreen = () => {
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [openRow, setOpenRow] = useState<string | null>(null);
-  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
-  const [archiveModalVisible, setArchiveModalVisible] = useState(false);
-  const [selectedCustomerId, setSelectedCustomerId] = useState<number | null>(
-    null,
-  );
+  
+  const [filterOpen, setFilterOpen] = useState(false);
+  const [selectedFilter, setSelectedFilter] = useState<FilterOption>('all');
+
+  const filteredCustomers = customers.filter((customer) => {
+    if (selectedFilter === 'all') return true;
+    console.log(customer.status);
+    return customer.status === selectedFilter;
+  });
+
+  console.log('FLITERED: ', filteredCustomers);
 
   async function handleSearch(query: string) {
     if (!query.trim()) {
@@ -55,6 +78,8 @@ export const CustomerScreen = () => {
     }
     await searchCustomer(query);
   }
+
+
 
   useEffect(() => {
     const fetchData = async () => {
@@ -87,80 +112,10 @@ export const CustomerScreen = () => {
     <GestureHandlerRootView
       style={[styles.screen, { paddingBottom: tabBarHeight - 8 }]}
     >
-      {/* ── DELETE MODAL ──────────────────────── */}
-      <ReusableModal
-        state="danger"
-        visible={deleteModalVisible}
-        title="Permanent Deletion"
-        message="Once deleted, this record cannot be recovered. Consider archiving instead."
-        buttons={[
-          {
-            label: 'Cancel',
-            onPress: () => setDeleteModalVisible(false),
-            variant: 'neutral',
-          },
-          {
-            label: 'Delete',
-            variant: 'danger',
-            onPress: async () => {
-              try {
-                if (selectedCustomerId !== null) {
-                  await deleteCustomer(selectedCustomerId);
-                  setSelectedCustomerId(null);
-                  setDeleteModalVisible(false);
-                  setOpenRow(null);
-                  await getCustomers();
-                }
-              } catch (err: any) {
-                Alert.alert(
-                  'Error',
-                  err?.response?.data?.message ?? 'Failed to delete',
-                );
-              }
-            },
-          },
-        ]}
-        onClose={() => setDeleteModalVisible(false)}
-      />
 
-      {/* ── ARCHIVE MODAL ─────────────────────── */}
-      <ReusableModal
-        state="warning"
-        visible={archiveModalVisible}
-        title="Archive this record?"
-        message="This record will be moved to archive. You can restore it later."
-        buttons={[
-          {
-            label: 'Cancel',
-            onPress: () => setArchiveModalVisible(false),
-            variant: 'neutral',
-          },
-          {
-            label: 'Archive',
-            variant: 'warning',
-            onPress: async () => {
-              try {
-                if (selectedCustomerId !== null) {
-                  await archiveCustomer(selectedCustomerId);
-                  setSelectedCustomerId(null);
-                  setArchiveModalVisible(false);
-                  setOpenRow(null);
-                  await getCustomers();
-                }
-              } catch (err: any) {
-                Alert.alert(
-                  'Error',
-                  err?.response?.data?.message ?? 'Failed to archive',
-                );
-              }
-            },
-          },
-        ]}
-        onClose={() => setArchiveModalVisible(false)}
-      />
 
       <FlatList
-        data={customers}
+        data={filteredCustomers}
         keyExtractor={(item) => item.id.toString()}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
@@ -199,45 +154,110 @@ export const CustomerScreen = () => {
 
             {/* ── STATS ROW ────────────────────── */}
             <View style={styles.statsRow}>
-              <StatChip label="Total" value={customers.length} />
+              <StatChip label="Active" value={customers.length} />
             </View>
 
             <Text style={styles.listLabel}>ALL CUSTOMERS</Text>
+
+            <View style={styles.filterWrapper}>
+              <Pressable
+                style={styles.filterTrigger}
+                onPress={() => setFilterOpen((prev) => !prev)}
+              >
+                <View
+                  style={[
+                    styles.filterDot,
+                    {
+                      backgroundColor:
+                        selectedFilter === 'all'
+                          ? DS.color.textPrimary
+                          : STATUS_COLOR[selectedFilter].color,
+                    },
+                  ]}
+                />
+
+                <Text style={styles.filterTriggerText}>
+                  {selectedFilter === 'all'
+                    ? 'All Leads'
+                    : STATUS_LABEL[selectedFilter]}
+                </Text>
+
+                <Feather
+                  name={filterOpen ? 'chevron-up' : 'chevron-down'}
+                  size={16}
+                  color={DS.color.textSecondary}
+                />
+              </Pressable>
+
+              {filterOpen && (
+                <View style={styles.dropdown}>
+                  {FILTER_OPTIONS.map((option) => {
+                    const active = option === selectedFilter;
+
+                    return (
+                      <Pressable
+                        key={option}
+                        style={[
+                          styles.dropdownItem,
+                          active && styles.dropdownItemActive,
+                        ]}
+                        onPress={() => {
+                          setSelectedFilter(option);
+                          setFilterOpen(false);
+                        }}
+                      >
+                        {option !== 'all' && (
+                          <View
+                            style={[
+                              styles.filterDot,
+                              { backgroundColor: STATUS_COLOR[option].color },
+                            ]}
+                          />
+                        )}
+
+                        <Text
+                          style={[
+                            styles.dropdownText,
+                            active && styles.dropdownTextActive,
+                          ]}
+                        >
+                          {option === 'all'
+                            ? 'All Leads'
+                            : STATUS_LABEL[option]}
+                        </Text>
+
+                        {active && (
+                          <Feather
+                            name="check"
+                            size={14}
+                            color={DS.color.primary}
+                            style={{ marginLeft: 'auto' }}
+                          />
+                        )}
+                      </Pressable>
+                    );
+                  })}
+                </View>
+              )}
+            </View>
           </View>
         }
         renderItem={({ item, index }) => (
-          <SwipeableRow
-            rowId={item.id.toString()}
-            isOpen={openRow === item.id.toString()}
-            onOpen={(id) => setOpenRow(id)}
-            onClose={() => setOpenRow(null)}
-            onDelete={() => {
-              setSelectedCustomerId(item.id);
-              setDeleteModalVisible(true);
+          <Pressable
+            onPress={() => {
               setOpenRow(null);
+              navigation.navigate('CustomerDetails', { customer: item });
             }}
-            onArchive={() => {
-              setSelectedCustomerId(item.id);
-              setArchiveModalVisible(true);
-              setOpenRow(null);
-            }}
-            isHint={index === 0}
           >
-            <Pressable
-              onPress={() => {
-                setOpenRow(null);
-                navigation.navigate('CustomerDetails', { customer: item });
-              }}
-            >
-              <CustomerCard
-                id={item.id}
-                name={item.name}
-                email={item.email}
-                company={item.company}
-                number={item.number}
-              />
-            </Pressable>
-          </SwipeableRow>
+            <CustomerCard
+              id={item.id}
+              name={item.name}
+              email={item.email}
+              company={item.company}
+              number={item.number}
+              status={item.status}
+            />
+          </Pressable>
         )}
         ListEmptyComponent={<EmptyState />}
       />
@@ -424,5 +444,71 @@ const styles = StyleSheet.create({
   stateText: {
     fontSize: 14,
     color: DS.color.textSecondary,
+  },
+
+  // FILTER
+
+  // FILTER (unchanged but required)
+  filterWrapper: {
+    // paddingHorizontal: DS.spacing.lg,
+    marginVertical: DS.spacing.md,
+    zIndex: 100,
+  },
+
+  filterTrigger: {
+    height: 46,
+    borderRadius: DS.radius.md,
+    borderWidth: 1,
+    borderColor: DS.color.border,
+    backgroundColor: DS.color.card,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: DS.spacing.md,
+    gap: 8,
+  },
+
+  filterTriggerText: {
+    flex: 1,
+    color: DS.color.textPrimary,
+    fontSize: 14,
+    fontWeight: '600',
+  },
+
+  filterDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 999,
+  },
+
+  dropdown: {
+    marginTop: 6,
+    borderRadius: DS.radius.md,
+    backgroundColor: DS.color.card,
+    borderWidth: 1,
+    borderColor: DS.color.border,
+    overflow: 'hidden',
+    ...DS.shadow.sm,
+  },
+
+  dropdownItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingHorizontal: DS.spacing.md,
+    paddingVertical: 12,
+  },
+
+  dropdownItemActive: {
+    backgroundColor: DS.color.primaryMuted,
+  },
+
+  dropdownText: {
+    fontSize: 13,
+    color: DS.color.textSecondary,
+  },
+
+  dropdownTextActive: {
+    color: DS.color.primary,
+    fontWeight: '600',
   },
 });

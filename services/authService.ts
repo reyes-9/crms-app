@@ -12,7 +12,7 @@ export const authService = {
     address: string;
     password: string;
   }) {
-    const res = await api.post('/auth/register/', data); //    {headers: { 'Content-Type': 'application/json' },}
+    const res = await api.post('/auth/register/', data);
     return res.data; // { access, refresh, user, success }
   },
 

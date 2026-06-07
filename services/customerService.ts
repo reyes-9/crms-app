@@ -1,23 +1,32 @@
-import { CustomerProfile, CustomerProfileForm } from '@/types/customer';
+import { ApiResponse } from '@/types/api';
+import {
+  CustomerProfile,
+  CustomerProfileForm,
+  CustomerResponse,
+} from '@/types/customer';
 import { api } from './api';
 
 export const customerService = {
   async getCustomers() {
     const res = await api.get('/customers/');
+    // console.log(JSON.stringify(res.data, null, 2));
     return res;
   },
 
   async addCustomer(payload: CustomerProfileForm) {
-    const res = await api.post<CustomerProfile>(`/customers/`, payload);
-    return res.data;
+    const res = await api.post<ApiResponse<CustomerResponse>>(
+      `/customers/`,
+      payload,
+    );
+    return res;
   },
 
   async editCustomer(id: number, data: CustomerProfile) {
-    const res = await api.patch<CustomerProfile>(
+    const res = await api.patch<ApiResponse<CustomerResponse>>(
       `/customers/${id}/edit/`,
       data,
     );
-    return res.data;
+    return res;
   },
 
   async archiveCustomer(id: number) {
@@ -27,6 +36,11 @@ export const customerService = {
 
   async deleteCustomer(id: number) {
     const res = await api.delete(`/customers/${id}/delete/`);
+    return res;
+  },
+
+  async restoreCustomer(id: number) {
+    const res = await api.patch(`/customers/${id}/restore/`);
     return res;
   },
 

@@ -17,7 +17,22 @@ export function CustomerProvider({ children }: CustomerProviderProps) {
   async function getCustomers() {
     try {
       const res = await customerService.getCustomers();
-      const activeCustomers = res.data.filter((c: any) => !c.is_archived);
+      console.log(JSON.stringify(res.data.data.customers, null, 2));
+
+      const activeCustomers = res.data.data.customers.filter(
+        (c: any) => !c.is_deleted,
+      );
+      setCustomers(activeCustomers); // update state only
+    } catch (err: any) {
+      throw new Error(err);
+    }
+  }
+  async function searchCustomer(search: string) {
+    try {
+      const res = await customerService.searchCustomer(search);
+      const activeCustomers = res.data.data.customers.filter(
+        (c: any) => !c.is_archived,
+      );
       setCustomers(activeCustomers); // update state only
     } catch (err: any) {
       throw new Error(err);
@@ -26,11 +41,10 @@ export function CustomerProvider({ children }: CustomerProviderProps) {
   async function addCustomer(payload: CustomerProfileForm) {
     try {
       const res = await customerService.addCustomer(payload);
-      // console.log('Payload:', payload);
-      console.log('RES:', res);
+      const newCustomer = res.data.data.customer;
 
       // Append new customer to state — avoid re-fetching
-      setCustomers((prev) => [res, ...prev]);
+      setCustomers((prev) => [newCustomer, ...prev]);
     } catch (err: any) {
       console.error(err);
       throw new Error(err);
@@ -42,7 +56,7 @@ export function CustomerProvider({ children }: CustomerProviderProps) {
   ): Promise<CustomerProfile> {
     try {
       const res = await customerService.editCustomer(id, data);
-      const updatedCustomer = res;
+      const updatedCustomer = res.data.data.customer;
 
       // Update the customers array with the updated customer
       setCustomers((prev) =>
@@ -56,23 +70,30 @@ export function CustomerProvider({ children }: CustomerProviderProps) {
   }
   async function archiveCustomer(id: number) {
     try {
-      await customerService.archiveCustomer(id);
+      const res = await customerService.archiveCustomer(id);
+      const status = res.data.status;
+
+      return status;
     } catch (err: any) {
       throw new Error(err);
     }
   }
   async function deleteCustomer(id: number) {
     try {
-      await customerService.deleteCustomer(id);
+      const res = await customerService.deleteCustomer(id);
+      const status = res.data.status;
+
+      return status;
     } catch (err: any) {
       throw new Error(err);
     }
   }
-  async function searchCustomer(search: string) {
+  async function restoreCustomer(id: number) {
     try {
-      const res = await customerService.searchCustomer(search);
-      const activeCustomers = res.data.filter((c: any) => !c.is_archived);
-      setCustomers(activeCustomers); // update state only
+      const res = await customerService.restoreCustomer(id);
+      const status = res.data.status;
+
+      return status;
     } catch (err: any) {
       throw new Error(err);
     }
@@ -87,6 +108,7 @@ export function CustomerProvider({ children }: CustomerProviderProps) {
         editCustomer,
         archiveCustomer,
         deleteCustomer,
+        restoreCustomer,
         searchCustomer,
       }}
     >

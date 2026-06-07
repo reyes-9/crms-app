@@ -333,7 +333,7 @@ export const LeadDetailsScreen = () => {
         ) : null}
 
         {/* ── DANGER ZONE ──────────────────────── */}
-        <SectionCard title="Danger Zone" icon="alert-triangle">
+        <SectionCard title="Actions" icon="tool">
           <View style={styles.dangerRow}>
             {/* Archive */}
             <TouchableOpacity
@@ -731,7 +731,7 @@ const styles = StyleSheet.create({
   dangerBtnTitle: {
     fontSize: 14,
     fontWeight: '600',
-    color: DS.color.textPrimary,
+    color: DS.color.warning,
   },
   dangerBtnSub: {
     fontSize: 12,

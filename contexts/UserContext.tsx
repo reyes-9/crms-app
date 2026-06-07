@@ -25,7 +25,8 @@ export function UserProvider({ children }: UserProviderProps) {
         const token = await AsyncStorage.getItem('access');
         if (token) {
           const data = await authService.getMe();
-          setUser(data.user);
+          const user = data.data.user;
+          setUser(user);
         }
       } catch {
         // Token expired and refresh also failed — stay logged out
@@ -41,7 +42,7 @@ export function UserProvider({ children }: UserProviderProps) {
     try {
       const registrationRes = await authService.register(credentials);
 
-      setUser(registrationRes.user);
+      setUser(registrationRes.data.user);
     } catch (registrationErr) {
       throw registrationErr;
     }
@@ -51,8 +52,20 @@ export function UserProvider({ children }: UserProviderProps) {
     try {
       const loginRes = await authService.login(credentials);
 
-      await AsyncStorage.setItem('access', loginRes.access);
-      await AsyncStorage.setItem('refresh', loginRes.refresh);
+      const access = loginRes.data.access;
+      const refresh = loginRes.data.refresh;
+
+      // console.log(JSON.stringify(access, null, 2));
+      // console.log(JSON.stringify(refresh, null, 2));
+
+      await AsyncStorage.setItem('access', access);
+      await AsyncStorage.setItem('refresh', refresh);
+
+      // const storedAccess = await AsyncStorage.getItem('access');
+      // const storedRefresh = await AsyncStorage.getItem('refresh');
+
+      // console.log('Stored Access:', storedAccess);
+      // console.log('Stored Refresh:', storedRefresh);
     } catch (loginErr: any) {
       const message =
         loginErr?.response?.data?.detail || loginErr?.message || 'Login failed';

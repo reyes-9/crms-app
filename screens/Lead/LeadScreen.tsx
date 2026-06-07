@@ -1,16 +1,7 @@
-// CREATE THE LEADFORM.TSX
-// CREATE THE LEADFORM.TSX
-// CREATE THE LEADFORM.TSX
-// CREATE THE LEADFORM.TSX
-// FOR THE ADD LEAD
-// FOR THE ADD LEAD
-// FOR THE ADD LEAD
-
 import SearchInput from '@/components/SearchInput';
 import { useLead } from '@/hooks/useLead';
 import { DS } from '@/theme/design';
 import { LeadProfile, LeadStatus } from '@/types/lead';
-import { formatCurrency } from '@/utils/formatCurrency';
 import { Feather } from '@expo/vector-icons';
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import { useNavigation } from '@react-navigation/native';
@@ -162,6 +153,7 @@ export const LeadScreen = () => {
         data={filteredLeads}
         keyExtractor={(item) => item.id.toString()}
         renderItem={renderItem}
+        showsVerticalScrollIndicator={false}
         ListHeaderComponent={
           <>
             {/* HEADER */}

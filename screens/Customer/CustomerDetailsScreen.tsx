@@ -1,3 +1,4 @@
+import { ReusableModal } from '@/components/ReusableModal';
 import { useCustomer } from '@/hooks/useCustomer';
 import { useCustomerNote } from '@/hooks/useCustomerNote';
 import { useOrder } from '@/hooks/useOrder';
@@ -6,7 +7,7 @@ import { RootStackParamList } from '@/types/navigation';
 import { Feather } from '@expo/vector-icons';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   Linking,
   ScrollView,
@@ -15,8 +16,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-
-/* ─── Types ─────────────────────────────────────── */
+import Toast from 'react-native-toast-message';
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 
@@ -29,13 +29,27 @@ const ORDER_STATUS_MAP: Record<string, { bg: string; color: string }> = {
   cancelled: DS.color.status.cancelled,
 };
 
-/* ─── Screen ─────────────────────────────────────── */
-
 export const CustomerDetailsScreen = () => {
+  const STATUS_COLOR: Record<string, { bg: string; color: string }> = {
+    active: { bg: '#DCFCE7', color: '#15803D' },
+    archived: { bg: '#FEF3C7', color: '#B45309' },
+    deleted: { bg: '#FEE2E2', color: '#B91C1C' },
+  };
+
   const route = useRoute<RouteProp<RootStackParamList, 'CustomerDetails'>>();
   const navigation = useNavigation<Nav>();
 
-  const { customers } = useCustomer();
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+  const [archiveModalVisible, setArchiveModalVisible] = useState(false);
+  const [restoreModalVisible, setRestoreModalVisible] = useState(false);
+
+  const {
+    customers,
+    deleteCustomer,
+    archiveCustomer,
+    restoreCustomer,
+    getCustomers,
+  } = useCustomer();
   const { customerNotes, getCustomerNotes } = useCustomerNote();
   const { limitedOrders, getOrdersByCustomerIdLimit } = useOrder();
 
@@ -59,26 +73,169 @@ export const CustomerDetailsScreen = () => {
       .join('')
       .toUpperCase() ?? '?';
 
+  const handleArchive = async () => {
+    try {
+      await archiveCustomer(customer.id);
+      setArchiveModalVisible(false);
+      Toast.show({
+        type: 'success',
+        text1: 'Customer Archived',
+        text2: 'Customer archived successfully',
+      });
+      await getCustomers();
+      navigation.goBack();
+    } catch (err: any) {
+      setArchiveModalVisible(false);
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: err?.response?.data?.message ?? 'Failed to archive',
+      });
+    }
+  };
+
+  const handleDelete = async () => {
+    try {
+      await deleteCustomer(customer.id);
+      setDeleteModalVisible(false);
+      Toast.show({
+        type: 'success',
+        text1: 'Customer Deleted',
+        text2: 'Customer deleted successfully',
+      });
+      await getCustomers();
+      navigation.goBack();
+    } catch (err: any) {
+      setDeleteModalVisible(false);
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: err?.response?.data?.message ?? 'Failed to delete',
+      });
+    }
+  };
+
+  const handleRestore = async () => {
+    try {
+      await restoreCustomer(customer.id);
+      setRestoreModalVisible(false);
+      Toast.show({
+        type: 'success',
+        text1: 'Customer Restored',
+        text2: 'Customer restored successfully',
+      });
+      await getCustomers();
+      navigation.goBack();
+    } catch (err: any) {
+      setDeleteModalVisible(false);
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: err?.response?.data?.message ?? 'Failed to restore',
+      });
+    }
+  };
+
   return (
     <ScrollView
       style={styles.screen}
       contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
     >
+      {/* ── DELETE MODAL ──────────────────────── */}
+      <ReusableModal
+        state="danger"
+        visible={deleteModalVisible}
+        title="Permanent Deletion"
+        message="Once deleted, this record cannot be recovered. Consider archiving instead."
+        buttons={[
+          {
+            label: 'Cancel',
+            onPress: () => setDeleteModalVisible(false),
+            variant: 'neutral',
+          },
+          {
+            label: 'Delete',
+            variant: 'danger',
+            onPress: handleDelete,
+          },
+        ]}
+        onClose={() => setDeleteModalVisible(false)}
+      />
+
+      {/* ── ARCHIVE MODAL ─────────────────────── */}
+      <ReusableModal
+        state="warning"
+        visible={archiveModalVisible}
+        title="Archive this record?"
+        message="This record will be moved to archive. You can restore it later."
+        buttons={[
+          {
+            label: 'Cancel',
+            onPress: () => setArchiveModalVisible(false),
+            variant: 'neutral',
+          },
+          {
+            label: 'Archive',
+            variant: 'warning',
+            onPress: handleArchive,
+          },
+        ]}
+        onClose={() => setArchiveModalVisible(false)}
+      />
+
+      {/* ── RESTORE MODAL ─────────────────────── */}
+      <ReusableModal
+        state="success"
+        visible={restoreModalVisible}
+        title="Restore this record?"
+        message="This record will be restored."
+        buttons={[
+          {
+            label: 'Cancel',
+            onPress: () => setRestoreModalVisible(false),
+            variant: 'neutral',
+          },
+          {
+            label: 'Restore',
+            variant: 'success',
+            onPress: handleRestore,
+          },
+        ]}
+        onClose={() => setRestoreModalVisible(false)}
+      />
+
       {/* ── PROFILE CARD ─────────────────────────── */}
       <View style={styles.profileCard}>
         <View style={styles.avatarWrapper}>
           <Text style={styles.avatarText}>{initials}</Text>
         </View>
-
         <View style={styles.profileInfo}>
           <Text style={styles.profileName}>{customer.name}</Text>
           <View style={styles.activePill}>
-            <View style={styles.activeIndicator} />
-            <Text style={styles.activeText}>Active</Text>
+            <View
+              style={[
+                styles.activeIndicator,
+                {
+                  backgroundColor:
+                    STATUS_COLOR[customer.status]?.color || DS.color.success,
+                },
+              ]}
+            />
+            <Text
+              style={[
+                styles.activeText,
+                {
+                  color:
+                    STATUS_COLOR[customer.status]?.color || DS.color.success,
+                },
+              ]}
+            >
+              {customer.status?.charAt(0).toUpperCase() +
+                customer.status?.slice(1) || 'Active'}
+            </Text>
           </View>
         </View>
-
         <TouchableOpacity
           style={styles.editBtn}
           onPress={() => navigation.navigate('EditCustomer', { customer })}
@@ -132,8 +289,10 @@ export const CustomerDetailsScreen = () => {
           limitedOrders.map((order) => {
             const statusStyle = ORDER_STATUS_MAP[
               order.status.toLowerCase()
-            ] ?? { bg: '#F3F4F6', color: '#6B7280' };
-
+            ] ?? {
+              bg: '#F3F4F6',
+              color: '#6B7280',
+            };
             return (
               <View key={order.id} style={styles.orderItem}>
                 <View style={styles.orderItemLeft}>
@@ -189,6 +348,71 @@ export const CustomerDetailsScreen = () => {
             </View>
           ))
         )}
+      </SectionCard>
+
+      {/* ── DANGER ZONE ──────────────────────── */}
+      <SectionCard title="Danger Zone" icon="alert-triangle">
+        <View style={styles.dangerRow}>
+          <TouchableOpacity
+            style={styles.dangerBtn}
+            onPress={() => setArchiveModalVisible(true)} // ← fixed
+          >
+            <Feather name="archive" size={15} color={DS.color.warning} />
+            <View style={styles.dangerBtnText}>
+              <Text style={styles.dangerBtnTitle}>Archive Customer</Text>
+              <Text style={styles.dangerBtnSub}>
+                Hide from active customers list
+              </Text>
+            </View>
+            <Feather
+              name="chevron-right"
+              size={16}
+              color={DS.color.textMuted}
+            />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.dangerBtn}
+            onPress={() => setDeleteModalVisible(true)} // ← fixed
+          >
+            <Feather name="trash-2" size={15} color={DS.color.danger} />
+            <View style={styles.dangerBtnText}>
+              <Text style={[styles.dangerBtnTitle, { color: DS.color.danger }]}>
+                Delete Customer
+              </Text>
+              <Text style={styles.dangerBtnSub}>
+                Permanently remove this customer
+              </Text>
+            </View>
+            <Feather
+              name="chevron-right"
+              size={16}
+              color={DS.color.textMuted}
+            />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.dangerBtn}
+            onPress={() => setRestoreModalVisible(true)} // ← fixed
+          >
+            <Feather name="rotate-ccw" size={15} color={DS.color.success} />
+            <View style={styles.dangerBtnText}>
+              <Text
+                style={[styles.dangerBtnTitle, { color: DS.color.success }]}
+              >
+                Restore Customer
+              </Text>
+              <Text style={styles.dangerBtnSub}>
+                Show to the active customer list.
+              </Text>
+            </View>
+            <Feather
+              name="chevron-right"
+              size={16}
+              color={DS.color.textMuted}
+            />
+          </TouchableOpacity>
+        </View>
       </SectionCard>
     </ScrollView>
   );
@@ -256,7 +480,6 @@ const SectionCard = ({
         </TouchableOpacity>
       )}
     </View>
-
     <View style={styles.sectionBody}>{children}</View>
   </View>
 );
@@ -344,7 +567,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 5,
     alignSelf: 'flex-start',
-    backgroundColor: DS.color.successLight,
+    // backgroundColor: DS.color.successLight,
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: DS.radius.full,
@@ -542,5 +765,25 @@ const styles = StyleSheet.create({
   emptyInlineText: {
     fontSize: 13,
     color: DS.color.textMuted,
+  },
+
+  // DANGER ZONE
+  dangerRow: { gap: 0 },
+  dangerBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: DS.spacing.md,
+    paddingVertical: DS.spacing.md,
+  },
+  dangerBtnText: { flex: 1 },
+  dangerBtnTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: DS.color.warning,
+  },
+  dangerBtnSub: {
+    fontSize: 12,
+    color: DS.color.textMuted,
+    marginTop: 2,
   },
 });

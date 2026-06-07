@@ -43,8 +43,11 @@ api.interceptors.response.use(
           { refresh },
         );
 
-        await AsyncStorage.setItem('access', res.data.access);
-        original.headers.Authorization = `Bearer ${res.data.access}`;
+        const access = res.data.data.access;
+        console.log(JSON.stringify(res.data, null, 2));
+
+        await AsyncStorage.setItem('access', access);
+        original.headers.Authorization = `Bearer ${access}`;
         return api(original);
       } catch {
         // Refresh also failed — user needs to log in again

@@ -4,15 +4,25 @@ export interface CustomerProviderProps {
   children: React.ReactNode;
 }
 
-export interface CustomerProfile {
+export interface Customer {
   id: number;
   name: string;
   email: string;
   company: string;
   number: string;
+  status: CustomerStatus;
+  is_archived: booloean;
 }
 
-export type CustomerProfileForm = Omit<CustomerProfile, 'id'>;
+export type CustomerStatus = 'active' | 'archived' | 'deleted';
+
+export type CustomerProfile = Omit<CustomerProfile, 'id', 'is_archived'>;
+
+export interface CustomerResponse {
+  customer: CustomerProfile;
+}
+
+export type CustomerProfileForm = Omit<CustomerProfile, 'id', 'is_archived'>;
 
 export interface CustomerContextType {
   customers: CustomerProfile[];
@@ -22,5 +32,6 @@ export interface CustomerContextType {
   editCustomer: (id: number, data: CustomerProfile) => Promise<CustomerProfile>;
   archiveCustomer: (id: number) => Promise<void>;
   deleteCustomer: (id: number) => Promise<void>;
+  restoreCustomer: (id: number) => Promise<void>;
   searchCustomer: (search: string) => Promise<void>;
 }

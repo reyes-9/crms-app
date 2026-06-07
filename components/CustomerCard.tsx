@@ -3,12 +3,43 @@ import { CustomerProfile } from '@/types/customer';
 import { Feather } from '@expo/vector-icons';
 import { StyleSheet, Text, View } from 'react-native';
 
+const getStatusColors = (status: CustomerProfile['status']) => {
+  switch (status) {
+    case 'active':
+      return {
+        bg: DS.color.success + '15',
+        text: DS.color.success,
+      };
+
+    case 'archived':
+      return {
+        bg: DS.color.warning + '15',
+        text: DS.color.warning,
+      };
+
+    case 'deleted':
+      return {
+        bg: DS.color.danger + '15',
+        text: DS.color.danger,
+      };
+
+    default:
+      return {
+        bg: DS.color.neutral + '15',
+        text: DS.color.neutral,
+      };
+  }
+};
+
 export const CustomerCard = ({
   name,
   company,
   email,
   number,
+  status,
 }: CustomerProfile) => {
+  const statusColors = getStatusColors(status);
+
   return (
     <View style={styles.card}>
       <View style={styles.topRow}>
@@ -28,10 +59,18 @@ export const CustomerCard = ({
           )}
         </View>
 
+        <View
+          style={[styles.statusBadge, { backgroundColor: statusColors.bg }]}
+        >
+          <Text style={[styles.statusText, { color: statusColors.text }]}>
+            {status}
+          </Text>
+        </View>
+
         <Feather name="chevron-right" size={16} color={DS.color.textMuted} />
       </View>
 
-      <View style={styles.metaRow}>
+      {/* <View style={styles.metaRow}>
         <View style={styles.metaItem}>
           <Feather name="phone" size={12} color={DS.color.textMuted} />
           <Text numberOfLines={1} style={styles.metaText}>
@@ -47,17 +86,18 @@ export const CustomerCard = ({
             {email}
           </Text>
         </View>
-      </View>
+      </View> */}
     </View>
   );
 };
+
 const styles = StyleSheet.create({
   card: {
     backgroundColor: DS.color.card,
     borderWidth: 1,
     borderColor: DS.color.border,
     borderRadius: DS.radius.lg,
-    padding: DS.spacing.md,
+    padding: DS.spacing.lg,
     marginBottom: DS.spacing.sm,
   },
 
@@ -97,6 +137,20 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: DS.color.textSecondary,
   },
+
+  statusBadge: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: DS.radius.full,
+    marginRight: DS.spacing.sm,
+  },
+
+  statusText: {
+    fontSize: 11,
+    fontWeight: '600',
+    textTransform: 'capitalize',
+  },
+
   metaRow: {
     flexDirection: 'row',
     alignItems: 'center',

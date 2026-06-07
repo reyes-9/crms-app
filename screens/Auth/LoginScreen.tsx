@@ -1,4 +1,8 @@
+import { Feather } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React, { useEffect, useState } from 'react';
+import { useForm } from 'react-hook-form';
 import {
   ActivityIndicator,
   Image,
@@ -9,16 +13,12 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useForm } from 'react-hook-form';
-import { Feather } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { Input } from '@/components/Input';
 import { useUser } from '@/hooks/useUser';
+import { DS } from '@/theme/design';
 import { LoginCredentials } from '@/types/auth';
 import { RootStackParamList } from '@/types/navigation';
-import { DS } from '@/theme/design';
 
 type SplashScreenNavProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -95,11 +95,7 @@ export const LoginScreen = () => {
 
           {err ? (
             <View style={styles.errorContainer}>
-              <Feather
-                name="alert-circle"
-                size={16}
-                color={DS.color.danger}
-              />
+              <Feather name="alert-circle" size={16} color={DS.color.danger} />
               <Text style={styles.errorMsg}>{err}</Text>
             </View>
           ) : null}
@@ -142,9 +138,7 @@ export const LoginScreen = () => {
                     size="small"
                     color={DS.color.textInverse}
                   />
-                  <Text style={styles.signInButtonText}>
-                    Signing In...
-                  </Text>
+                  <Text style={styles.signInButtonText}>Signing In...</Text>
                 </View>
               ) : (
                 <>
@@ -153,9 +147,7 @@ export const LoginScreen = () => {
                     size={18}
                     color={DS.color.textInverse}
                   />
-                  <Text style={styles.signInButtonText}>
-                    Sign In
-                  </Text>
+                  <Text style={styles.signInButtonText}>Sign In</Text>
                 </>
               )}
             </Pressable>
@@ -168,14 +160,10 @@ export const LoginScreen = () => {
 
         {/* Footer */}
         <View style={styles.footer}>
-          <Text style={styles.footerText}>
-            Don't have an account?
-          </Text>
+          <Text style={styles.footerText}>Don't have an account?</Text>
 
           <TouchableOpacity onPress={handleSignUp}>
-            <Text style={styles.createAccountText}>
-              Create Account
-            </Text>
+            <Text style={styles.createAccountText}>Create Account</Text>
           </TouchableOpacity>
         </View>
       </View>
