@@ -20,7 +20,6 @@ import {
   View,
 } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import Toast from 'react-native-toast-message';
 /* ─── Screen ──────────────────────────────────────── */
 
 export const CustomerScreen = () => {
@@ -58,18 +57,15 @@ export const CustomerScreen = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
-  const [openRow, setOpenRow] = useState<string | null>(null);
-  
+  // const [openRow, setOpenRow] = useState<string | null>(null);
+
   const [filterOpen, setFilterOpen] = useState(false);
   const [selectedFilter, setSelectedFilter] = useState<FilterOption>('all');
 
   const filteredCustomers = customers.filter((customer) => {
     if (selectedFilter === 'all') return true;
-    console.log(customer.status);
     return customer.status === selectedFilter;
   });
-
-  console.log('FLITERED: ', filteredCustomers);
 
   async function handleSearch(query: string) {
     if (!query.trim()) {
@@ -78,8 +74,6 @@ export const CustomerScreen = () => {
     }
     await searchCustomer(query);
   }
-
-
 
   useEffect(() => {
     const fetchData = async () => {
@@ -99,7 +93,7 @@ export const CustomerScreen = () => {
     setRefreshing(true);
     try {
       await getCustomers();
-      setOpenRow(null);
+      // setOpenRow(null);
     } finally {
       setRefreshing(false);
     }
@@ -112,8 +106,6 @@ export const CustomerScreen = () => {
     <GestureHandlerRootView
       style={[styles.screen, { paddingBottom: tabBarHeight - 8 }]}
     >
-
-
       <FlatList
         data={filteredCustomers}
         keyExtractor={(item) => item.id.toString()}
@@ -154,7 +146,18 @@ export const CustomerScreen = () => {
 
             {/* ── STATS ROW ────────────────────── */}
             <View style={styles.statsRow}>
-              <StatChip label="Active" value={customers.length} />
+              <StatChip
+                label="Total"
+                value={customers.length}
+              />
+              <StatChip
+                label="Active"
+                value={customers.filter((c) => c.status === 'active').length}
+              />
+              <StatChip
+                label="Archived"
+                value={customers.filter((c) => c.status === 'archived').length}
+              />
             </View>
 
             <Text style={styles.listLabel}>ALL CUSTOMERS</Text>
@@ -245,7 +248,7 @@ export const CustomerScreen = () => {
         renderItem={({ item, index }) => (
           <Pressable
             onPress={() => {
-              setOpenRow(null);
+              // setOpenRow(null);
               navigation.navigate('CustomerDetails', { customer: item });
             }}
           >

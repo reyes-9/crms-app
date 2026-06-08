@@ -3,7 +3,7 @@ import { api } from './api';
 
 export const orderService = {
   async getOrdersByCustomerId(customer_id: number) {
-    const res = await api.get(`/orders/?customer_id=${customer_id}`);
+    const res = await api.get(`/orders/by-customer/${customer_id}/`);
     return res;
   },
 
@@ -18,7 +18,7 @@ export const orderService = {
   },
 
   async searchOrder(search: string) {
-    const res = await api.get(`/orders/?search=${search}`);
+    const res = await api.get(`/orders/search/${search}/`); // /api/orders/search/test/
     return res;
   },
 
@@ -44,7 +44,6 @@ export const orderService = {
 
   async advanceOrder(id: number, data: { status: string }) {
     const res = await api.patch(`/orders/${id}/advance/`, data);
-
     return res;
   },
 };

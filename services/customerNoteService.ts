@@ -10,6 +10,13 @@ export const customerNoteService = {
     return res;
   },
 
+  async getCustomerNotesWithLimit(customer_id: number) {
+    const res = await api.get(
+      `/customer-notes/?customer_id=${customer_id}&limit=${5}`,
+    );
+    return res;
+  },
+
   async addCustomerNote(payload: CreateCustomerNotePayload) {
     const res = await api.post(`/customer-notes/`, payload);
     return res;

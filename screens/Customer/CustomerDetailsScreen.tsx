@@ -50,7 +50,7 @@ export const CustomerDetailsScreen = () => {
     restoreCustomer,
     getCustomers,
   } = useCustomer();
-  const { customerNotes, getCustomerNotes } = useCustomerNote();
+  const { limitedCustomerNotes, getCustomerNotesWithLimit } = useCustomerNote();
   const { limitedOrders, getOrdersByCustomerIdLimit } = useOrder();
 
   const { customer: routeCustomer } = route.params;
@@ -62,7 +62,7 @@ export const CustomerDetailsScreen = () => {
 
   useEffect(() => {
     getOrdersByCustomerIdLimit(customer.id);
-    getCustomerNotes(customer.id);
+    getCustomerNotesWithLimit(customer.id);
   }, []);
 
   const initials =
@@ -93,7 +93,6 @@ export const CustomerDetailsScreen = () => {
       });
     }
   };
-
   const handleDelete = async () => {
     try {
       await deleteCustomer(customer.id);
@@ -114,7 +113,6 @@ export const CustomerDetailsScreen = () => {
       });
     }
   };
-
   const handleRestore = async () => {
     try {
       await restoreCustomer(customer.id);
@@ -325,17 +323,17 @@ export const CustomerDetailsScreen = () => {
 
       {/* ── NOTES ───────────────────────────────── */}
       <SectionCard
-        title="Notes"
+        title="Recent Notes"
         icon="file-text"
         actionLabel="Manage"
         onAction={() =>
           navigation.navigate('CustomerNotes', { customer_id: customer.id })
         }
       >
-        {!customerNotes || customerNotes.length === 0 ? (
+        {!limitedCustomerNotes || limitedCustomerNotes.length === 0 ? (
           <EmptyInline message="No notes yet" icon="file-text" />
         ) : (
-          customerNotes.map((note, i) => (
+          limitedCustomerNotes.map((note, i) => (
             <View key={note.id}>
               {i > 0 && <View style={styles.noteDivider} />}
               <View style={styles.noteItem}>

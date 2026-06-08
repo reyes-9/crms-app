@@ -1,3 +1,9 @@
+// TEST THE NEWLY CREATED API'S
+// TEST THE NEWLY CREATED API'S
+// TEST THE NEWLY CREATED API'S
+// TEST THE NEWLY CREATED API'S
+// TEST THE NEWLY CREATED API'S
+
 import { orderService } from '@/services/orderService';
 import {
   CreateOrderPayload,
@@ -17,9 +23,8 @@ export function OrderProvider({ children }: OrderProviderProps) {
 
   async function getOrdersByCustomerId(customer_id: number) {
     try {
-      const order = await orderService.getOrdersByCustomerId(customer_id);
-      setOrders(order.data);
-      // console.log(orders);
+      const res = await orderService.getOrdersByCustomerId(customer_id);
+      setOrders(res.data.data.orders);
     } catch (err: any) {
       throw new Error(err);
     }
@@ -27,9 +32,8 @@ export function OrderProvider({ children }: OrderProviderProps) {
 
   async function getOrdersByCustomerIdLimit(customer_id: number) {
     try {
-      const order = await orderService.getOrdersByCustomerIdLimit(customer_id);
-      setLimitedOrders(order.data);
-      // console.log(orders);
+      const res = await orderService.getOrdersByCustomerIdLimit(customer_id);
+      setLimitedOrders(res.data.data.orders);
     } catch (err: any) {
       throw new Error(err);
     }
@@ -37,22 +41,18 @@ export function OrderProvider({ children }: OrderProviderProps) {
 
   async function getOrdersById(id: number) {
     try {
-      const order = await orderService.getOrdersById(id);
+      const res = await orderService.getOrdersById(id);
       // Don't modify the global orders list - just return the data
-      // console.log('Return Data: ', order.data);
-      return order.data;
+      return res.data.data.order;
     } catch (err: any) {
-      // console.error(err);
       throw new Error(err);
-      // return null;
     }
   }
 
   async function searchOrder(search: string) {
     try {
       const res = await orderService.searchOrder(search);
-      const order = res.data;
-
+      const order = res.data.data.orders;
       setOrders(order);
     } catch (err: any) {
       throw new Error(err);
@@ -62,13 +62,9 @@ export function OrderProvider({ children }: OrderProviderProps) {
   async function editOrder(id: number, data: OrderDetails) {
     try {
       const res = await orderService.editOrder(id, data);
-      console.log('RES: ', res);
-      const updatedOrder = res;
+      const updatedOrder = res.data.order;
 
-      // Update the customers array with the updated customer
       setOrders((prev) => prev.map((c) => (c.id === id ? updatedOrder : c)));
-
-      return updatedOrder;
     } catch (err: any) {
       console.error(err);
       throw new Error(err);
@@ -78,10 +74,9 @@ export function OrderProvider({ children }: OrderProviderProps) {
   async function addOrder(data: CreateOrderPayload) {
     try {
       const res = await orderService.addOrder(data);
-      const newOrder = res;
+      const newOrder = res.data.order;
 
       setOrders((prev) => [...prev, newOrder]);
-      return newOrder;
     } catch (err: any) {
       console.error(err);
       throw new Error(err);
@@ -90,12 +85,9 @@ export function OrderProvider({ children }: OrderProviderProps) {
 
   async function deleteOrder(id: number) {
     try {
-      const res = await orderService.deleteOrder(id);
-
+      await orderService.deleteOrder(id);
       // Remove the deleted order from the orders array
       setOrders((prev) => prev.filter((order) => order.id !== id));
-
-      return res;
     } catch (err: any) {
       console.error(err);
       throw new Error(err);
@@ -105,8 +97,7 @@ export function OrderProvider({ children }: OrderProviderProps) {
   async function cancelOrder(id: number) {
     try {
       const res = await orderService.cancelOrder(id);
-
-      const cancelledOrder = res.data.order || res.data;
+      const cancelledOrder = res.data.data.order;
 
       setOrders((prev) =>
         prev.map((o) =>
@@ -118,8 +109,6 @@ export function OrderProvider({ children }: OrderProviderProps) {
             : o,
         ),
       );
-
-      return cancelledOrder;
     } catch (err: any) {
       throw new Error(err);
     }
@@ -131,7 +120,7 @@ export function OrderProvider({ children }: OrderProviderProps) {
         status,
       });
 
-      const advancedOrder = res.data.order || res.data;
+      const advancedOrder = res.data.data.order;
 
       setOrders((prev) =>
         prev.map((o) =>

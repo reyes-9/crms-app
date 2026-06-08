@@ -176,7 +176,7 @@ export const CustomerNotes = () => {
   /* ── Main render ────────────────────────────────── */
 
   return (
-    <SafeAreaView style={styles.screen}>
+    <View style={styles.screen}>
       <Pressable style={{ flex: 1 }} onPress={() => setOpenMenu(null)}>
         {/* ── HEADER ───────────────────────────── */}
         <View style={styles.header}>
@@ -257,7 +257,7 @@ export const CustomerNotes = () => {
           setDeleteTarget(null);
         }}
       />
-    </SafeAreaView>
+    </View>
   );
 };
 

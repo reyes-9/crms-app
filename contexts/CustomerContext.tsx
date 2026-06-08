@@ -17,8 +17,6 @@ export function CustomerProvider({ children }: CustomerProviderProps) {
   async function getCustomers() {
     try {
       const res = await customerService.getCustomers();
-      console.log(JSON.stringify(res.data.data.customers, null, 2));
-
       const activeCustomers = res.data.data.customers.filter(
         (c: any) => !c.is_deleted,
       );

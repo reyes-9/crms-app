@@ -9,7 +9,6 @@ import { api } from './api';
 export const customerService = {
   async getCustomers() {
     const res = await api.get('/customers/');
-    // console.log(JSON.stringify(res.data, null, 2));
     return res;
   },
 
