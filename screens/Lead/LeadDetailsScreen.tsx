@@ -13,23 +13,26 @@
 import { ReusableModal } from '@/components/ReusableModal';
 import { useLead } from '@/hooks/useLead';
 import { DS } from '@/theme/design';
-import { LeadProfile, LeadStatus } from '@/types/lead';
+import { LeadStatus } from '@/types/lead';
+import { RootStackParamList } from '@/types/navigation';
 import { Feather } from '@expo/vector-icons';
-import { useNavigation, useRoute } from '@react-navigation/native';
-import { useState } from 'react';
+import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
+import { useMemo, useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   Linking,
-  Modal,
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from 'react-native';
+import Toast from 'react-native-toast-message';
+
+type LeadDetailsRoute = RouteProp<RootStackParamList, 'LeadDetails'>;
 
 /* ─── Constants ──────────────────────────────────── */
+
 export const STATUS_COLOR: Record<LeadStatus, { bg: string; color: string }> = {
   new: { bg: '#DBEAFE', color: '#1D4ED8' },
   contacted: { bg: '#FEF3C7', color: '#B45309' },
@@ -69,23 +72,26 @@ const ADVANCE_MAP: Record<LeadStatus, LeadStatus | null> = {
 ═══════════════════════════════════════════════════ */
 
 export const LeadDetailsScreen = () => {
-  const route = useRoute<any>();
+  const route = useRoute<LeadDetailsRoute>();
   const navigation = useNavigation<any>();
-  const { advanceLead, deleteLead, archiveLead } = useLead();
 
-  // Lead comes from navigation params; fall back to a safe shape
-  const [lead, setLead] = useState<LeadProfile>(route.params?.lead);
+  const { leads, advanceLead, deleteLead, archiveLead } = useLead(); // ← pull leads array
 
-  const [editModalVisible, setEditModalVisible] = useState(false);
+  const { lead: routeLead } = route.params;
+
+  // ✅ Correctly derives from leads array — updates whenever useLead state changes
+  const lead = useMemo(
+    () => leads.find((l) => l.id === routeLead.id) ?? routeLead,
+    [leads, routeLead.id],
+  );
+
   const [advanceLoading, setAdvanceLoading] = useState(false);
-
-  // Delete / Archive / Advance confirm modals
   const [deleteVisible, setDeleteVisible] = useState(false);
   const [archiveVisible, setArchiveVisible] = useState(false);
   const [advanceModalVisible, setAdvanceModalVisible] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
 
-  const currentStatus = lead.status;
+  const currentStatus = lead.status as LeadStatus;
   const currentIndex = STATUS_CHOICES.findIndex(([v]) => v === currentStatus);
   const nextStatus = ADVANCE_MAP[currentStatus];
   const canAdvance = nextStatus != null;
@@ -93,25 +99,28 @@ export const LeadDetailsScreen = () => {
   const initials = lead.name
     .split(' ')
     .slice(0, 2)
-    .map((w) => w[0])
+    .map((w: string) => w[0])
     .join('')
     .toUpperCase();
 
   /* ── Actions ────────────────────────────────────── */
 
-  const handleAdvance = async () => {
-    if (!nextStatus) return;
-    setAdvanceModalVisible(true);
-  };
-
   const confirmAdvance = async () => {
     if (!nextStatus) return;
     try {
       setAdvanceLoading(true);
-      const updated = await advanceLead(lead.id, nextStatus);
-      setLead(updated);
-    } catch {
-      Alert.alert('Error', 'Failed to advance lead. Please try again.');
+      await advanceLead(lead.id, nextStatus);
+      Toast.show({
+        type: 'success',
+        text1: 'Lead Advanced',
+        text2: `Lead moved to ${STATUS_LABEL[nextStatus]}`,
+      });
+    } catch (err: any) {
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: err?.response?.data?.message ?? 'Failed to advance lead',
+      });
     } finally {
       setAdvanceLoading(false);
       setAdvanceModalVisible(false);
@@ -123,9 +132,18 @@ export const LeadDetailsScreen = () => {
       setActionLoading(true);
       await deleteLead(lead.id);
       setDeleteVisible(false);
+      Toast.show({
+        type: 'success',
+        text1: 'Lead Deleted',
+        text2: 'Lead deleted successfully',
+      });
       navigation.goBack();
-    } catch {
-      Alert.alert('Error', 'Failed to delete lead. Please try again.');
+    } catch (err: any) {
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: err?.response?.data?.message ?? 'Failed to delete lead',
+      });
     } finally {
       setActionLoading(false);
     }
@@ -136,9 +154,18 @@ export const LeadDetailsScreen = () => {
       setActionLoading(true);
       await archiveLead(lead.id);
       setArchiveVisible(false);
+      Toast.show({
+        type: 'success',
+        text1: 'Lead Archived',
+        text2: 'Lead archived successfully',
+      });
       navigation.goBack();
-    } catch {
-      Alert.alert('Error', 'Failed to archive lead. Please try again.');
+    } catch (err: any) {
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: err?.response?.data?.message ?? 'Failed to archive lead',
+      });
     } finally {
       setActionLoading(false);
     }
@@ -180,15 +207,14 @@ export const LeadDetailsScreen = () => {
                   {STATUS_LABEL[currentStatus] ?? currentStatus}
                 </Text>
               </View>
-              {/* <Text style={styles.valuePill}>
-                {formatCurrency(lead.value, 'en-PH', 'PHP')}
-              </Text> */}
             </View>
           </View>
 
           <TouchableOpacity
             style={styles.editBtn}
-            onPress={() => setEditModalVisible(true)}
+            onPress={() =>
+              navigation.navigate('LeadForm', { mode: 'edit', lead })
+            }
           >
             <Feather name="edit-2" size={14} color={DS.color.primary} />
             <Text style={styles.editBtnText}>Edit</Text>
@@ -197,31 +223,29 @@ export const LeadDetailsScreen = () => {
 
         {/* ── QUICK ACTIONS ─────────────────────── */}
         <View style={styles.actionsRow}>
-          <TouchableOpacity style={styles.actionBtn}>
-            <Feather
-              name="phone"
-              size={16}
-              color={DS.color.primary}
-              onPress={() => Linking.openURL(`tel:${lead.number}`)}
-            />
+          <TouchableOpacity
+            style={styles.actionBtn}
+            onPress={() => Linking.openURL(`tel:${lead.number}`)}
+          >
+            <Feather name="phone" size={16} color={DS.color.primary} />
             <Text style={styles.actionBtnText}>Call</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.actionBtn}>
-            <Feather
-              name="mail"
-              size={16}
-              color={DS.color.primary}
-              onPress={() => Linking.openURL(`mailto:${lead.email}`)}
-            />
+
+          <TouchableOpacity
+            style={styles.actionBtn}
+            onPress={() => Linking.openURL(`mailto:${lead.email}`)}
+          >
+            <Feather name="mail" size={16} color={DS.color.primary} />
             <Text style={styles.actionBtnText}>Email</Text>
           </TouchableOpacity>
+
           <TouchableOpacity
             style={[
               styles.actionBtn,
               styles.actionBtnPrimary,
               !canAdvance && styles.actionBtnDisabled,
             ]}
-            onPress={handleAdvance}
+            onPress={() => setAdvanceModalVisible(true)}
             disabled={!canAdvance || advanceLoading}
           >
             {advanceLoading ? (
@@ -239,7 +263,7 @@ export const LeadDetailsScreen = () => {
                     { color: DS.color.textInverse },
                   ]}
                 >
-                  {canAdvance ? `${STATUS_LABEL[nextStatus!]}` : 'Advance Lead'}
+                  {canAdvance ? STATUS_LABEL[nextStatus!] : 'Advance Lead'}
                 </Text>
               </>
             )}
@@ -310,10 +334,6 @@ export const LeadDetailsScreen = () => {
               label: 'Source',
               value: lead.source.charAt(0).toUpperCase() + lead.source.slice(1),
             },
-            // {
-            //   label: 'Value',
-            //   value: formatCurrency(lead.value, 'en-PH', 'PHP'),
-            // },
           ].map(({ label, value }, i) => (
             <View key={label}>
               {i > 0 && <View style={styles.rowDivider} />}
@@ -335,8 +355,7 @@ export const LeadDetailsScreen = () => {
         {/* ── DANGER ZONE ──────────────────────── */}
         <SectionCard title="Actions" icon="tool">
           <View style={styles.dangerRow}>
-            {/* Archive */}
-            <TouchableOpacity
+            {/* <TouchableOpacity
               style={styles.dangerBtn}
               onPress={() => setArchiveVisible(true)}
             >
@@ -352,11 +371,10 @@ export const LeadDetailsScreen = () => {
                 size={16}
                 color={DS.color.textMuted}
               />
-            </TouchableOpacity>
+            </TouchableOpacity> */}
 
-            <View style={styles.rowDivider} />
+            {/* <View style={styles.rowDivider} /> */}
 
-            {/* Delete */}
             <TouchableOpacity
               style={styles.dangerBtn}
               onPress={() => setDeleteVisible(true)}
@@ -382,22 +400,15 @@ export const LeadDetailsScreen = () => {
         </SectionCard>
       </ScrollView>
 
-      {/* ── EDIT MODAL ───────────────────────────── */}
-      {/* <LeadFormModal
-        visible={editModalVisible}
-        onClose={() => setEditModalVisible(false)}
-        editingLead={lead}
-      /> */}
-
       {/* ── ADVANCE CONFIRM ──────────────────────── */}
       <ReusableModal
         state="success"
         visible={advanceModalVisible}
-        title="Advance Order"
-        message="The status of this order will be advanced. This cannot be undone."
+        title="Advance Lead"
+        message={`Move this lead to "${nextStatus ? STATUS_LABEL[nextStatus] : ''}"? This cannot be undone.`}
         buttons={[
           {
-            label: 'Close',
+            label: 'Cancel',
             onPress: () => setAdvanceModalVisible(false),
             variant: 'neutral',
           },
@@ -405,6 +416,7 @@ export const LeadDetailsScreen = () => {
         ]}
         onClose={() => setAdvanceModalVisible(false)}
       />
+
       {/* ── ARCHIVE CONFIRM ──────────────────────── */}
       <ReusableModal
         visible={archiveVisible}
@@ -449,7 +461,6 @@ export const LeadDetailsScreen = () => {
     </>
   );
 };
-
 /* ─── Section Card ────────────────────────────────── */
 
 const SectionCard = ({
@@ -500,55 +511,55 @@ interface ConfirmModalProps {
   onCancel: () => void;
 }
 
-const ConfirmModal = ({
-  visible,
-  isLoading,
-  icon,
-  iconColor,
-  iconBg,
-  title,
-  message,
-  confirmLabel,
-  confirmColor,
-  onConfirm,
-  onCancel,
-}: ConfirmModalProps) => (
-  <Modal visible={visible} animationType="fade" transparent>
-    <View style={styles.confirmOverlay}>
-      <View style={styles.confirmCard}>
-        <View style={[styles.confirmIconWrap, { backgroundColor: iconBg }]}>
-          <Feather name={icon} size={24} color={iconColor} />
-        </View>
-        <Text style={styles.confirmTitle}>{title}</Text>
-        <Text style={styles.confirmMessage}>{message}</Text>
-        <View style={styles.confirmActions}>
-          <TouchableOpacity
-            style={styles.confirmCancel}
-            onPress={onCancel}
-            disabled={isLoading}
-          >
-            <Text style={styles.confirmCancelText}>Cancel</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[
-              styles.confirmAction,
-              { backgroundColor: confirmColor },
-              isLoading && styles.confirmActionDisabled,
-            ]}
-            onPress={onConfirm}
-            disabled={isLoading}
-          >
-            {isLoading ? (
-              <ActivityIndicator size="small" color={DS.color.textInverse} />
-            ) : (
-              <Text style={styles.confirmActionText}>{confirmLabel}</Text>
-            )}
-          </TouchableOpacity>
-        </View>
-      </View>
-    </View>
-  </Modal>
-);
+// const ConfirmModal = ({
+//   visible,
+//   isLoading,
+//   icon,
+//   iconColor,
+//   iconBg,
+//   title,
+//   message,
+//   confirmLabel,
+//   confirmColor,
+//   onConfirm,
+//   onCancel,
+// }: ConfirmModalProps) => (
+//   <Modal visible={visible} animationType="fade" transparent>
+//     <View style={styles.confirmOverlay}>
+//       <View style={styles.confirmCard}>
+//         <View style={[styles.confirmIconWrap, { backgroundColor: iconBg }]}>
+//           <Feather name={icon} size={24} color={iconColor} />
+//         </View>
+//         <Text style={styles.confirmTitle}>{title}</Text>
+//         <Text style={styles.confirmMessage}>{message}</Text>
+//         <View style={styles.confirmActions}>
+//           <TouchableOpacity
+//             style={styles.confirmCancel}
+//             onPress={onCancel}
+//             disabled={isLoading}
+//           >
+//             <Text style={styles.confirmCancelText}>Cancel</Text>
+//           </TouchableOpacity>
+//           <TouchableOpacity
+//             style={[
+//               styles.confirmAction,
+//               { backgroundColor: confirmColor },
+//               isLoading && styles.confirmActionDisabled,
+//             ]}
+//             onPress={onConfirm}
+//             disabled={isLoading}
+//           >
+//             {isLoading ? (
+//               <ActivityIndicator size="small" color={DS.color.textInverse} />
+//             ) : (
+//               <Text style={styles.confirmActionText}>{confirmLabel}</Text>
+//             )}
+//           </TouchableOpacity>
+//         </View>
+//       </View>
+//     </View>
+//   </Modal>
+// );
 
 /* ─── Styles ─────────────────────────────────────── */
 

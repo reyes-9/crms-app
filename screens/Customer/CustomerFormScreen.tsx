@@ -3,6 +3,7 @@ import { useCustomer } from '@/hooks/useCustomer';
 import { DS } from '@/theme/design';
 import { CustomerProfileForm } from '@/types/customer';
 import { Feather } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import {
@@ -16,7 +17,6 @@ import {
   View,
 } from 'react-native';
 import Toast from 'react-native-toast-message';
-import { useNavigation } from '@react-navigation/native';
 
 export const CustomerFormScreen = () => {
   const navigation = useNavigation();

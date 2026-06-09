@@ -7,7 +7,7 @@ export type RootStackParamList = ParamListBase & {
   Register: undefined;
   Main: undefined;
   Customer: {};
-  CustomerForm: {}
+  CustomerForm: {};
   CustomerDetails: {
     customer: CustomerProfile;
   };
@@ -22,4 +22,8 @@ export type RootStackParamList = ParamListBase & {
     | { mode: 'edit'; orderId: number };
 
   CustomerNotes: { customer_id: number };
+
+  LeadDetails: { lead: Lead };
+
+  LeadForm: { mode: 'create' } | { mode: 'edit'; lead: Lead };
 };

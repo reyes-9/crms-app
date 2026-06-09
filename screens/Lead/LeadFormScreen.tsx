@@ -2,10 +2,11 @@ import Dropdown from '@/components/Dropdown';
 import { Input } from '@/components/Input';
 import { useLead } from '@/hooks/useLead';
 import { DS } from '@/theme/design';
-import { LeadProfileForm, LeadSource } from '@/types/lead';
+import { LeadProfileForm } from '@/types/lead';
+import { RootStackParamList } from '@/types/navigation';
 import { Feather } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
-import React, { useState } from 'react';
+import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
+import React from 'react';
 import { useForm } from 'react-hook-form';
 import {
   ActivityIndicator,
@@ -19,14 +20,17 @@ import {
 } from 'react-native';
 import Toast from 'react-native-toast-message';
 
+type LeadFormRoute = RouteProp<RootStackParamList, 'LeadForm'>;
+
 export const LeadFormScreen = () => {
   const navigation = useNavigation();
 
-  const { addLead } = useLead();
+  const route = useRoute<LeadFormRoute>();
+  const { mode } = route.params;
+  const isEditing = mode === 'edit';
+  const lead = isEditing ? route.params.lead : undefined;
 
-  const [source, setSource] = useState<LeadSource | null>(null);
-  const [sourceError, setSourceError] = useState(false);
-  const [status, setStatus] = useState('new');
+  const { addLead, editLead } = useLead();
 
   const {
     control,
@@ -35,11 +39,11 @@ export const LeadFormScreen = () => {
     formState: { isSubmitting },
   } = useForm<LeadProfileForm>({
     defaultValues: {
-      name: '',
-      company: '',
-      email: '',
-      number: '',
-      source: undefined,
+      name: lead?.name ?? '',
+      company: lead?.company ?? '',
+      email: lead?.email ?? '',
+      number: lead?.number ?? '',
+      source: lead?.source ?? undefined,
     },
   });
 
@@ -47,40 +51,54 @@ export const LeadFormScreen = () => {
   const watchedCompany = watch('company');
 
   const onSubmit = async (payload: LeadProfileForm) => {
-    console.log('Customer Payload:', payload);
     try {
-      await addLead(payload);
-      Toast.show({
-        type: 'success',
-        text1: 'Lead Created',
-        text2: 'New lead added successfully',
-      });
-      navigation.goBack();
+      if (isEditing) {
+        await editLead(lead.id, payload);
+        Toast.show({
+          type: 'success',
+          text1: 'Lead Updated',
+          text2: 'Lead updated successfully',
+        });
+      } else {
+        await addLead(payload);
+        Toast.show({
+          type: 'success',
+          text1: 'Lead Created',
+          text2: 'New lead added successfully',
+        });
+        navigation.goBack();
+      }
     } catch (err) {
       console.error(err);
       Toast.show({
         type: 'error',
         text1: 'Error',
-        text2: 'Failed to save order',
+        text2: `Failed to ${isEditing ? 'update' : 'save'} lead`,
       });
     }
   };
 
   return (
-    <ScrollView
-      style={styles.screen}
-      contentContainerStyle={styles.content}
-      keyboardShouldPersistTaps="handled"
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      {/* <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      > */}
+      <ScrollView
+        style={styles.screen}
+        contentContainerStyle={styles.content}
+        keyboardShouldPersistTaps="handled"
+      >
         {/* HEADER */}
         <View>
           <Text style={styles.eyebrow}>LEAD</Text>
-          <Text style={styles.pageTitle}>New Lead</Text>
-          <Text style={styles.pageSubtitle}>Add a new lead to your CRM</Text>
+          <Text style={styles.pageTitle}>
+            {isEditing ? 'Edit Lead' : 'New Lead'}
+          </Text>
+          <Text style={styles.pageSubtitle}>
+            {isEditing
+              ? 'Update the details of this lead'
+              : 'Add a new lead to your CRM'}
+          </Text>
         </View>
 
         {/* SUMMARY */}
@@ -88,12 +106,10 @@ export const LeadFormScreen = () => {
           <View style={styles.summaryIcon}>
             <Feather name="user" size={22} color={DS.color.primary} />
           </View>
-
           <View style={{ flex: 1 }}>
             <Text style={styles.summaryTitle} numberOfLines={1}>
               {watchedName || 'Unnamed Lead'}
             </Text>
-
             <Text style={styles.summarySubtitle}>
               {watchedCompany || 'No company'}
             </Text>
@@ -149,9 +165,7 @@ export const LeadFormScreen = () => {
               { label: 'Other', value: 'other' },
             ]}
             required
-            rules={{
-              required: 'Source is required',
-            }}
+            rules={{ required: 'Source is required' }}
           />
 
           {/* SUBMIT */}
@@ -167,22 +181,26 @@ export const LeadFormScreen = () => {
             {isSubmitting ? (
               <View style={styles.submitRow}>
                 <ActivityIndicator size="small" color={DS.color.textInverse} />
-                <Text style={styles.submitText}>Saving Customer...</Text>
+                <Text style={styles.submitText}>
+                  {isEditing ? 'Updating Lead...' : 'Saving Lead...'}
+                </Text>
               </View>
             ) : (
               <View style={styles.submitRow}>
                 <Feather
-                  name="user-plus"
+                  name={isEditing ? 'save' : 'user-plus'}
                   size={18}
                   color={DS.color.textInverse}
                 />
-                <Text style={styles.submitText}>Create Customer</Text>
+                <Text style={styles.submitText}>
+                  {isEditing ? 'Update Lead' : 'Create Lead'}
+                </Text>
               </View>
             )}
           </Pressable>
         </View>
-      {/* </KeyboardAvoidingView> */}
-    </ScrollView>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 };
 
@@ -191,12 +209,12 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: DS.color.bg,
   },
-
   content: {
-    paddingHorizontal: DS.spacing.lg,
-    paddingTop: DS.spacing.lg,
-    paddingBottom: DS.spacing.xxl,
+    padding: DS.spacing.xl,
+    gap: DS.spacing.md,
+    paddingBottom: 40,
   },
+
   // HEADER
   eyebrow: {
     ...DS.typography.eyebrow,
@@ -218,13 +236,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: DS.color.border,
     padding: DS.spacing.lg,
-    marginTop: DS.spacing.md,
     flexDirection: 'row',
     alignItems: 'center',
     gap: DS.spacing.md,
     ...DS.shadow.sm,
   },
-
   summaryIcon: {
     width: 52,
     height: 52,
@@ -233,13 +249,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-
   summaryTitle: {
     fontSize: 16,
     fontWeight: '700',
     color: DS.color.textPrimary,
   },
-
   summarySubtitle: {
     fontSize: 13,
     color: DS.color.textSecondary,
@@ -248,23 +262,21 @@ const styles = StyleSheet.create({
 
   // FORM
   formCard: {
-    marginTop: DS.spacing.md,
     backgroundColor: DS.color.card,
     borderRadius: DS.radius.lg,
     borderWidth: 1,
     borderColor: DS.color.border,
     padding: DS.spacing.lg,
+    gap: DS.spacing.md,
     ...DS.shadow.sm,
   },
-
   formTitle: {
     ...DS.typography.sectionTitle,
   },
-
   formSubtitle: {
     fontSize: 13,
     color: DS.color.textSecondary,
-    marginBottom: DS.spacing.xl,
+    marginBottom: DS.spacing.sm,
   },
 
   // SUBMIT
@@ -274,15 +286,13 @@ const styles = StyleSheet.create({
     backgroundColor: DS.color.primary,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: DS.spacing.lg,
+    marginTop: DS.spacing.sm,
   },
-
   submitRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
   },
-
   submitText: {
     fontSize: 15,
     fontWeight: '600',

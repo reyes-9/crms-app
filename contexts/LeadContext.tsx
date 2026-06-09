@@ -18,7 +18,10 @@ export function LeadProvider({ children }: LeadProviderProps) {
   async function getLeads() {
     try {
       const res = await leadService.getLeads();
-      const active = res.data.filter((l: LeadProfile) => !l.is_archived);
+      const active = res.data.data.leads.filter(
+        (l: LeadProfile) => !l.is_archived,
+      );
+
       setLeads(active);
     } catch (err: any) {
       throw new Error(err);
@@ -28,7 +31,8 @@ export function LeadProvider({ children }: LeadProviderProps) {
   async function addLead(data: LeadProfileForm) {
     try {
       const res = await leadService.addLead(data);
-      setLeads((prev) => [res.data, ...prev]);
+      const lead = res.data.data.lead;
+      setLeads((prev) => [lead, ...prev]);
     } catch (err: any) {
       throw new Error(err);
     }
@@ -40,7 +44,10 @@ export function LeadProvider({ children }: LeadProviderProps) {
   ): Promise<LeadProfile> {
     try {
       const res = await leadService.editLead(id, data);
-      const updated: LeadProfile = res.data;
+      // console.log(JSON.stringify(res.data.data.lead, null, 2));
+      const updated: LeadProfile = res.data.data.lead;
+      console.log(updated);
+
       setLeads((prev) => prev.map((l) => (l.id === id ? updated : l)));
       return updated;
     } catch (err: any) {
@@ -54,7 +61,7 @@ export function LeadProvider({ children }: LeadProviderProps) {
   ): Promise<LeadProfile> {
     try {
       const res = await leadService.advanceLead(id, status);
-      const updated: LeadProfile = res.data;
+      const updated: LeadProfile = res.data.data.lead;
       setLeads((prev) => prev.map((l) => (l.id === id ? updated : l)));
       return updated;
     } catch (err: any) {

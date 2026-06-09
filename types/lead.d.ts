@@ -16,7 +16,7 @@ export interface LeadProfile {
   number: string;
   status: LeadStatus;
   source: LeadSource;
-  value: number;
+  value?: number;
   notes?: string;
   is_archived?: boolean;
 }

@@ -146,10 +146,7 @@ export const CustomerScreen = () => {
 
             {/* ── STATS ROW ────────────────────── */}
             <View style={styles.statsRow}>
-              <StatChip
-                label="Total"
-                value={customers.length}
-              />
+              <StatChip label="Total" value={customers.length} />
               <StatChip
                 label="Active"
                 value={customers.filter((c) => c.status === 'active').length}
@@ -181,7 +178,7 @@ export const CustomerScreen = () => {
 
                 <Text style={styles.filterTriggerText}>
                   {selectedFilter === 'all'
-                    ? 'All Leads'
+                    ? 'All Customers'
                     : STATUS_LABEL[selectedFilter]}
                 </Text>
 
@@ -314,6 +311,7 @@ const styles = StyleSheet.create({
     padding: DS.spacing.lg,
     paddingBottom: 32,
   },
+
   listHeader: {
     paddingTop: DS.spacing.xs,
     gap: DS.spacing.md,

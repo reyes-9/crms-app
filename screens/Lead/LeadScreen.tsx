@@ -174,7 +174,7 @@ export const LeadScreen = () => {
               <Pressable
                 style={styles.addButton}
                 onPress={() => {
-                  navigation.navigate('LeadForm');
+                  navigation.navigate('LeadForm', { mode: 'create' });
                 }}
               >
                 <Feather name="plus" size={18} color={DS.color.textInverse} />
@@ -308,6 +308,7 @@ const styles = StyleSheet.create({
   listHeader: {
     paddingTop: DS.spacing.xs,
     gap: DS.spacing.md,
+    marginBottom: DS.spacing.md,
   },
 
   pageHeader: {
