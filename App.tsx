@@ -10,6 +10,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
 import { CustomerNoteProvider } from './contexts/CustomerNoteContext';
 import { LeadProvider } from './contexts/LeadContext';
+import { LeadNoteProvider } from './contexts/LeadNoteContext';
 import { OrderProvider } from './contexts/OrderContext';
 import { RootNavigator } from './navigation/RootNavigator';
 
@@ -20,14 +21,16 @@ export default function App() {
         <CustomerProvider>
           <OrderProvider>
             <CustomerNoteProvider>
-              <SafeAreaProvider>
-                <NavigationContainer>
-                  <GestureHandlerRootView style={{ flex: 1 }}>
-                    <RootNavigator />
-                  </GestureHandlerRootView>
-                </NavigationContainer>
-                <Toast config={toastConfig} />
-              </SafeAreaProvider>
+              <LeadNoteProvider>
+                <SafeAreaProvider>
+                  <NavigationContainer>
+                    <GestureHandlerRootView style={{ flex: 1 }}>
+                      <RootNavigator />
+                    </GestureHandlerRootView>
+                  </NavigationContainer>
+                  <Toast config={toastConfig} />
+                </SafeAreaProvider>
+              </LeadNoteProvider>
             </CustomerNoteProvider>
           </OrderProvider>
         </CustomerProvider>

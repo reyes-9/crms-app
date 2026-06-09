@@ -12,12 +12,13 @@
 
 import { ReusableModal } from '@/components/ReusableModal';
 import { useLead } from '@/hooks/useLead';
+import { useLeadNote } from '@/hooks/useLeadNote';
 import { DS } from '@/theme/design';
 import { LeadStatus } from '@/types/lead';
 import { RootStackParamList } from '@/types/navigation';
 import { Feather } from '@expo/vector-icons';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Linking,
@@ -28,6 +29,7 @@ import {
   View,
 } from 'react-native';
 import Toast from 'react-native-toast-message';
+import { LeadNoteDetails } from '@/types/leadNote';
 
 type LeadDetailsRoute = RouteProp<RootStackParamList, 'LeadDetails'>;
 
@@ -84,6 +86,12 @@ export const LeadDetailsScreen = () => {
     () => leads.find((l) => l.id === routeLead.id) ?? routeLead,
     [leads, routeLead.id],
   );
+
+  const { limitedLeadNotes, getLeadNotesWithLimit } = useLeadNote();
+
+  useEffect(() => {
+    getLeadNotesWithLimit(lead.id);
+  }, [lead.id, getLeadNotesWithLimit]);
 
   const [advanceLoading, setAdvanceLoading] = useState(false);
   const [deleteVisible, setDeleteVisible] = useState(false);
@@ -346,11 +354,35 @@ export const LeadDetailsScreen = () => {
         </SectionCard>
 
         {/* ── NOTES ────────────────────────────── */}
-        {lead.notes ? (
-          <SectionCard title="Notes" icon="file-text">
-            <Text style={styles.notesText}>{lead.notes}</Text>
-          </SectionCard>
-        ) : null}
+        <SectionCard
+          title="Recent Notes"
+          icon="file-text"
+          actionLabel="Manage"
+          onAction={() =>
+            navigation.navigate('LeadNotes', { lead_id: lead.id })
+          }
+        >
+          {!limitedLeadNotes || limitedLeadNotes.length === 0 ? (
+            <EmptyInline message="No notes yet" icon="file-text" />
+          ) : (
+            limitedLeadNotes.map((note: LeadNoteDetails, i: number) => (
+              <View key={note.id}>
+                {i > 0 && <View style={styles.noteDivider} />}
+                <View style={styles.noteItem}>
+                  <Text style={styles.noteText}>{note.content}</Text>
+                  <View style={styles.noteMeta}>
+                    <Feather
+                      name="clock"
+                      size={11}
+                      color={DS.color.textMuted}
+                    />
+                    <Text style={styles.noteMetaText}>Apr 10, 2025 · you</Text>
+                  </View>
+                </View>
+              </View>
+            ))
+          )}
+        </SectionCard>
 
         {/* ── DANGER ZONE ──────────────────────── */}
         <SectionCard title="Actions" icon="tool">
@@ -492,6 +524,21 @@ const SectionCard = ({
       )}
     </View>
     <View style={styles.sectionBody}>{children}</View>
+  </View>
+);
+
+/* ─── Empty Inline ───────────────────────────────── */
+
+const EmptyInline = ({
+  message,
+  icon,
+}: {
+  message: string;
+  icon: React.ComponentProps<typeof Feather>['name'];
+}) => (
+  <View style={styles.emptyInline}>
+    <Feather name={icon} size={20} color={DS.color.border} />
+    <Text style={styles.emptyInlineText}>{message}</Text>
   </View>
 );
 
@@ -724,10 +771,36 @@ const styles = StyleSheet.create({
   },
 
   // NOTES
-  notesText: {
+  noteDivider: {
+    height: 1,
+    backgroundColor: DS.color.borderLight,
+    marginVertical: DS.spacing.sm,
+  },
+  noteItem: { gap: 6 },
+  noteText: {
     fontSize: 14,
     lineHeight: 22,
     color: DS.color.textSecondary,
+  },
+  noteMeta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  noteMetaText: {
+    fontSize: 11,
+    color: DS.color.textMuted,
+  },
+
+  // EMPTY
+  emptyInline: {
+    alignItems: 'center',
+    gap: 8,
+    paddingVertical: DS.spacing.xl,
+  },
+  emptyInlineText: {
+    fontSize: 13,
+    color: DS.color.textMuted,
   },
 
   // DANGER ZONE

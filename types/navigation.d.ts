@@ -26,4 +26,6 @@ export type RootStackParamList = ParamListBase & {
   LeadDetails: { lead: Lead };
 
   LeadForm: { mode: 'create' } | { mode: 'edit'; lead: Lead };
+
+  LeadNotes: { lead_id: number };
 };

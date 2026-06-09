@@ -13,7 +13,8 @@ import { EditCustomerScreen } from '@/screens/Customer/EditCustomerScreen';
 import { LeadDetailsScreen } from '@/screens/Lead/LeadDetailsScreen';
 import { LeadFormScreen } from '@/screens/Lead/LeadFormScreen';
 
-import { CustomerNotes } from '@/screens/Notes/CustomerNotes';
+import { CustomerNotes } from '@/screens/Customer/CustomerNotes';
+import { LeadNotes } from '@/screens/Lead/LeadNotes';
 import { OrderFormScreen } from '@/screens/Orders/OrderFormScreen';
 import { OrdersScreen } from '@/screens/Orders/OrdersScreen';
 
@@ -37,6 +38,7 @@ const DETAIL_SCREENS = [
   { name: 'Orders', component: OrdersScreen, title: 'Orders' },
   { name: 'OrderForm', component: OrderFormScreen, title: 'Order Form' },
   { name: 'CustomerNotes', component: CustomerNotes, title: 'Customer Notes' },
+  { name: 'LeadNotes', component: LeadNotes, title: 'Lead Notes' },
   {
     name: 'CustomerForm',
     component: CustomerFormScreen,

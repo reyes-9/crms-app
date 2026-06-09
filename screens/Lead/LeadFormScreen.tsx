@@ -68,6 +68,7 @@ export const LeadFormScreen = () => {
         });
         navigation.goBack();
       }
+      
     } catch (err) {
       console.error(err);
       Toast.show({
