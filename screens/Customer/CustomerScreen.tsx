@@ -178,7 +178,7 @@ export const CustomerScreen = () => {
 
                 <Text style={styles.filterTriggerText}>
                   {selectedFilter === 'all'
-                    ? 'All Customers'
+                    ? 'All Leads'
                     : STATUS_LABEL[selectedFilter]}
                 </Text>
 
