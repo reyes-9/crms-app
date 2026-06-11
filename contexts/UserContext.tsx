@@ -25,7 +25,7 @@ export function UserProvider({ children }: UserProviderProps) {
         const token = await AsyncStorage.getItem('access');
         if (token) {
           const data = await authService.getMe();
-          const user = data.data.user;
+          const user = data.data;
           setUser(user);
         }
       } catch {
@@ -55,29 +55,21 @@ export function UserProvider({ children }: UserProviderProps) {
       const access = loginRes.data.access;
       const refresh = loginRes.data.refresh;
 
-      // console.log(JSON.stringify(access, null, 2));
-      // console.log(JSON.stringify(refresh, null, 2));
-
       await AsyncStorage.setItem('access', access);
       await AsyncStorage.setItem('refresh', refresh);
 
-      // const storedAccess = await AsyncStorage.getItem('access');
-      // const storedRefresh = await AsyncStorage.getItem('refresh');
-
-      // console.log('Stored Access:', storedAccess);
-      // console.log('Stored Refresh:', storedRefresh);
+      await loadUser();
     } catch (loginErr: any) {
       const message =
         loginErr?.response?.data?.detail || loginErr?.message || 'Login failed';
-      // console.log(message);
       throw new Error(message);
     }
   }
 
   async function loadUser() {
     try {
-      const data = await authService.getMe();
-      setUser(data.user);
+      const res = await authService.getMe();
+      setUser(res.data.user);
     } catch (err) {
       console.error('Failed to load user:', err);
       setUser(null);
@@ -86,6 +78,7 @@ export function UserProvider({ children }: UserProviderProps) {
 
   async function logout() {
     await authService.logout();
+
     setUser(null);
   }
 

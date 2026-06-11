@@ -319,11 +319,6 @@ const NoteFormModal = ({
           content: trimmedContent,
         });
       } else {
-        console.log('Lead Note:', {
-          lead_id,
-          title: trimmedTitle,
-          content: trimmedContent,
-        });
         await addLeadNote({
           lead: lead_id,
           title: trimmedTitle,

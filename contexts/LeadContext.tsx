@@ -44,9 +44,7 @@ export function LeadProvider({ children }: LeadProviderProps) {
   ): Promise<LeadProfile> {
     try {
       const res = await leadService.editLead(id, data);
-      // console.log(JSON.stringify(res.data.data.lead, null, 2));
       const updated: LeadProfile = res.data.data.lead;
-      console.log(updated);
 
       setLeads((prev) => prev.map((l) => (l.id === id ? updated : l)));
       return updated;

@@ -7,7 +7,7 @@ import { Header } from '@/components/Header';
 import { CustomerScreen } from '@/screens/Customer/CustomerScreen';
 import DashboardScreen from '@/screens/DashboardScreen';
 import { LeadScreen } from '@/screens/Lead/LeadScreen';
-import { ProfileScreen } from '@/screens/ProfileScreen';
+import { ProfileScreen } from '@/screens/Profile/ProfileScreen';
 import { DS } from '@/theme/design';
 import { Pressable } from 'react-native';
 

@@ -52,11 +52,8 @@ export const LoginScreen = () => {
         password: data.password,
       });
 
-      await loadUser();
-
       navigation.replace('Main');
     } catch (err: any) {
-      console.log(err.message);
       setErr(err.message);
     }
   };

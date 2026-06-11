@@ -40,7 +40,6 @@ export const CustomerFormScreen = () => {
   const watchedCompany = watch('company');
 
   const onSubmit = async (payload: CustomerProfileForm) => {
-    console.log('Customer Payload:', payload);
     try {
       await addCustomer(payload);
       Toast.show({

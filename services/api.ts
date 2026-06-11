@@ -44,7 +44,6 @@ api.interceptors.response.use(
         );
 
         const access = res.data.data.access;
-        console.log(JSON.stringify(res.data, null, 2));
 
         await AsyncStorage.setItem('access', access);
         original.headers.Authorization = `Bearer ${access}`;

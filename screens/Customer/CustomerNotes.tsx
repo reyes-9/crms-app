@@ -11,12 +11,11 @@ import {
   Modal,
   Platform,
   Pressable,
-  SafeAreaView,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  View,
+  View
 } from 'react-native';
 
 /* ─── Screen ─────────────────────────────────────── */
@@ -323,11 +322,6 @@ const NoteFormModal = ({
           content: trimmedContent,
         });
       } else {
-        console.log('Customer Note:', {
-          customer_id,
-          title: trimmedTitle,
-          content: trimmedContent,
-        });
         await addCustomerNote({
           customer: customer_id,
           title: trimmedTitle,

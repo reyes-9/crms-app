@@ -111,7 +111,6 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!user) {
-      // User logged out — reset everything
       setSummary(null);
       setKpiCards([]);
       setLoading(false);
