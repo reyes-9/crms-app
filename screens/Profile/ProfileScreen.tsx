@@ -351,8 +351,8 @@ export function ProfileScreen() {
       <ReusableModal
         state="danger"
         visible={logoutModalVisible}
-        title="You sure you want to log out?"
-        // message="This record will be restored."
+        title="Are you sure?"
+        message="You will need to sign in again to access your account."
         buttons={[
           {
             label: 'Cancel',

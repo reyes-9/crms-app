@@ -1,9 +1,9 @@
 import { Feather } from '@expo/vector-icons';
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { FlatList, RefreshControl, StyleSheet, Text, View } from 'react-native';
 
-import { useDashboard } from '@/contexts/DashboardContext';
+import { useDashboard } from '@/hooks/useDashboard';
 import { DS } from '@/theme/design';
 import {
   KpiCardData,

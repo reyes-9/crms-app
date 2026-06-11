@@ -5,13 +5,7 @@ import type {
   DashboardSummary,
   KpiCardData,
 } from '@/types/dashboard';
-import React, {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useState,
-} from 'react';
+import React, { createContext, useCallback, useEffect, useState } from 'react';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -74,7 +68,9 @@ function buildKpiCards(summary: DashboardSummary): KpiCardData[] {
 
 // ─── Context ─────────────────────────────────────────────────────────────────
 
-const DashboardContext = createContext<DashboardContextValue | null>(null);
+export const DashboardContext = createContext<DashboardContextValue | null>(
+  null,
+);
 
 // ─── Provider ────────────────────────────────────────────────────────────────
 
@@ -83,7 +79,7 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
 
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
   const [kpiCards, setKpiCards] = useState<KpiCardData[]>([]);
-  // ✅ Fix: start as true when user exists so skeletons show immediately,
+  // Fix: start as true when user exists so skeletons show immediately,
   //         false when no user so the screen doesn't show skeletons on logout
   const [loading, setLoading] = useState(!!user);
   const [error, setError] = useState<string | null>(null);
@@ -97,6 +93,8 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
 
       const res = await dashboardService.getSummary();
       const data: DashboardSummary = res.data;
+
+      // console.log('data: ', data);
 
       setSummary(data);
       setKpiCards(buildKpiCards(data));
@@ -143,13 +141,3 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
 }
 
 // ─── Hook ────────────────────────────────────────────────────────────────────
-
-export function useDashboard(): DashboardContextValue {
-  const ctx = useContext(DashboardContext);
-
-  if (!ctx) {
-    throw new Error('useDashboard must be used inside <DashboardProvider>');
-  }
-
-  return ctx;
-}

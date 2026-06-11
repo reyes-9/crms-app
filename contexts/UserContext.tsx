@@ -69,7 +69,7 @@ export function UserProvider({ children }: UserProviderProps) {
   async function loadUser() {
     try {
       const res = await authService.getMe();
-      setUser(res.data.user);
+      setUser(res.data);
     } catch (err) {
       console.error('Failed to load user:', err);
       setUser(null);
@@ -78,7 +78,7 @@ export function UserProvider({ children }: UserProviderProps) {
 
   async function logout() {
     await authService.logout();
-
+    console.log('USER IS UNSET.');
     setUser(null);
   }
 
